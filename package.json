@@ -1,0 +1,25 @@
+{
+  "name": "stableflow-sdk",
+  "private": true,
+  "packageManager": "pnpm@10.19.0",
+  "scripts": {
+    "build": "pnpm run build:core && pnpm run build:wallets && pnpm run build:hyperliquid && pnpm run build:shell && pnpm run build:examples",
+    "build:core": "pnpm --filter @stableflow/core build",
+    "build:wallets": "pnpm --filter @stableflow/wallet-solana build && pnpm --filter @stableflow/wallet-evm build && pnpm --filter @stableflow/wallet-near build && pnpm --filter @stableflow/wallet-ton build && pnpm --filter @stableflow/wallet-aptos build && pnpm --filter @stableflow/wallet-tron build && pnpm --filter @stableflow/wallet-sui build",
+    "build:hyperliquid": "pnpm --filter @stableflow/hyperliquid build",
+    "build:shell": "pnpm --filter stableflow-ai-sdk build",
+    "build:examples": "pnpm --filter demo-evm build",
+    "dev:demo-evm": "pnpm --filter demo-evm dev",
+    "changeset": "changeset"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.27.11",
+    "typescript": "^5.9.3"
+  },
+  "pnpm": {
+    "overrides": {
+      "@metaplex-foundation/umi": "1.5.1",
+      "@layerzerolabs/lz-definitions": "~3.0.168"
+    }
+  }
+}

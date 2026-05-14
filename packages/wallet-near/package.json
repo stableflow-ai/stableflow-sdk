@@ -1,0 +1,34 @@
+{
+  "name": "@stableflow/wallet-near",
+  "version": "3.0.0",
+  "description": "NEAR wallet adapter for StableFlow SDK",
+  "license": "MIT",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@stableflow/core": "workspace:*",
+    "big.js": "^7.0.1",
+    "buffer": "^6.0.3"
+  },
+  "peerDependencies": {
+    "@near-js/transactions": "^2.5.1"
+  },
+  "devDependencies": {
+    "@types/big.js": "^6.2.2",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3"
+  }
+}

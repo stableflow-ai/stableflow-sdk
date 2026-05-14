@@ -1,0 +1,11 @@
+{
+  "$schema": "https://unpkg.com/@changesets/config@3.0.0/schema.json",
+  "changelog": "@changesets/cli/changelog",
+  "commit": false,
+  "fixed": [],
+  "linked": [["@stableflow/core", "@stableflow/wallet-evm", "@stableflow/wallet-solana", "@stableflow/wallet-near", "@stableflow/wallet-ton", "@stableflow/wallet-aptos", "@stableflow/wallet-tron", "@stableflow/wallet-sui", "@stableflow/hyperliquid", "stableflow-ai-sdk"]],
+  "access": "public",
+  "baseBranch": "main",
+  "updateInternalDependencies": "patch",
+  "ignore": ["@stableflow/examples"]
+}

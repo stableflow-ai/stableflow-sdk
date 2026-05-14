@@ -1,0 +1,42 @@
+{
+  "name": "@stableflow/core",
+  "version": "3.0.0",
+  "description": "StableFlow core: HTTP client, models, bridge services, and chain-agnostic APIs",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/stableflow-ai/stableflow-ai-sdk.git",
+    "directory": "sdk/stableflow/packages/core"
+  },
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsup",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "axios": "^1.6.8",
+    "big.js": "^7.0.1",
+    "bs58": "^6.0.0",
+    "buffer": "^6.0.3",
+    "ethers": "^6.16.0",
+    "form-data": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/big.js": "^6.2.2",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3"
+  },
+  "peerDependencies": {
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "name": "@stableflow/wallet-evm",
+  "version": "3.0.0",
+  "description": "EVM wallet adapter for StableFlow SDK",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/stableflow-ai/stableflow-ai-sdk.git",
+    "directory": "sdk/stableflow/packages/wallet-evm"
+  },
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@stableflow/core": "workspace:*",
+    "big.js": "^7.0.1",
+    "ethers": "^6.16.0"
+  },
+  "peerDependencies": {
+    "@layerzerolabs/lz-v2-utilities": "^3.0.151",
+    "@stableflow/wallet-solana": "workspace:*"
+  },
+  "peerDependenciesMeta": {
+    "@stableflow/wallet-solana": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@stableflow/wallet-solana": "workspace:*",
+    "@types/big.js": "^6.2.2",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3"
+  }
+}

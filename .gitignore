@@ -1,0 +1,16 @@
+node_modules/
+dist/
+*.log
+.DS_Store
+.env
+.env.local
+.cursor/
+.idea/
+.vscode/
+
+# npm package artifacts
+*.tgz
+
+# Internal documentation
+PUBLISH.md
+

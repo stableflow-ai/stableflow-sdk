@@ -1,0 +1,45 @@
+{
+  "name": "@stableflow/wallet-ton",
+  "version": "3.0.0",
+  "description": "TON wallet adapter for StableFlow SDK",
+  "license": "MIT",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@stableflow/core": "workspace:*",
+    "big.js": "^7.0.1",
+    "buffer": "^6.0.3"
+  },
+  "peerDependencies": {
+    "@layerzerolabs/lz-ton-sdk-v2": "^3.0.168",
+    "@layerzerolabs/lz-v2-utilities": "^3.0.151",
+    "@ton/ton": "^16.2.4",
+    "@stableflow/wallet-solana": "workspace:*"
+  },
+  "peerDependenciesMeta": {
+    "@stableflow/wallet-solana": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@layerzerolabs/lz-v2-utilities": "^3.0.151",
+    "@stableflow/wallet-solana": "workspace:*",
+    "@types/big.js": "^6.2.2",
+    "bigint-buffer": "^1.1.5",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3"
+  }
+}
