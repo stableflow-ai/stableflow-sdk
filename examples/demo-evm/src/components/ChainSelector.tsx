@@ -31,7 +31,7 @@ export const ChainSelector: React.FC<ChainSelectorProps> = ({
       >
         <option value="">Select EVM chain</option>
         {tokenList.map((token) => (
-          <option key={token.contractAddress} value={token.contractAddress}>
+          <option key={`${token.chainName}-${token.contractAddress}`} value={token.contractAddress}>
             {token.symbol} - {token.chainName}
           </option>
         ))}

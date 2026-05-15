@@ -24,10 +24,13 @@ export default defineConfig({
     sourcemap: true,
   },
   resolve: {
-    alias: {
-      buffer: 'buffer',
-      '@': resolve(__dirname, './src'),
-    },
+    alias: [
+      {
+        find: "@",
+        replacement: "/src"
+      },
+      { find: "buffer", replacement: "buffer" },
+    ]
   },
   define: {
     'process.env': {},
@@ -43,5 +46,6 @@ export default defineConfig({
         "process.browser": "true"
       }
     },
+    force: true
   },
 });
