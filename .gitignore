@@ -14,3 +14,5 @@ dist/
 # Internal documentation
 PUBLISH.md
 
+pnpm-lock.yaml
+
