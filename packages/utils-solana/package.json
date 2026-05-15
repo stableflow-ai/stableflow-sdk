@@ -1,12 +1,12 @@
 {
-  "name": "@stableflow/core",
+  "name": "@stableflow/utils-solana",
   "version": "3.0.0",
-  "description": "StableFlow core: HTTP client, models, bridge services, and chain-agnostic APIs",
+  "description": "Solana utilities for StableFlow SDK (RPC fallback, ATA helpers)",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/stableflow-ai/stableflow-ai-sdk.git",
-    "directory": "sdk/stableflow/packages/core"
+    "directory": "sdk/stableflow/packages/utils-solana"
   },
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -25,17 +25,16 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "axios": "^1.6.8",
-    "big.js": "^7.0.1",
-    "bs58": "^6.0.0",
-    "buffer": "^6.0.3",
-    "form-data": "^4.0.0"
-  },
-  "devDependencies": {
-    "@types/big.js": "^6.2.2",
-    "tsup": "^8.5.1",
-    "typescript": "^5.9.3"
+    "@stableflow/core": "workspace:*"
   },
   "peerDependencies": {
+    "@solana/spl-token": "^0.4.14",
+    "@solana/web3.js": "^1.98.4"
+  },
+  "devDependencies": {
+    "@solana/spl-token": "^0.4.14",
+    "@solana/web3.js": "^1.98.4",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3"
   }
 }

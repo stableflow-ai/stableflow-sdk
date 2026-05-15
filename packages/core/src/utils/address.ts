@@ -1,6 +1,15 @@
 import bs58 from "bs58";
-import { zeroPadValue } from "ethers";
 import { Buffer } from 'buffer';
+
+/** Left-pad a hex value to `lengthBytes` (ethers v6 zeroPadValue semantics). */
+function zeroPadValue(hex: string, lengthBytes: number): string {
+  const normalized = hex.startsWith("0x") ? hex.slice(2) : hex;
+  const targetLen = lengthBytes * 2;
+  if (normalized.length > targetLen) {
+    throw new Error(`hex value exceeds ${lengthBytes} bytes`);
+  }
+  return "0x" + normalized.padStart(targetLen, "0");
+}
 
 // Address validation utilities for different blockchains
 

@@ -24,7 +24,10 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
+    "@stableflow/bridges": "workspace:*",
     "@stableflow/core": "workspace:*",
+    "@stableflow/utils-evm": "workspace:*",
+    "@stableflow/utils-solana": "workspace:*",
     "big.js": "^7.0.1",
     "buffer": "^6.0.3",
     "ethers": "^6.16.0"

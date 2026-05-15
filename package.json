@@ -3,8 +3,10 @@
   "private": true,
   "packageManager": "pnpm@10.19.0",
   "scripts": {
-    "build": "pnpm run build:core && pnpm run build:wallets && pnpm run build:hyperliquid && pnpm run build:shell && pnpm run build:examples",
+    "build": "pnpm run build:core && pnpm run build:utils && pnpm run build:bridges && pnpm run build:wallets && pnpm run build:hyperliquid && pnpm run build:shell && pnpm run build:examples",
     "build:core": "pnpm --filter @stableflow/core build",
+    "build:utils": "pnpm --filter @stableflow/utils-evm build && pnpm --filter @stableflow/utils-solana build",
+    "build:bridges": "pnpm --filter @stableflow/bridges build",
     "build:wallets": "pnpm --filter @stableflow/wallet-solana build && pnpm --filter @stableflow/wallet-evm build && pnpm --filter @stableflow/wallet-near build && pnpm --filter @stableflow/wallet-ton build && pnpm --filter @stableflow/wallet-aptos build && pnpm --filter @stableflow/wallet-tron build && pnpm --filter @stableflow/wallet-sui build",
     "build:hyperliquid": "pnpm --filter @stableflow/hyperliquid build",
     "build:shell": "pnpm --filter stableflow-ai-sdk build",

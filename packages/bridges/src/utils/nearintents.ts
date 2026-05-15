@@ -1,4 +1,4 @@
-import { Service } from "../../core/Service";
+import { Service } from "@stableflow/core";
 
 export const getQuoteModes = (params: { quoteData?: any; bridgeStore?: { quoteDataService: Service; } }) => {
   const { quoteData, bridgeStore } = params;

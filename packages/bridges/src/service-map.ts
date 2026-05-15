@@ -7,7 +7,7 @@ import oneClickFraxZeroService from "./fraxzero/from-oneclick";
 import usdt0OneClickService from "./usdt0/to-oneclick";
 import oneClickUsdt0Service from "./usdt0/from-oneclick";
 import nativeService from "./native";
-import { Service } from "../core/Service";
+import { Service } from "@stableflow/core";
 
 export const ServiceMap: Record<Service, any> = {
   [Service.OneClick]: oneClickService,

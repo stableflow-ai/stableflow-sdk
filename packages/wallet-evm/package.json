@@ -24,21 +24,17 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
+    "@stableflow/bridges": "workspace:*",
     "@stableflow/core": "workspace:*",
+    "@stableflow/utils-evm": "workspace:*",
+    "@stableflow/utils-solana": "workspace:*",
     "big.js": "^7.0.1",
     "ethers": "^6.16.0"
   },
   "peerDependencies": {
-    "@layerzerolabs/lz-v2-utilities": "^3.0.151",
-    "@stableflow/wallet-solana": "workspace:*"
-  },
-  "peerDependenciesMeta": {
-    "@stableflow/wallet-solana": {
-      "optional": true
-    }
+    "@layerzerolabs/lz-v2-utilities": "^3.0.151"
   },
   "devDependencies": {
-    "@stableflow/wallet-solana": "workspace:*",
     "@types/big.js": "^6.2.2",
     "tsup": "^8.5.1",
     "typescript": "^5.9.3"

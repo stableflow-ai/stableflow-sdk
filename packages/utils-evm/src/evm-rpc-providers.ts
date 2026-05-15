@@ -1,5 +1,5 @@
 import { ethers } from "ethers";
-import { TokenConfig } from "../models/Token";
+import type { TokenConfig } from "@stableflow/core";
 
 const providerCache = new Map<number, ethers.AbstractProvider>();
 

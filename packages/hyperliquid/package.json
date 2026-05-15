@@ -19,6 +19,7 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
+    "@stableflow/bridges": "workspace:*",
     "@stableflow/core": "workspace:*",
     "big.js": "^7.0.1",
     "ethers": "^6.16.0"

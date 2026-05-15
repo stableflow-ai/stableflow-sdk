@@ -24,9 +24,6 @@ export type { WalletConfig } from './models/Wallet';
 export { TransactionStatus } from './models/Status';
 
 export { SFA } from './services/SFA';
-export type { GetAllQuoteParams } from './services/SFA';
-
-export { ServiceMap } from './bridges';
 
 export { tokens, usdtTokens, usdcTokens, frxusdTokens } from './wallets/config/tokens';
 export { usdtChains } from './wallets/config/usdt';
@@ -40,30 +37,10 @@ export type { ChainType } from './wallets/config/chains';
 export { default as erc20Abi } from './wallets/config/erc20';
 
 export { getPrice } from './utils/price';
-export { numberRemoveEndZero } from './utils/number';
+export { numberRemoveEndZero, formatNumber } from './utils/number';
 export { addressToBytes32 } from './utils/address';
 export { Csl } from './utils/log';
 export { ExecTime } from './utils/exec-time';
-export { evmRpcFallbackProvider } from './utils/evm-rpc-providers';
 export { formatQuoteError } from './utils/error';
 export { getRouteStatus } from './utils/service';
 export { quoteSignature } from './utils/cctp';
-export {
-  buildEndpointV2LzComposePayload,
-  encodeUint,
-  normalizeHex,
-  toBytes32,
-  NATIVE_MSG_FEE_BUFFER,
-} from './utils/layerzero-compose';
-
-export {
-  LZ_RECEIVE_VALUE,
-  USDT0_CONFIG,
-  USDT0_LEGACY_MESH_TRANSFTER_FEE,
-  DATA_HEX_PROTOBUF_EXTRA,
-  SIGNATURE_SIZE,
-} from './bridges/usdt0/config';
-export { OFT_ABI } from './bridges/usdt0/contract';
-export { getHopMsgFee } from './bridges/usdt0/hop-composer';
-export { FRAXZERO_MIDDLE_TOKEN_FRXUSD, FRAXZERO_MIDDLE_TOKEN_USDC } from './bridges/fraxzero/config';
-export { getQuoteModes } from './bridges/utils';

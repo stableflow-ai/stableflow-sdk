@@ -9,7 +9,8 @@ import type { QuoteResult as QuoteResultType, Transaction } from './types';
 import { useWallet } from './hooks/useWallet';
 import Big from 'big.js';
 import './App.css';
-import { getQuoteModes, SFA, type GetAllQuoteParams, type TokenConfig } from '@stableflow/core';
+import type { TokenConfig } from '@stableflow/core';
+import { BridgeSFA, getQuoteModes, type GetAllQuoteParams } from '@stableflow/bridges';
 
 const prices: Record<string, string> = {
   TRX: '0.293733',
@@ -97,7 +98,7 @@ function App() {
           : {}),
       };
 
-      const response = await SFA.getAllQuote(quoteRequest);
+      const response = await BridgeSFA.getAllQuote(quoteRequest);
 
       if (response && Array.isArray(response)) {
         const validQuotes = response.filter((q) => q.quote && !q.error);
@@ -186,7 +187,7 @@ function App() {
         }
       }
 
-      const txHash = await SFA.send(selectedQuote.serviceType, {
+      const txHash = await BridgeSFA.send(selectedQuote.serviceType, {
         wallet: fromWallet.wallet,
         quote,
       });

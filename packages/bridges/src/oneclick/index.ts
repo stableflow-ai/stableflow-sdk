@@ -1,15 +1,15 @@
 import Big from "big.js";
 import { ONECLICK_PROXY, ONECLICK_PROXY_ABI } from "./contract";
-import { numberRemoveEndZero } from "../../utils/number";
-import { getPrice } from "../../utils/price";
-import { SendType } from "../../core/Send";
-import { Service } from "../../core/Service";
-import { DefaultAddresses } from "../../wallets/config/addresses";
-import { OpenAPI } from '../../core/OpenAPI';
-import { request } from '../../core/request';
-import { ChainType } from "../../wallets/config/chains";
-import { ExecTime } from "../../utils/exec-time";
-import { Csl } from "../../utils/log";
+import { numberRemoveEndZero } from "@stableflow/core";
+import { getPrice } from "@stableflow/core";
+import { SendType } from "@stableflow/core";
+import { Service } from "@stableflow/core";
+import { DefaultAddresses } from "@stableflow/core";
+import { OpenAPI } from '@stableflow/core';
+import { request } from '@stableflow/core';
+import { ChainType } from "@stableflow/core";
+import { ExecTime } from "@stableflow/core";
+import { Csl } from "@stableflow/core";
 
 export const BridgeFee = [
   {

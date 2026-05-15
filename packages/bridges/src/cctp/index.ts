@@ -1,13 +1,13 @@
 import { CCTP_TOKEN_PROXY, CCTP_TOKEN_PROXY_ABI } from "./contract";
 import { CCTP_DOMAINS } from "./config";
-import { OpenAPI } from '../../core/OpenAPI';
-import { request } from '../../core/request';
-import { SendType } from "../../core/Send";
-import { Service } from "../../core/Service";
+import { OpenAPI } from '@stableflow/core';
+import { request } from '@stableflow/core';
+import { SendType } from "@stableflow/core";
+import { Service } from "@stableflow/core";
 import Big from "big.js";
-import { numberRemoveEndZero } from "../../utils/number";
-import { ExecTime } from "../../utils/exec-time";
-import { Csl } from "../../utils/log";
+import { numberRemoveEndZero } from "@stableflow/core";
+import { ExecTime } from "@stableflow/core";
+import { Csl } from "@stableflow/core";
 
 export const PayInLzToken = false;
 

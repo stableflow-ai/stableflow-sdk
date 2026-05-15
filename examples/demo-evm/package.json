@@ -11,6 +11,7 @@
   "dependencies": {
     "@layerzerolabs/lz-v2-utilities": "^3.0.151",
     "@rainbow-me/rainbowkit": "^2.2.8",
+    "@stableflow/bridges": "workspace:*",
     "@stableflow/core": "workspace:*",
     "@stableflow/wallet-evm": "workspace:*",
     "@tanstack/react-query": "^5.87.1",

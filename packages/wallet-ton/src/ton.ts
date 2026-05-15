@@ -13,12 +13,14 @@ import {
   Service,
   SendType,
   ExecTime,
+  addressToBytes32,
+} from '@stableflow/core';
+import {
+  getHopMsgFee,
   LZ_RECEIVE_VALUE,
   USDT0_LEGACY_MESH_TRANSFTER_FEE,
-  addressToBytes32,
-  getHopMsgFee,
-} from '@stableflow/core';
-import { getDestinationAssociatedTokenAddress } from '@stableflow/wallet-solana';
+} from '@stableflow/bridges';
+import { getDestinationAssociatedTokenAddress } from '@stableflow/utils-solana';
 
 export default class TonWallet {
   private tonConnectUI: any;

@@ -106,8 +106,6 @@ const probeRpcHealth = async (rpcUrl: string) => {
     body: JSON.stringify({
       jsonrpc: "2.0",
       id: 1,
-      // Use a real business-critical RPC method.
-      // getHealth can be healthy while this endpoint still throttles normal RPC calls.
       method: "getLatestBlockhash",
       params: [{ commitment: "confirmed" }],
     }),
@@ -157,7 +155,6 @@ export const getAvailableSolanaRpcUrl = async (options?: { isQuerySignature?: bo
     }
   }
 
-  // If all checks fail, still return primary endpoint for backward compatibility.
   return formatRpcUrl(rpcUrls[0]);
 };
 

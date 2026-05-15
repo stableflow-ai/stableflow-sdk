@@ -6,17 +6,19 @@ import {
   Service,
   DefaultAddresses,
   getChainRpcUrl,
+  Csl,
+  OpenAPI,
+  ExecTime,
+} from '@stableflow/core';
+import {
   getHopMsgFee,
   DATA_HEX_PROTOBUF_EXTRA,
   LZ_RECEIVE_VALUE,
   SIGNATURE_SIZE,
   USDT0_LEGACY_MESH_TRANSFTER_FEE,
-  Csl,
-  OpenAPI,
-  ExecTime,
-  NATIVE_MSG_FEE_BUFFER,
-} from '@stableflow/core';
-import { getDestinationAssociatedTokenAddress } from '@stableflow/wallet-solana';
+} from '@stableflow/bridges';
+import { NATIVE_MSG_FEE_BUFFER } from '@stableflow/utils-evm';
+import { getDestinationAssociatedTokenAddress } from '@stableflow/utils-solana';
 import { Options } from "@layerzerolabs/lz-v2-utilities";
 import { ethers } from "ethers";
 import Big from "big.js";

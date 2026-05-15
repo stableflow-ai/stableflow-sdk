@@ -1,8 +1,13 @@
 {
-  "name": "@stableflow/wallet-ton",
+  "name": "@stableflow/utils-evm",
   "version": "3.0.0",
-  "description": "TON wallet adapter for StableFlow SDK",
+  "description": "EVM utilities for StableFlow SDK (RPC fallback, LayerZero compose)",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/stableflow-ai/stableflow-ai-sdk.git",
+    "directory": "sdk/stableflow/packages/utils-evm"
+  },
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
@@ -14,26 +19,16 @@
     }
   },
   "files": ["dist"],
+  "sideEffects": false,
   "scripts": {
     "build": "tsup",
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@stableflow/bridges": "workspace:*",
     "@stableflow/core": "workspace:*",
-    "@stableflow/utils-solana": "workspace:*",
-    "big.js": "^7.0.1",
-    "buffer": "^6.0.3"
-  },
-  "peerDependencies": {
-    "@layerzerolabs/lz-ton-sdk-v2": "^3.0.168",
-    "@layerzerolabs/lz-v2-utilities": "^3.0.151",
-    "@ton/ton": "^16.2.4"
+    "ethers": "^6.16.0"
   },
   "devDependencies": {
-    "@layerzerolabs/lz-v2-utilities": "^3.0.151",
-    "@types/big.js": "^6.2.2",
-    "bigint-buffer": "^1.1.5",
     "tsup": "^8.5.1",
     "typescript": "^5.9.3"
   }

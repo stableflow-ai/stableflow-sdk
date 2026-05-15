@@ -7,12 +7,5 @@ export default defineConfig({
   clean: true,
   sourcemap: true,
   treeshake: true,
-  external: [
-    '@stableflow/core',
-    '@stableflow/bridges',
-    '@stableflow/utils-evm',
-    '@stableflow/utils-solana',
-    'ethers',
-    'big.js',
-  ],
+  external: ['@stableflow/core', '@solana/spl-token', '@solana/web3.js'],
 });

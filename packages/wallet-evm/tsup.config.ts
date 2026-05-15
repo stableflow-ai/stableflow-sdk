@@ -9,7 +9,9 @@ export default defineConfig({
   treeshake: true,
   external: [
     '@stableflow/core',
-    '@stableflow/wallet-solana',
+    '@stableflow/bridges',
+    '@stableflow/utils-evm',
+    '@stableflow/utils-solana',
     'ethers',
     'big.js',
     '@layerzerolabs/lz-v2-utilities',

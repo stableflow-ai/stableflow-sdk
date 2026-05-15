@@ -1,5 +1,5 @@
-import { frxusdChains } from "../../wallets/config/frxusd";
-import { usdcChains } from "../../wallets/config/usdc";
+import { frxusdChains } from "@stableflow/core";
+import { usdcChains } from "@stableflow/core";
 import { LayerZeroChainConfig, LAYERZZERO_CHAINS } from "../utils";
 
 export interface FraxZeroConfig extends LayerZeroChainConfig {

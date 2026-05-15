@@ -3,9 +3,9 @@ import { FRAXZERO_ABI } from "./contract";
 import { calculateEstimateTime } from "../utils";
 import { Usdt0Service } from "../usdt0";
 import { OFT_ABI } from "../usdt0/contract";
-import { ExecTime } from "../../utils/exec-time";
-import { OpenAPI } from "../../core/OpenAPI";
-import { Service } from "../../core/Service";
+import { ExecTime } from "@stableflow/core";
+import { OpenAPI } from "@stableflow/core";
+import { Service } from "@stableflow/core";
 
 export const PayInLzToken = false;
 

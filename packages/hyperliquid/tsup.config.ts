@@ -7,5 +7,5 @@ export default defineConfig({
   clean: true,
   sourcemap: true,
   treeshake: true,
-  external: ['@stableflow/core', 'ethers', 'big.js'],
+  external: ['@stableflow/core', '@stableflow/bridges', 'ethers', 'big.js'],
 });

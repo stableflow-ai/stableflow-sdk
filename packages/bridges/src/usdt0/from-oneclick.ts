@@ -2,10 +2,10 @@ import oneClickService, { excludeFees as oneClickExcludeFees } from "../oneclick
 import usdt0Service, { excludeFees as usdt0ExcludeFees } from "../usdt0";
 import Big from "big.js";
 import { MIDDLE_CHAIN_LAYERZERO_EXECUTOR, MIDDLE_CHAIN_REFOUND_ADDRESS, MIDDLE_TOKEN_CHAIN } from "./config";
-import { ExecTime } from "../../utils/exec-time";
-import { OpenAPI } from "../../core/OpenAPI";
-import { numberRemoveEndZero } from "../../utils/number";
-import { getPrice } from "../../utils/price";
+import { ExecTime } from "@stableflow/core";
+import { OpenAPI } from "@stableflow/core";
+import { numberRemoveEndZero } from "@stableflow/core";
+import { getPrice } from "@stableflow/core";
 
 export class OneClickUsdt0Service {
   public async quote(params: any) {

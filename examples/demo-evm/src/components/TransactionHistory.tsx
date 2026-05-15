@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useTransactionStore } from '../stores/transactionStore';
-import { SFA } from '@stableflow/core';
+import { BridgeSFA } from '@stableflow/bridges';
 import type { Transaction } from '../types';
 
 export const TransactionHistory: React.FC = () => {
@@ -11,7 +11,7 @@ export const TransactionHistory: React.FC = () => {
     setLoading((prev) => ({ ...prev, [transaction.id]: true }));
 
     try {
-      const response = await SFA.getStatus(transaction.serviceType!, {
+      const response = await BridgeSFA.getStatus(transaction.serviceType!, {
         hash: transaction.id,
         depositAddress: transaction.depositAddress,
       });

@@ -1,11 +1,11 @@
 import { ethers } from "ethers";
 import { USDT0_CONFIG } from "./config";
 import { OFT_ABI } from "./contract";
-import { ExecTime } from "../../utils/exec-time";
-import { OpenAPI } from "../../core/OpenAPI";
-import { usdt0Chains } from "../../wallets/config/usdt0";
-import { evmRpcFallbackProvider } from "../../utils/evm-rpc-providers";
-import { Csl } from "../../utils/log";
+import { ExecTime } from "@stableflow/core";
+import { OpenAPI } from "@stableflow/core";
+import { usdt0Chains } from "@stableflow/core";
+import { evmRpcFallbackProvider } from "@stableflow/utils-evm";
+import { Csl } from "@stableflow/core";
 
 export const getHopMsgFee = async (params: any) => {
   const {

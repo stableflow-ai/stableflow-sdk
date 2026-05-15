@@ -1,4 +1,4 @@
-import { usdt0Chains } from "../../wallets/config/usdt0";
+import { usdt0Chains } from "@stableflow/core";
 import { LAYERZZERO_CHAINS, type LayerZeroChainConfig } from "../utils";
 
 interface Usdt0Config extends LayerZeroChainConfig {

@@ -1,13 +1,13 @@
-import { formatNumber } from "../../utils/number";
+import { formatNumber } from "@stableflow/core";
 import type { AxiosInstance } from "axios";
 import axios from "axios";
 import Big from "big.js";
 import { NativeChains, NativeV4Routes } from "./contract";
-import { ExecTime } from "../../utils/exec-time";
-import { request } from "../../core/request";
-import { OpenAPI } from "../../core/OpenAPI";
-import { Service } from "../../core/Service";
-import { Csl } from "../../utils/log";
+import { ExecTime } from "@stableflow/core";
+import { request } from "@stableflow/core";
+import { OpenAPI } from "@stableflow/core";
+import { Service } from "@stableflow/core";
+import { Csl } from "@stableflow/core";
 
 export class NativeService {
   public async quote(params: any) {
