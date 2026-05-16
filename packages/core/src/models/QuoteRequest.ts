@@ -79,11 +79,9 @@ export type QuoteRequest = {
    */
   deadline: string;
   /**
-   * Referral identifier (lowercase only). It will be reflected in the on-chain data and displayed on public analytics platforms.
-   */
-  referral?: string;
-  /**
    * Time in milliseconds the user is willing to wait for a quote from the relay.
+   * **Defaults to 0ms delay if not specified, if you want to receive the fastest quote**.
+   * 
    */
   quoteWaitingTimeMs?: number;
   /**

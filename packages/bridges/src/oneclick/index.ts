@@ -195,7 +195,7 @@ export class OneClickService {
         .substr(2, 9)}`,
       recipientType: "DESTINATION_CHAIN",
       deadline: new Date(Date.now() + this.offsetTime).toISOString(),
-      quoteWaitingTimeMs: 3000,
+      quoteWaitingTimeMs: 0,
       appFees: [
         ...BridgeFee,
         ...appFees,

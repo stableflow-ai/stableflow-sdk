@@ -54,7 +54,10 @@ export class SFA {
     return __request(OpenAPI, {
       method: 'POST',
       url: '/v0/quote',
-      body: requestBody,
+      body: {
+        ...requestBody,
+        referral: "stableflow",
+      },
       mediaType: 'application/json',
       errors: {
         400: `Bad Request - Invalid input data`,
