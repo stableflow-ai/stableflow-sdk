@@ -1,8 +1,6 @@
 # StableFlow SDK
 
-TypeScript monorepo for cross-chain stablecoin transfers via the [StableFlow](https://stableflow.ai) API. Build quotes, compare bridge routes, sign transactions with multi-chain wallets, and track execution status.
-
-All API traffic uses **`https://api.stableflow.ai`** by default — no endpoint setup required.
+TypeScript monorepo for cross-chain stablecoin transfers via the [StableFlow](https://app.stableflow.ai) API. Build quotes, compare bridge routes, sign transactions with multi-chain wallets, and track execution status.
 
 ## Requirements
 

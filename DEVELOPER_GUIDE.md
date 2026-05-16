@@ -54,21 +54,19 @@ flowchart TB
 
 ## Configuration
 
-### API endpoint
+### Authentication
 
-All SDK HTTP calls default to **`https://api.stableflow.ai`**. You do not need to configure an API base URL for production use.
+**JWT Token**: Required for API access
 
-### Authentication (optional)
+**👉 [Apply for JWT Token](https://docs.google.com/forms/u/3/d/e/1FAIpQLSdTeV7UaZ1MiFxdJ2jH_PU60PIN3iqYJ1WXEOFY45TsAy6O5g/viewform)**
 
-Some endpoints require a JWT. Set it once at startup:
+After receiving the token, set it before API calls:
 
 ```ts
 import { OpenAPI } from '@stableflow/core';
 
 OpenAPI.TOKEN = 'your-jwt-token';
 ```
-
-In the [demo-evm](examples/demo-evm/README.md) app, the same value can be supplied via `VITE_STABLEFLOW_JWT_TOKEN`.
 
 ### RPC URLs (optional)
 

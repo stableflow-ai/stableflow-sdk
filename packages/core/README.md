@@ -2,8 +2,6 @@
 
 StableFlow core: HTTP client, API models, token/chain configuration, and shared utilities.
 
-All API requests use the production endpoint **`https://api.stableflow.ai`** by default. No endpoint configuration is required for normal integration.
-
 ## Installation
 
 ```bash
