@@ -5,8 +5,8 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/stableflow-ai/stableflow-ai-sdk.git",
-    "directory": "sdk/stableflow/packages/utils-evm"
+    "url": "https://github.com/stableflow-ai/stableflow-sdk.git",
+    "directory": "packages/utils-evm"
   },
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",

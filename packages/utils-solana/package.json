@@ -5,8 +5,8 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/stableflow-ai/stableflow-ai-sdk.git",
-    "directory": "sdk/stableflow/packages/utils-solana"
+    "url": "https://github.com/stableflow-ai/stableflow-sdk.git",
+    "directory": "packages/utils-solana"
   },
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",

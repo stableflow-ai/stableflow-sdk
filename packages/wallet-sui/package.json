@@ -3,6 +3,11 @@
   "version": "3.0.0",
   "description": "Sui wallet adapter for StableFlow SDK",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/stableflow-ai/stableflow-sdk.git",
+    "directory": "packages/wallet-sui"
+  },
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",

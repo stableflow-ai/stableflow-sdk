@@ -3,10 +3,10 @@
   "version": "3.0.0",
   "description": "EVM wallet adapter for StableFlow SDK",
   "license": "MIT",
-  "repository": {
+ "repository": {
     "type": "git",
-    "url": "https://github.com/stableflow-ai/stableflow-ai-sdk.git",
-    "directory": "sdk/stableflow/packages/wallet-evm"
+    "url": "https://github.com/stableflow-ai/stableflow-sdk.git",
+    "directory": "packages/wallet-evm"
   },
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
