@@ -89,6 +89,13 @@ export const frxusdChains: Record<string, TokenConfig> = {
     ...chains.sol,
     services: [Service.FraxZero],
   },
+  katana: {
+    ...frxusd,
+    assetId: "",
+    contractAddress: "0x80Eede496655FB9047dd39d9f418d5483ED600df",
+    ...chains.katana,
+    services: [Service.FraxZero],
+  },
 };
 
 export const frxusdSol = {

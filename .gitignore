@@ -15,4 +15,5 @@ dist/
 PUBLISH.md
 
 pnpm-lock.yaml
+wrangler.toml
 
