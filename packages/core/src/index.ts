@@ -37,10 +37,7 @@ export type { ChainType } from './wallets/config/chains';
 export { default as erc20Abi } from './wallets/config/erc20';
 
 export { getPrice } from './utils/price';
-export { numberRemoveEndZero, formatNumber } from './utils/number';
-export { addressToBytes32 } from './utils/address';
+export { numberRemoveEndZero } from './utils/number';
 export { Csl } from './utils/log';
 export { ExecTime } from './utils/exec-time';
-export { formatQuoteError } from './utils/error';
 export { getRouteStatus } from './utils/service';
-export { quoteSignature } from './utils/cctp';

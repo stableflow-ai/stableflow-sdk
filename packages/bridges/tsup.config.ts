@@ -13,6 +13,8 @@ export default defineConfig({
     '@stableflow/utils-evm',
     'axios',
     'big.js',
+    'bs58',
+    'buffer',
     'ethers',
   ],
 });

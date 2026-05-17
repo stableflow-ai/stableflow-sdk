@@ -1,5 +1,4 @@
-import { OpenAPI } from '../core/OpenAPI';
-import { request } from '../core/request';
+import { OpenAPI, request } from '@stableflow/core';
 
 export async function quoteSignature(params: any) {
   const response: any = await request(OpenAPI, {

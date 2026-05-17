@@ -13,9 +13,9 @@ import {
   Service,
   SendType,
   ExecTime,
-  addressToBytes32,
 } from '@stableflow/core';
 import {
+  addressToBytes32,
   getHopMsgFee,
   LZ_RECEIVE_VALUE,
   USDT0_LEGACY_MESH_TRANSFTER_FEE,

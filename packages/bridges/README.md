@@ -28,6 +28,7 @@ For HTTP-only quote/status without wallet orchestration, [`@stableflow/core`](..
 | `GetAllQuoteParams` | Parameters for `getAllQuote` |
 | `ServiceMap` | Per-service `quote` / `send` / `getStatus` implementations |
 | `getQuoteModes` | Helpers to interpret quote shape (OneClick, exact output, etc.) |
+| Utilities | `formatQuoteError`, `addressToBytes32`, `quoteSignature`, `formatNumber` |
 | USDT0 / FraxZero | `USDT0_CONFIG`, `OFT_ABI`, `getHopMsgFee`, `FRAXZERO_MIDDLE_TOKEN_*`, … |
 
 Supported `Service` values (from `@stableflow/core`): `oneclick`, `usdt0`, `cctp`, `fraxzero`, composite routes (`usdt0-oneclick`, `oneclick-usdt0`, `fraxzero-oneclick`, `oneclick-fraxzero`), and `native`.

@@ -1,4 +1,4 @@
-import { formatNumber } from "@stableflow/core";
+import { formatNumber } from "../utils/format-number";
 import type { AxiosInstance } from "axios";
 import axios from "axios";
 import Big from "big.js";

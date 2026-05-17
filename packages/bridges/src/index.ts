@@ -1,7 +1,13 @@
 export { ServiceMap } from './service-map';
 export { BridgeSFA } from './sfa';
 export type { GetAllQuoteParams } from './sfa';
-export { getQuoteModes } from './utils';
+export {
+  getQuoteModes,
+  addressToBytes32,
+  formatQuoteError,
+  quoteSignature,
+  formatNumber,
+} from './utils';
 export { getHopMsgFee } from './usdt0/hop-composer';
 export {
   LZ_RECEIVE_VALUE,

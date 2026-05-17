@@ -4,11 +4,10 @@ import {
   usdcChains,
   getChainRpcUrl,
   Service,
-  formatQuoteError,
   tokens,
   OpenAPI,
 } from '@stableflow/core';
-import { ServiceMap } from '@stableflow/bridges';
+import { formatQuoteError, ServiceMap } from '@stableflow/bridges';
 import type { WalletConfig, TokenConfig } from '@stableflow/core';
 import Big from 'big.js';
 

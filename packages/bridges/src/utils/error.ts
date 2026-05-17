@@ -1,6 +1,5 @@
 import Big from "big.js";
-import { Service } from "../core/Service";
-import { TokenConfig } from "../models/Token";
+import { Service, type TokenConfig } from "@stableflow/core";
 
 export const formatQuoteError = (error: any, options: { service: Service; fromToken: TokenConfig; }) => {
   const { service, fromToken } = options;

@@ -1,5 +1,4 @@
 import {
-  addressToBytes32,
   numberRemoveEndZero,
   getPrice,
   SendType,
@@ -11,6 +10,7 @@ import {
   ExecTime,
 } from '@stableflow/core';
 import {
+  addressToBytes32,
   getHopMsgFee,
   DATA_HEX_PROTOBUF_EXTRA,
   LZ_RECEIVE_VALUE,

@@ -29,6 +29,8 @@
     "@stableflow/utils-evm": "workspace:*",
     "axios": "^1.6.8",
     "big.js": "^7.0.1",
+    "bs58": "^6.0.0",
+    "buffer": "^6.0.3",
     "ethers": "^6.16.0"
   },
   "devDependencies": {

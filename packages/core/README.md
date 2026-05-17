@@ -25,7 +25,7 @@ For full cross-chain bridge flows (multi-route quote, send, status), use [`@stab
 | Models | `QuoteRequest`, `QuoteResponse`, `TokenResponse`, `TokenConfig`, `WalletConfig`, … |
 | Token / chain config | `tokens`, `usdtChains`, `usdcChains`, `frxusdChains`, `usdt0Chains` |
 | RPC | `setRpcUrls`, `getRpcUrls`, `getChainRpcUrl`, `NetworkRpcUrlsMap` |
-| Utilities | `formatQuoteError`, `getRouteStatus`, `getPrice`, `addressToBytes32`, `quoteSignature`, … |
+| Utilities | `numberRemoveEndZero`, `getRouteStatus`, `getPrice`, `Csl`, `ExecTime`, … |
 
 See `dist/index.d.ts` after running `pnpm build`.
 

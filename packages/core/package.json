@@ -26,13 +26,10 @@
   },
   "dependencies": {
     "axios": "^1.6.8",
-    "big.js": "^7.0.1",
-    "bs58": "^6.0.0",
     "buffer": "^6.0.3",
     "form-data": "^4.0.0"
   },
   "devDependencies": {
-    "@types/big.js": "^6.2.2",
     "tsup": "^8.5.1",
     "typescript": "^5.9.3"
   },
