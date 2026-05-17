@@ -22,12 +22,21 @@ pnpm dev:demo-evm
 
 See [examples/demo-evm/README.md](examples/demo-evm/README.md) for environment variables and usage.
 
+Run the Aptos + EVM demo:
+
+```bash
+pnpm dev:demo-aptos
+```
+
+See [examples/demo-aptos/README.md](examples/demo-aptos/README.md) for environment variables and usage.
+
 ## Documentation
 
 | Document | Description |
 |----------|-------------|
 | [**Developer Guide**](DEVELOPER_GUIDE.md) | Integration guide: `dry` quotes, `SFA`, `BridgeSFA`, wallets, Hyperliquid |
 | [demo-evm](examples/demo-evm/README.md) | React + wagmi reference app |
+| [demo-aptos](examples/demo-aptos/README.md) | Aptos + EVM dual-wallet reference app (Vite 8) |
 
 ## Repository layout
 
@@ -55,6 +64,7 @@ Each package has its own README with installation and exports.
 | Example | Directory | Description |
 |---------|-----------|-------------|
 | `demo-evm` | [examples/demo-evm](examples/demo-evm) | Vite + React + RainbowKit; `BridgeSFA` multi-route quotes and send |
+| `demo-aptos` | [examples/demo-aptos](examples/demo-aptos) | Vite 8 + Aptos Wallet Adapter + RainbowKit; Aptos/EVM quotes and send |
 
 ## Build scripts
 
@@ -68,6 +78,7 @@ From the monorepo root:
 | `pnpm build:wallets` | Build all wallet packages |
 | `pnpm build:hyperliquid` | Build `@stableflow/hyperliquid` |
 | `pnpm dev:demo-evm` | Start the EVM demo dev server |
+| `pnpm dev:demo-aptos` | Start the Aptos + EVM demo dev server (port 3003) |
 
 The root `build:shell` script builds the separate `stableflow-ai-sdk` umbrella package when present in the parent workspace.
 

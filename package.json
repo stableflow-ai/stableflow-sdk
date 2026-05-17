@@ -10,8 +10,9 @@
     "build:bridges": "pnpm --filter @stableflow/bridges build",
     "build:wallets": "pnpm --filter @stableflow/wallet-solana build && pnpm --filter @stableflow/wallet-evm build && pnpm --filter @stableflow/wallet-near build && pnpm --filter @stableflow/wallet-ton build && pnpm --filter @stableflow/wallet-aptos build && pnpm --filter @stableflow/wallet-tron build && pnpm --filter @stableflow/wallet-sui build",
     "build:hyperliquid": "pnpm --filter @stableflow/hyperliquid build",
-    "build:examples": "pnpm --filter demo-evm build",
+    "build:examples": "pnpm --filter demo-evm build && pnpm --filter demo-aptos build",
     "dev:demo-evm": "pnpm --filter demo-evm dev",
+    "dev:demo-aptos": "pnpm --filter demo-aptos dev",
     "changeset": "changeset"
   },
   "devDependencies": {
