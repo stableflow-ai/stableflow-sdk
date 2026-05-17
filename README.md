@@ -41,6 +41,7 @@ Other examples (each uses `@stableflow/*` **beta** packages):
 | `pnpm dev:demo-tron` | [demo-tron](examples/demo-tron/README.md) — Tron + EVM (3008) |
 | `pnpm dev:demo-simple` | [demo-simple](examples/demo-simple/README.md) — `SFA` HTTP only (3009) |
 | `pnpm dev:demo-hyperliquid` | [demo-hyperliquid](examples/demo-hyperliquid/README.md) — Hyperliquid deposit (3010) |
+| `pnpm dev:demo-full` | [demo-full](examples/demo-full/README.md) — all bridge chains (3011) |
 
 ## Documentation
 
@@ -83,6 +84,7 @@ Each package has its own README with installation and exports.
 | `demo-tron` | [examples/demo-tron](examples/demo-tron) | Tron + EVM |
 | `demo-simple` | [examples/demo-simple](examples/demo-simple) | `@stableflow/core` / `SFA` only |
 | `demo-hyperliquid` | [examples/demo-hyperliquid](examples/demo-hyperliquid) | `@stableflow/hyperliquid` deposit |
+| `demo-full` | [examples/demo-full](examples/demo-full) | All bridge chains (EVM, Aptos, NEAR, Solana, Sui, TON, Tron) |
 
 ## Build scripts
 

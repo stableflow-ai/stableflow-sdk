@@ -413,6 +413,8 @@ const status = await Hyperliquid.getStatus({ depositId });
 
 Runnable Vite apps under `examples/`. All `@stableflow/*` dependencies use the **beta** dist-tag.
 
+**demo-full** combines every bridge-chain wallet demo (EVM, Aptos, NEAR, Solana, Sui, TON, Tron). It does not replace **demo-simple** (SFA HTTP only) or **demo-hyperliquid**.
+
 | Example | README | Dev command | Port |
 |---------|--------|-------------|------|
 | EVM bridge | [demo-evm](examples/demo-evm/README.md) | `pnpm dev:demo-evm` | 3002 |
@@ -424,6 +426,7 @@ Runnable Vite apps under `examples/`. All `@stableflow/*` dependencies use the *
 | Tron + EVM | [demo-tron](examples/demo-tron/README.md) | `pnpm dev:demo-tron` | 3008 |
 | SFA HTTP only | [demo-simple](examples/demo-simple/README.md) | `pnpm dev:demo-simple` | 3009 |
 | Hyperliquid | [demo-hyperliquid](examples/demo-hyperliquid/README.md) | `pnpm dev:demo-hyperliquid` | 3010 |
+| All bridge chains | [demo-full](examples/demo-full/README.md) | `pnpm dev:demo-full` | 3011 |
 
 ---
 

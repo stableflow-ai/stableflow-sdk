@@ -28,12 +28,13 @@ export default class TonWallet {
   private account: string;
   private csl;
 
-  constructor(options: { tonConnectUI: any; account: string; }) {
+  constructor(options: { tonConnectUI: any; account: string; apiKey?: string; }) {
     this.tonConnectUI = options.tonConnectUI;
     this.account = options.account;
 
     this.tonClient = new TonClient({
       endpoint: getChainRpcUrl("ton").rpcUrl,
+      apiKey: options.apiKey,
     });
 
     const cs = new Csl(OpenAPI.DEBUG);

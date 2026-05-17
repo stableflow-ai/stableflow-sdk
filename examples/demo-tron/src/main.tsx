@@ -10,18 +10,9 @@ const JWT_TOKEN = import.meta.env.VITE_STABLEFLOW_JWT_TOKEN;
 if (JWT_TOKEN) {
   OpenAPI.TOKEN = JWT_TOKEN;
 }
-console.log("JWT_TOKEN: %o", JWT_TOKEN)
 
 setRpcUrls({
-  arb: ['https://arbitrum-one-rpc.publicnode.com'],
   eth: ['https://0xrpc.io/eth'],
-  bsc: ['https://bsc-rpc.publicnode.com'],
-  avax: ['https://avalanche-c-chain-rpc.publicnode.com'],
-  base: ['https://base-rpc.publicnode.com'],
-  pol: ['https://polygon-bor-rpc.publicnode.com'],
-  gnosis: ['https://gnosis-rpc.publicnode.com'],
-  op: ['https://optimism-rpc.publicnode.com'],
-  bera: ['https://berachain-rpc.publicnode.com'],
   xlayer: ['https://rpc.xlayer.tech'],
   plasma: ['https://rpc.plasma.to'],
 });
