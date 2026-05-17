@@ -1,26 +1,29 @@
-import React from 'react';
-import RainbowProvider from './Rainbow';
-import AptosAdapterProvider from './AptosAdapter';
-import SolanaAdapterProvider from './SolanaAdapter';
-import NearAdapterProvider from './NearAdapter';
-import SuiAdapterProvider from './SuiAdapter';
-import TonAdapterProvider from './TonAdapter';
-import TronAdapterProvider from './TronAdapter';
+import React, { lazy, Suspense } from 'react';
+
+const RainbowProvider = lazy(() => import("./Rainbow"));
+const AptosAdapterProvider = lazy(() => import("./AptosAdapter"));
+const SolanaAdapterProvider = lazy(() => import("./SolanaAdapter"));
+const NearAdapterProvider = lazy(() => import("./NearAdapter"));
+const SuiAdapterProvider = lazy(() => import("./SuiAdapter"));
+const TonAdapterProvider = lazy(() => import("./TonAdapter"));
+const TronAdapterProvider = lazy(() => import("./TronAdapter"));
 
 export default function WalletsProvider({ children }: { children: React.ReactNode }) {
   return (
-    <RainbowProvider>
-      <AptosAdapterProvider>
-        <SolanaAdapterProvider>
-          <NearAdapterProvider>
-            <SuiAdapterProvider>
-              <TonAdapterProvider>
-                <TronAdapterProvider>{children}</TronAdapterProvider>
-              </TonAdapterProvider>
-            </SuiAdapterProvider>
-          </NearAdapterProvider>
-        </SolanaAdapterProvider>
-      </AptosAdapterProvider>
-    </RainbowProvider>
+    <Suspense fallback={<div>Loading...</div>}>
+      <RainbowProvider>
+        <AptosAdapterProvider>
+          <SolanaAdapterProvider>
+            <NearAdapterProvider>
+              <SuiAdapterProvider>
+                <TonAdapterProvider>
+                  <TronAdapterProvider>{children}</TronAdapterProvider>
+                </TonAdapterProvider>
+              </SuiAdapterProvider>
+            </NearAdapterProvider>
+          </SolanaAdapterProvider>
+        </AptosAdapterProvider>
+      </RainbowProvider>
+    </Suspense>
   );
 }
