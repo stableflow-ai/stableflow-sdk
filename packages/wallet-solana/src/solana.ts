@@ -67,7 +67,7 @@ export default class SolanaWallet {
   }
 
   getConnection() {
-    const solanaRpcUrls: string[] = getChainRpcUrl("solana").rpcUrls;
+    const solanaRpcUrls: string[] = getChainRpcUrl("sol").rpcUrls;
     return createSolanaFallbackConnection(solanaRpcUrls);
   };
 

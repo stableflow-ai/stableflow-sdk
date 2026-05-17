@@ -1,0 +1,52 @@
+{
+  "name": "demo-solana",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@coral-xyz/anchor": "^0.29.0",
+    "@layerzerolabs/lz-solana-sdk-v2": "^3.0.154",
+    "@layerzerolabs/lz-v2-utilities": "^3.0.151",
+    "@layerzerolabs/oft-v2-solana-sdk": "^3.0.168",
+    "@metaplex-foundation/mpl-toolbox": "^0.10.0",
+    "@metaplex-foundation/umi": "^1.5.1",
+    "@metaplex-foundation/umi-bundle-defaults": "^1.5.1",
+    "@metaplex-foundation/umi-web3js-adapters": "^1.5.1",
+    "@rainbow-me/rainbowkit": "^2.2.8",
+    "@solana/spl-token": "^0.4.14",
+    "@solana/wallet-adapter-base": "^0.9.27",
+    "@solana/wallet-adapter-phantom": "^0.9.28",
+    "@solana/wallet-adapter-react": "^0.15.39",
+    "@solana/wallet-adapter-react-ui": "^0.9.39",
+    "@solana/wallet-adapter-solflare": "^0.6.32",
+    "@solana/web3.js": "^1.98.4",
+    "@stableflow/bridges": "beta",
+    "@stableflow/core": "beta",
+    "@stableflow/wallet-evm": "beta",
+    "@stableflow/wallet-solana": "beta",
+    "@tanstack/react-query": "^5.87.1",
+    "big.js": "^7.0.1",
+    "buffer": "^6.0.3",
+    "ethers": "^6.13.5",
+    "react": "^19.1.10",
+    "react-dom": "^19.1.10",
+    "viem": "^2.37.5",
+    "wagmi": "^2.16.9",
+    "zustand": "^5.0.8"
+  },
+  "devDependencies": {
+    "@types/big.js": "^6.2.2",
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.1.10",
+    "@types/react-dom": "^19.1.7",
+    "@vitejs/plugin-react": "^5.0.4",
+    "typescript": "^5.9.3",
+    "vite": "^8.0.0",
+    "vite-plugin-node-polyfills": "^0.24.0"
+  }
+}

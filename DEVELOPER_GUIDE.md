@@ -11,7 +11,8 @@ This guide covers integrating the StableFlow TypeScript SDK monorepo: package la
 5. [BridgeSFA — full cross-chain flows](#bridgesfa--full-cross-chain-flows)
 6. [Wallet adapters](#wallet-adapters)
 7. [Hyperliquid](#hyperliquid)
-8. [Troubleshooting](#troubleshooting)
+8. [Examples](#examples)
+9. [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -135,7 +136,7 @@ const txHash = await BridgeSFA.send(best.serviceType, {
 
 `Hyperliquid.quote` defaults to `dry: true` for the same reason; pass `dry: false` before `transfer`.
 
-> **Note:** The [demo-evm](examples/demo-evm/src/App.tsx) example uses `dry: false` in `handleGetQuote` for simplicity so deposit addresses appear immediately. Production apps should prefer the two-step pattern above.
+> **Note:** Bridge demos (e.g. [demo-evm](examples/demo-evm/src/App.tsx)) use `dry: false` in `handleGetQuote` for simplicity so deposit addresses appear immediately. Production apps should prefer the two-step pattern above.
 
 ---
 
@@ -408,6 +409,24 @@ const status = await Hyperliquid.getStatus({ depositId });
 
 ---
 
+## Examples
+
+Runnable Vite apps under `examples/`. All `@stableflow/*` dependencies use the **beta** dist-tag.
+
+| Example | README | Dev command | Port |
+|---------|--------|-------------|------|
+| EVM bridge | [demo-evm](examples/demo-evm/README.md) | `pnpm dev:demo-evm` | 3002 |
+| Aptos + EVM | [demo-aptos](examples/demo-aptos/README.md) | `pnpm dev:demo-aptos` | 3003 |
+| NEAR + EVM | [demo-near](examples/demo-near/README.md) | `pnpm dev:demo-near` | 3004 |
+| Solana + EVM | [demo-solana](examples/demo-solana/README.md) | `pnpm dev:demo-solana` | 3005 |
+| Sui + EVM | [demo-sui](examples/demo-sui/README.md) | `pnpm dev:demo-sui` | 3006 |
+| TON + EVM | [demo-ton](examples/demo-ton/README.md) | `pnpm dev:demo-ton` | 3007 |
+| Tron + EVM | [demo-tron](examples/demo-tron/README.md) | `pnpm dev:demo-tron` | 3008 |
+| SFA HTTP only | [demo-simple](examples/demo-simple/README.md) | `pnpm dev:demo-simple` | 3009 |
+| Hyperliquid | [demo-hyperliquid](examples/demo-hyperliquid/README.md) | `pnpm dev:demo-hyperliquid` | 3010 |
+
+---
+
 ## Package documentation
 
 - [Monorepo README](README.md)
@@ -415,4 +434,3 @@ const status = await Hyperliquid.getStatus({ depositId });
 - [@stableflow/bridges](packages/bridges/README.md)
 - [Wallet packages](packages/wallet-evm/README.md)
 - [@stableflow/hyperliquid](packages/hyperliquid/README.md)
-- [demo-evm](examples/demo-evm/README.md)

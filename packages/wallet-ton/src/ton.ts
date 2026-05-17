@@ -33,7 +33,7 @@ export default class TonWallet {
     this.account = options.account;
 
     this.tonClient = new TonClient({
-      endpoint: getChainRpcUrl("Ton").rpcUrl,
+      endpoint: getChainRpcUrl("ton").rpcUrl,
     });
 
     const cs = new Csl(OpenAPI.DEBUG);

@@ -30,13 +30,24 @@ pnpm dev:demo-aptos
 
 See [examples/demo-aptos/README.md](examples/demo-aptos/README.md) for environment variables and usage.
 
+Other examples (each uses `@stableflow/*` **beta** packages):
+
+| Command | Demo |
+|---------|------|
+| `pnpm dev:demo-near` | [demo-near](examples/demo-near/README.md) — NEAR + EVM (port 3004) |
+| `pnpm dev:demo-solana` | [demo-solana](examples/demo-solana/README.md) — Solana + EVM (3005) |
+| `pnpm dev:demo-sui` | [demo-sui](examples/demo-sui/README.md) — Sui + EVM (3006) |
+| `pnpm dev:demo-ton` | [demo-ton](examples/demo-ton/README.md) — TON + EVM (3007) |
+| `pnpm dev:demo-tron` | [demo-tron](examples/demo-tron/README.md) — Tron + EVM (3008) |
+| `pnpm dev:demo-simple` | [demo-simple](examples/demo-simple/README.md) — `SFA` HTTP only (3009) |
+| `pnpm dev:demo-hyperliquid` | [demo-hyperliquid](examples/demo-hyperliquid/README.md) — Hyperliquid deposit (3010) |
+
 ## Documentation
 
 | Document | Description |
 |----------|-------------|
 | [**Developer Guide**](DEVELOPER_GUIDE.md) | Integration guide: `dry` quotes, `SFA`, `BridgeSFA`, wallets, Hyperliquid |
-| [demo-evm](examples/demo-evm/README.md) | React + wagmi reference app |
-| [demo-aptos](examples/demo-aptos/README.md) | Aptos + EVM dual-wallet reference app (Vite 8) |
+| [Examples index](DEVELOPER_GUIDE.md#examples) | Links to every demo README |
 
 ## Repository layout
 
@@ -63,8 +74,15 @@ Each package has its own README with installation and exports.
 
 | Example | Directory | Description |
 |---------|-----------|-------------|
-| `demo-evm` | [examples/demo-evm](examples/demo-evm) | Vite + React + RainbowKit; `BridgeSFA` multi-route quotes and send |
-| `demo-aptos` | [examples/demo-aptos](examples/demo-aptos) | Vite 8 + Aptos Wallet Adapter + RainbowKit; Aptos/EVM quotes and send |
+| `demo-evm` | [examples/demo-evm](examples/demo-evm) | EVM-only `BridgeSFA` (port 3002) |
+| `demo-aptos` | [examples/demo-aptos](examples/demo-aptos) | Aptos + EVM |
+| `demo-near` | [examples/demo-near](examples/demo-near) | NEAR + EVM |
+| `demo-solana` | [examples/demo-solana](examples/demo-solana) | Solana + EVM |
+| `demo-sui` | [examples/demo-sui](examples/demo-sui) | Sui + EVM |
+| `demo-ton` | [examples/demo-ton](examples/demo-ton) | TON + EVM |
+| `demo-tron` | [examples/demo-tron](examples/demo-tron) | Tron + EVM |
+| `demo-simple` | [examples/demo-simple](examples/demo-simple) | `@stableflow/core` / `SFA` only |
+| `demo-hyperliquid` | [examples/demo-hyperliquid](examples/demo-hyperliquid) | `@stableflow/hyperliquid` deposit |
 
 ## Build scripts
 
@@ -77,8 +95,8 @@ From the monorepo root:
 | `pnpm build:bridges` | Build `@stableflow/bridges` |
 | `pnpm build:wallets` | Build all wallet packages |
 | `pnpm build:hyperliquid` | Build `@stableflow/hyperliquid` |
-| `pnpm dev:demo-evm` | Start the EVM demo dev server |
-| `pnpm dev:demo-aptos` | Start the Aptos + EVM demo dev server (port 3003) |
+| `pnpm dev:demo-*` | Start a specific example (see table above) |
+| `pnpm build:examples` | Build all examples under `examples/*` |
 
 The root `build:shell` script builds the separate `stableflow-ai-sdk` umbrella package when present in the parent workspace.
 

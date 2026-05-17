@@ -253,7 +253,7 @@ function App() {
     <div className="app">
       <header className="app-header">
         <h1>StableFlow Demo-Aptos</h1>
-        <p>Aptos + EVM cross-chain bridge example</p>
+        <p>Aptos + EVM cross-chain bridge (amber theme)</p>
       </header>
 
       <main className="app-main">

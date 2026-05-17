@@ -1,0 +1,230 @@
+import { useEffect, useMemo, useState } from 'react';
+import Big from 'big.js';
+import {
+  Hyperliquid,
+  HyperliquidFromTokens,
+  HyperliuquidMinAmount,
+  HyperliuquidToToken,
+  type HyperliquidQuoteParams,
+} from '@stableflow/hyperliquid';
+import type { TokenConfig } from '@stableflow/core';
+import { useEvmWalletContext } from './providers/EvmWalletContext';
+import './App.css';
+
+const fromTokens = HyperliquidFromTokens.filter((t) => t.chainType === 'evm');
+const toToken = HyperliuquidToToken;
+
+const prices: Record<string, string> = {
+  TRX: '0.29',
+  ETH: '2954',
+  POL: '0.12',
+  NEAR: '1.45',
+  SOL: '123',
+  BNB: '901',
+  AVAX: '11.8',
+  APT: '1.56',
+  BERA: '0.6',
+};
+
+function App() {
+  const { wallet, currentChainId, onSwitchChain } = useEvmWalletContext();
+  const [fromToken, setFromToken] = useState<TokenConfig | null>(null);
+  const [amount, setAmount] = useState('');
+  const [quote, setQuote] = useState<Record<string, unknown> | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [statusMsg, setStatusMsg] = useState('');
+
+  const minHuman = useMemo(
+    () => Big(HyperliuquidMinAmount).div(10 ** toToken.decimals).toString(),
+    []
+  );
+
+  const getQuoteParams = (dry?: boolean): HyperliquidQuoteParams | null => {
+    if (!wallet.account || !fromToken || !amount || !wallet.wallet) return null;
+    return {
+      dry,
+      slippageTolerance: 0.5,
+      refundTo: wallet.account,
+      recipient: wallet.account,
+      wallet: wallet.wallet,
+      fromToken,
+      prices,
+      amountWei: Big(amount).times(10 ** fromToken.decimals).toFixed(0, 0),
+    };
+  };
+
+  const runQuote = async (dry?: boolean) => {
+    const params = getQuoteParams(dry);
+    if (!params) {
+      setQuote(null);
+      return null;
+    }
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await Hyperliquid.quote(params);
+      if (!res.quote) {
+        setQuote(null);
+        setError(res.error || 'No quote');
+        return null;
+      }
+      setQuote(res.quote);
+      return res.quote;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Quote failed');
+      setQuote(null);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!fromToken || !wallet.account || !amount) return;
+    const t = window.setTimeout(() => void runQuote(true), 800);
+    return () => window.clearTimeout(t);
+  }, [amount, fromToken, wallet.account]);
+
+  const handleContinue = async () => {
+    if (!wallet.account) {
+      wallet.connect?.();
+      return;
+    }
+    if (fromToken?.chainId && currentChainId !== fromToken.chainId) {
+      await onSwitchChain?.({ chainId: fromToken.chainId });
+      return;
+    }
+    if (!fromToken || !amount) return;
+
+    const q = quote as {
+      needApprove?: boolean;
+      approveSpender?: string;
+      quote?: { amountIn?: string };
+    } | null;
+
+    if (q?.needApprove && wallet.wallet?.approve) {
+      await wallet.wallet.approve({
+        contractAddress: fromToken.contractAddress,
+        spender: q.approveSpender,
+        amountWei: q.quote?.amountIn,
+      });
+      await runQuote(true);
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+    try {
+      const finalQuote = await runQuote(false);
+      if (!finalQuote || !wallet.wallet) throw new Error('Missing quote or wallet');
+
+      const transferParams = {
+        wallet: wallet.wallet,
+        evmWallet: wallet.wallet,
+        evmWalletAddress: wallet.account,
+        quote: finalQuote,
+      };
+
+      const txhash = await Hyperliquid.transfer(transferParams);
+      if (toToken.chainId) {
+        await onSwitchChain?.({ chainId: toToken.chainId });
+      }
+
+      const depositRes = await Hyperliquid.deposit({ txhash, ...transferParams });
+      if (depositRes.code !== 200) {
+        throw new Error(JSON.stringify(depositRes.data) || 'Deposit failed');
+      }
+
+      const depositId = depositRes.data?.depositId;
+      if (depositId != null) {
+        const status = await Hyperliquid.getStatus({ depositId: String(depositId) });
+        setStatusMsg(`Deposit ${depositId}: ${JSON.stringify(status.data)}`);
+      }
+      alert('Deposit submitted. Check status below.');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Transfer failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const [buttonText, buttonDisabled] = useMemo(() => {
+    if (loading) return ['Loading...', true] as const;
+    if (!wallet.account) return ['Connect wallet', false] as const;
+    if (fromToken && currentChainId !== fromToken.chainId) return ['Switch network', false] as const;
+    if (!fromToken) return ['Select token', true] as const;
+    if (!amount || Big(amount).lte(0)) return ['Enter amount', true] as const;
+    if (Big(amount).lt(minHuman)) return [`Min ${minHuman} ${toToken.symbol}`, true] as const;
+    if (!quote) return ['Continue', true] as const;
+    if ((quote as { needApprove?: boolean }).needApprove) return ['Approve', false] as const;
+    return ['Continue', false] as const;
+  }, [loading, wallet, fromToken, amount, quote, currentChainId, minHuman]);
+
+  return (
+    <div className="app">
+      <header className="app-header">
+        <h1>StableFlow Demo-Hyperliquid</h1>
+        <p>Deposit EVM assets to Hyperliquid via @stableflow/hyperliquid</p>
+      </header>
+      <main className="app-main bridge-form">
+        {error && <div className="error-message">{error}</div>}
+        <div className="form-section">
+          <h2>From (EVM)</h2>
+          <select
+            className="select-chain"
+            value={fromToken?.contractAddress ?? ''}
+            onChange={(e) => {
+              const token = fromTokens.find((t) => t.contractAddress === e.target.value);
+              setFromToken(token ?? null);
+              if (token?.chainId) void onSwitchChain?.({ chainId: token.chainId });
+            }}
+          >
+            <option value="">Select token</option>
+            {fromTokens.map((t) => (
+              <option key={t.contractAddress} value={t.contractAddress}>
+                {t.chainName} — {t.symbol}
+              </option>
+            ))}
+          </select>
+          {wallet.account ? (
+            <p className="wallet-connected">
+              {wallet.account.slice(0, 6)}...{wallet.account.slice(-4)}
+              <button type="button" className="btn-disconnect" onClick={() => wallet.disconnect?.()}>
+                Disconnect
+              </button>
+            </p>
+          ) : (
+            <button type="button" className="btn-connect" onClick={() => wallet.connect?.()}>
+              Connect EVM Wallet
+            </button>
+          )}
+        </div>
+        <div className="form-section">
+          <label>Amount ({fromToken?.symbol ?? 'token'})</label>
+          <input
+            className="input-amount"
+            type="number"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            placeholder={`Min ~${minHuman}`}
+          />
+        </div>
+        {quote && (
+          <pre className="quote-preview">{JSON.stringify(quote, null, 2)}</pre>
+        )}
+        <button
+          type="button"
+          className="btn-primary"
+          disabled={buttonDisabled}
+          onClick={() => void handleContinue()}
+        >
+          {buttonText}
+        </button>
+        {statusMsg && <pre className="quote-preview">{statusMsg}</pre>}
+      </main>
+    </div>
+  );
+}
+
+export default App;
