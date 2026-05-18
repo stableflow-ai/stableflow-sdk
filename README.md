@@ -22,18 +22,19 @@ pnpm dev:demo-evm
 
 See [examples/demo-evm/README.md](examples/demo-evm/README.md) for environment variables and usage.
 
-Run the Aptos + EVM demo:
+Run the All-chain cross-chain bridge demo:
 
 ```bash
-pnpm dev:demo-aptos
+pnpm dev:demo-full
 ```
 
-See [examples/demo-aptos/README.md](examples/demo-aptos/README.md) for environment variables and usage.
+See [examples/demo-full/README.md](examples/demo-full/README.md) for environment variables and usage.
 
-Other examples (each uses `@stableflow/*` **beta** packages):
+Other examples (each uses `@stableflow/*` **latest** packages):
 
 | Command | Demo |
 |---------|------|
+| `pnpm dev:demo-aptos` | [demo-near](examples/demo-aptos/README.md) — Aptos + EVM (port 3003) |
 | `pnpm dev:demo-near` | [demo-near](examples/demo-near/README.md) — NEAR + EVM (port 3004) |
 | `pnpm dev:demo-solana` | [demo-solana](examples/demo-solana/README.md) — Solana + EVM (3005) |
 | `pnpm dev:demo-sui` | [demo-sui](examples/demo-sui/README.md) — Sui + EVM (3006) |
@@ -41,13 +42,12 @@ Other examples (each uses `@stableflow/*` **beta** packages):
 | `pnpm dev:demo-tron` | [demo-tron](examples/demo-tron/README.md) — Tron + EVM (3008) |
 | `pnpm dev:demo-simple` | [demo-simple](examples/demo-simple/README.md) — `SFA` HTTP only (3009) |
 | `pnpm dev:demo-hyperliquid` | [demo-hyperliquid](examples/demo-hyperliquid/README.md) — Hyperliquid deposit (3010) |
-| `pnpm dev:demo-full` | [demo-full](examples/demo-full/README.md) — all bridge chains (3011) |
 
 ## Documentation
 
 | Document | Description |
 |----------|-------------|
-| [**Developer Guide**](DEVELOPER_GUIDE.md) | Integration guide: `dry` quotes, `SFA`, `BridgeSFA`, wallets, Hyperliquid |
+| [**Developer Guide**](DEVELOPER_GUIDE.md) | Integration guide, which covers how to integrate StableFlow |
 | [Examples index](DEVELOPER_GUIDE.md#examples) | Links to every demo README |
 
 ## Repository layout
@@ -93,14 +93,14 @@ From the monorepo root:
 | Script | Description |
 |--------|-------------|
 | `pnpm build` | Build all packages and examples (ordered: core → utils → bridges → wallets → hyperliquid → demo) |
+| `pnpm build:pub` | Build all packages (ordered: core → utils → bridges → wallets → hyperliquid) |
 | `pnpm build:core` | Build `@stableflow/core` only |
+| `pnpm build:utils` | Build `@stableflow/utils-*` only |
 | `pnpm build:bridges` | Build `@stableflow/bridges` |
 | `pnpm build:wallets` | Build all wallet packages |
 | `pnpm build:hyperliquid` | Build `@stableflow/hyperliquid` |
-| `pnpm dev:demo-*` | Start a specific example (see table above) |
 | `pnpm build:examples` | Build all examples under `examples/*` |
-
-The root `build:shell` script builds the separate `stableflow-ai-sdk` umbrella package when present in the parent workspace.
+| `pnpm dev:demo-*` | Start a specific example (see table above) |
 
 ## Minimal integration example
 
@@ -127,8 +127,8 @@ const quotes = await BridgeSFA.getAllQuote({
 });
 ```
 
-Read [DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md) for the full `dry: false` → approve → `send` flow.
+Read [DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md) for a guide to integrating StableFlow.
 
 ## License
 
-MIT — see package `license` fields and [GitHub repository](https://github.com/stableflow-ai/stableflow-ai-sdk).
+MIT — see package `license` fields and [GitHub repository](https://github.com/stableflow-ai/stableflow-sdk).
