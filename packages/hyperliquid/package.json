@@ -25,12 +25,9 @@
   },
   "dependencies": {
     "@stableflow/bridges": "workspace:*",
-    "@stableflow/core": "workspace:*",
-    "big.js": "^7.0.1",
-    "ethers": "^6.16.0"
+    "@stableflow/core": "workspace:*"
   },
   "devDependencies": {
-    "@types/big.js": "^6.2.2",
     "tsup": "^8.5.1",
     "typescript": "^5.9.3"
   }

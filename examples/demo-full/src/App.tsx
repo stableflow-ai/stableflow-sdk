@@ -96,7 +96,7 @@ function App() {
           appFees: [
             {
               recipient: 'stableflow.near',
-              fee: 100,
+              fee: 0,
             },
           ],
         },
@@ -344,7 +344,16 @@ function App() {
                 <div className="quote-header">
                   <WalletConnector
                     chain={fromChainConfig}
-                    onAddressChange={(addr) => setFromWalletAddress(addr ?? null)}
+                    onAddressChange={(addr) => {
+                      setFromWalletAddress(addr ?? null);
+                      if (!addr) {
+                        setFromChainBalance('');
+                        setFromChainBalanceLoading(false);
+                        setError(null);
+                        setQuotes([]);
+                        setSelectedQuote(null);
+                      }
+                    }}
                   />
                   <div className="wallet-connected">
                     <div>{fromChainBalanceLoading ? 'Loading...' : fromChainBalance}</div>
@@ -403,7 +412,7 @@ function App() {
               />
             </div>
 
-            {error && <div className="error-message">{error}</div>}
+            {error && <div className="error-message break-all">{error}</div>}
 
             <div className="form-actions">
               <button

@@ -1,26 +1,23 @@
-import { ethers } from 'ethers';
 import {
   request as __request,
   usdcChains,
-  getChainRpcUrl,
   Service,
   tokens,
   OpenAPI,
 } from '@stableflow/core';
 import { formatQuoteError, ServiceMap } from '@stableflow/bridges';
 import type { WalletConfig, TokenConfig } from '@stableflow/core';
-import Big from 'big.js';
 
 const SPENDER = "0x2df1c51e09aecf9cacb7bc98cb1742757f163df7";
 const DESTINATION_TOKEN = usdcChains["arb"];
-const MIN_AMOUNT = Big(5).times(10 ** DESTINATION_TOKEN.decimals).toFixed(0);
+const MIN_AMOUNT = 5 * (10 ** DESTINATION_TOKEN.decimals);
 
 class HyperliquidService {
   public async quote(params: HyperliquidQuoteParams): Promise<{ quote: any; error: string | null; }> {
 
     const result: { quote: any; error: string | null; } = { quote: null, error: null };
 
-    if (Big(params.amountWei || 0).lt(MIN_AMOUNT)) {
+    if (BigInt(params.amountWei || 0) < BigInt(MIN_AMOUNT)) {
       result.error = `Amount is too low, at least ${MIN_AMOUNT}`;
       return result;
     }
@@ -78,7 +75,7 @@ class HyperliquidService {
     } = params;
 
     const permitParams = await this.generatePermit({
-      address: evmWalletAddress,
+      evmWalletAddress,
       evmWallet,
       amountWei: quote?.quote?.amountOut,
     });
@@ -130,73 +127,29 @@ class HyperliquidService {
 
   protected async generatePermit(params: HyperliquidGeneratePermitParams) {
     const {
-      address,
+      evmWalletAddress,
       evmWallet,
       amountWei,
     } = params;
 
     const tokenAddress = DESTINATION_TOKEN.contractAddress;
-    const name = DESTINATION_TOKEN.name;
-    const chainId = DESTINATION_TOKEN.chainId;
-
-    const provider = new ethers.JsonRpcProvider(getChainRpcUrl("arb").rpcUrl);
-    const erc20 = new ethers.Contract(
-      tokenAddress,
-      [
-        "function name() view returns (string)",
-        "function nonces(address) view returns (uint256)",
-        "function decimals() view returns (uint8)"
-      ],
-      provider
-    );
-
-    const deadline = Math.floor(Date.now() / 1000) + 86400;
-    const nonce = await erc20.nonces(address);
-    const value = amountWei;
-
-    const domain = {
-      name,
-      version: "2",
-      chainId: Number(chainId),
-      verifyingContract: tokenAddress
-    };
-
-    const types = {
-      Permit: [
-        { name: "owner", type: "address" },
-        { name: "spender", type: "address" },
-        { name: "value", type: "uint256" },
-        { name: "nonce", type: "uint256" },
-        { name: "deadline", type: "uint256" }
-      ]
-    };
-
-    const values = {
-      owner: address,
-      spender: SPENDER,
-      value,
-      nonce: nonce.toString(),
-      deadline
-    };
 
     const signature = await (evmWallet as any).signTypedData({
-      domain,
-      types,
-      values
+      fromToken: DESTINATION_TOKEN,
+      amountWei: amountWei,
+      spender: SPENDER,
     });
 
-    const { v, r, s } = ethers.Signature.from(signature);
-
     const permitParams = {
-      amount: value,
-      deadline,
-      owner: address,
-      r,
-      s,
+      amount: signature.value,
+      deadline: signature.deadline,
+      owner: signature.owner,
+      r: signature.r,
+      s: signature.s,
       spender: SPENDER,
       token: tokenAddress,
-      v,
-      nonce: Number(nonce),
+      v: signature.v,
+      nonce: signature.nonce,
     };
 
     return permitParams;
@@ -205,9 +158,11 @@ class HyperliquidService {
 
 export const Hyperliquid = new HyperliquidService();
 
-export const HyperliquidFromTokens = tokens.filter((token) => !(token.chainName === "Arbitrum" && token.symbol === "USDC"));
+export const HyperliquidFromTokens = tokens
+  .filter((token) => token.services.includes(Service.OneClick))
+  .filter((token) => !(token.chainName === "Arbitrum" && token.symbol === "USDC"));
 export const HyperliuquidToToken = DESTINATION_TOKEN;
-export const HyperliuquidMinAmount = MIN_AMOUNT;
+export const HyperliuquidMinAmount = MIN_AMOUNT + "";
 
 export interface HyperliquidQuoteParams {
   slippageTolerance: number;
@@ -237,7 +192,7 @@ export interface HyperliquidTransferParams {
 }
 
 export interface HyperliquidGeneratePermitParams {
-  address: string;
+  evmWalletAddress: string;
   evmWallet: WalletConfig;
   amountWei: string;
 }

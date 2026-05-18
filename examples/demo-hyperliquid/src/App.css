@@ -178,6 +178,10 @@ body {
   border: 1px solid #fcc;
 }
 
+.break-all {
+  word-break: break-all;
+}
+
 .quote-result {
   margin-top: 2rem;
 }

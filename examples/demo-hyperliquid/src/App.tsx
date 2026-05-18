@@ -32,6 +32,7 @@ function App() {
   const [amount, setAmount] = useState('');
   const [quote, setQuote] = useState<Record<string, unknown> | null>(null);
   const [loading, setLoading] = useState(false);
+  const [quoting, setQuoting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [statusMsg, setStatusMsg] = useState('');
 
@@ -50,7 +51,8 @@ function App() {
       wallet: wallet.wallet,
       fromToken,
       prices,
-      amountWei: Big(amount).times(10 ** fromToken.decimals).toFixed(0, 0),
+      // EXACT_OUTPUT swapMode, amountWei is the amount of destination token
+      amountWei: Big(amount).times(10 ** toToken.decimals).toFixed(0, 0),
     };
   };
 
@@ -60,23 +62,29 @@ function App() {
       setQuote(null);
       return null;
     }
-    setLoading(true);
+    setQuoting(true);
     setError(null);
     try {
       const res = await Hyperliquid.quote(params);
+      console.log("quote res: %o", res);
       if (!res.quote) {
         setQuote(null);
-        setError(res.error || 'No quote');
+        let errMsg = res.error || 'No quote';
+        if (errMsg.includes("Amount is too low")) {
+          errMsg = `Amount is too low, at least ${minHuman} ${fromToken?.symbol}`;
+        }
+        setError(errMsg);
         return null;
       }
       setQuote(res.quote);
       return res.quote;
     } catch (err) {
+      console.log("quote error: %o", err);
       setError(err instanceof Error ? err.message : 'Quote failed');
       setQuote(null);
       return null;
     } finally {
-      setLoading(false);
+      setQuoting(false);
     }
   };
 
@@ -150,7 +158,7 @@ function App() {
   };
 
   const [buttonText, buttonDisabled] = useMemo(() => {
-    if (loading) return ['Loading...', true] as const;
+    if (loading || quoting) return ['Loading...', true] as const;
     if (!wallet.account) return ['Connect wallet', false] as const;
     if (fromToken && currentChainId !== fromToken.chainId) return ['Switch network', false] as const;
     if (!fromToken) return ['Select token', true] as const;
@@ -159,7 +167,7 @@ function App() {
     if (!quote) return ['Continue', true] as const;
     if ((quote as { needApprove?: boolean }).needApprove) return ['Approve', false] as const;
     return ['Continue', false] as const;
-  }, [loading, wallet, fromToken, amount, quote, currentChainId, minHuman]);
+  }, [loading, quoting, wallet, fromToken, amount, quote, currentChainId, minHuman]);
 
   return (
     <div className="app">
@@ -168,7 +176,7 @@ function App() {
         <p>Deposit EVM assets to Hyperliquid via @stableflow/hyperliquid</p>
       </header>
       <main className="app-main bridge-form">
-        {error && <div className="error-message">{error}</div>}
+        {error && <div className="error-message break-all">{error}</div>}
         <div className="form-section">
           <h2>From (EVM)</h2>
           <select
@@ -205,14 +213,18 @@ function App() {
           <input
             className="input-amount"
             type="number"
+            min="0"
+            step="any"
             value={amount}
-            onChange={(e) => setAmount(e.target.value)}
+            onChange={(e) => {
+              const v = e.target.value;
+              if (v.startsWith('-')) return;
+              if (v !== '' && Big(v).lt(0)) return;
+              setAmount(v);
+            }}
             placeholder={`Min ~${minHuman}`}
           />
         </div>
-        {quote && (
-          <pre className="quote-preview">{JSON.stringify(quote, null, 2)}</pre>
-        )}
         <button
           type="button"
           className="btn-primary"
@@ -222,6 +234,9 @@ function App() {
           {buttonText}
         </button>
         {statusMsg && <pre className="quote-preview">{statusMsg}</pre>}
+        {quote && (
+          <pre className="quote-preview">{JSON.stringify(quote, null, 2)}</pre>
+        )}
       </main>
     </div>
   );
