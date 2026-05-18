@@ -2,7 +2,7 @@
 
 Reference React application demonstrating StableFlow cross-chain quotes and transfers on EVM (and other chains via the shared token registry).
 
-**Stack:** Vite, React, wagmi, RainbowKit, `@stableflow/core`, `@stableflow/bridges`, `@stableflow/wallet-evm`.
+**Stack:** Vite 7, React, wagmi, RainbowKit, `@stableflow/core`, `@stableflow/bridges`, `@stableflow/wallet-evm`.
 
 ## What it demonstrates
 

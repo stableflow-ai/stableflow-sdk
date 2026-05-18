@@ -4,7 +4,7 @@ Reference React application demonstrating StableFlow cross-chain quotes and tran
 
 Does **not** include [demo-simple](../demo-simple/README.md) (SFA HTTP only) or [demo-hyperliquid](../demo-hyperliquid/README.md) (Hyperliquid deposit).
 
-**Stack:** Vite 8, React, RainbowKit/wagmi, Aptos/Solana/NEAR/Sui/TON/Tron wallet adapters, `@stableflow/bridges`. All `@stableflow/*` packages use the **beta** dist-tag.
+**Stack:** Vite 7, React, RainbowKit/wagmi, Aptos/Solana/NEAR/Sui/TON/Tron wallet adapters, `@stableflow/bridges`. All `@stableflow/*` packages use the **beta** dist-tag.
 
 ## What it demonstrates
 

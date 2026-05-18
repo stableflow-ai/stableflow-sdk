@@ -2,7 +2,7 @@
 
 Reference React application demonstrating StableFlow cross-chain quotes and transfers with **NEAR** and **EVM** source chains.
 
-**Stack:** Vite 8, React, NEAR Wallet Selector, `@stableflow/wallet-near`, wagmi, RainbowKit, `@stableflow/wallet-evm`. All `@stableflow/*` packages use the **beta** dist-tag.
+**Stack:** Vite 7, React, NEAR Wallet Selector, `@stableflow/wallet-near`, wagmi, RainbowKit, `@stableflow/wallet-evm`. All `@stableflow/*` packages use the **beta** dist-tag.
 
 ## What it demonstrates
 

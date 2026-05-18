@@ -2,7 +2,7 @@
 
 Reference React application demonstrating StableFlow cross-chain quotes and transfers with **Aptos** and **EVM** source chains.
 
-**Stack:** Vite 8, React, Aptos Wallet Adapter, `@stableflow/wallet-aptos`, wagmi, RainbowKit, `@stableflow/wallet-evm`. All `@stableflow/*` packages use the **beta** dist-tag.
+**Stack:** Vite 7, React, Aptos Wallet Adapter, `@stableflow/wallet-aptos`, wagmi, RainbowKit, `@stableflow/wallet-evm`. All `@stableflow/*` packages use the **beta** dist-tag.
 
 ## What it demonstrates
 
