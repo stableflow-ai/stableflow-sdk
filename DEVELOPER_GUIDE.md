@@ -1,439 +1,875 @@
-# StableFlow SDK — Developer Guide
+# StableFlow SDK - Developer Guide
 
-This guide covers integrating the StableFlow TypeScript SDK monorepo: package layout, quoting, sending transactions, multi-chain wallets, and Hyperliquid deposits.
+This guide helps developers integrate StableFlow features, including the HTTP-only API flow, the full bridge integration flow, and Hyperliquid deposit.
 
-## Table of contents
+## Table of Contents
 
-1. [Overview](#overview)
-2. [Configuration](#configuration)
-3. [Quote performance: the `dry` flag](#quote-performance-the-dry-flag)
-4. [SFA — direct HTTP API](#sfa--direct-http-api)
-5. [BridgeSFA — full cross-chain flows](#bridgesfa--full-cross-chain-flows)
-6. [Wallet adapters](#wallet-adapters)
-7. [Hyperliquid](#hyperliquid)
-8. [Examples](#examples)
-9. [Troubleshooting](#troubleshooting)
+1. [Overview](#1-overview)
+   - [1.1 Introduction](#11-introduction)
+   - [1.2 Migration Guide](#12-migration-guide)
+2. [Getting Started](#2-getting-started)
+   - [2.1 Installation](#21-installation)
+   - [2.2 Configuration](#22-configuration)
+   - [2.3 API Integration Flow](#23-api-integration-flow)
+   - [2.4 Full Integration Flow](#24-full-integration-flow)
+   - [2.5 Hyperliquid](#25-hyperliquid)
+3. [Advanced](#3-advanced)
+   - [3.1 Recommended Use of the `dry` Flag](#31-recommended-use-of-the-dry-flag)
+   - [3.2 `oneclickParams`](#32-oneclickparams)
+   - [3.3 approve](#33-approve)
+   - [3.4 permit signature](#34-permit-signature)
+   - [3.5 Error Handling](#35-error-handling)
 
----
+## 1. Overview
 
-## Overview
+Fast, secure, and built for transfers at scale.
 
-The monorepo is split into focused packages:
+### 1.1 Introduction
+
+A comprehensive guide for developers to integrate StableFlow's crosschain transfers into your applications.
+
+#### Features
+
+##### Solver-based
+
+A decentralised network of professional market makers competes to fill your order. When native protocol rails offer better execution, StableFlow routes there instead. Deep liquidity, across every transfer size.
+Transfer leading stablecoins including USDT, USDC, and frxUSD across 12+ chains.
+
+##### Smart Routing
+
+Transfers between different assets on different chains can require bridging, redeeming, minting, and converting across multiple protocols. StableFlow sequences these steps using pre-signed authorisations. You confirm once. The rest executes automatically.
+
+##### Competitive at any size
+
+Low Fees, from 1 basis point(0.01%), 0 slippage via native rails and Near Intents, transfer size competitive from $1 to $1M+, 20+ including Ethereum, Solana, NEAR, Tron, and Aptos.
+
+##### Customizable
+
+StableFlow SDK is not a fixed all-in-one bundle. You can install only `@stableflow/core` for HTTP quotes, deposit addresses, and status checks. You can combine `@stableflow/bridges` with the wallet adapters you need to build a full multi-chain flow across EVM, Solana, NEAR, Tron, Aptos, Sui, TON, and more. If your product only needs Hyperliquid deposits, `@stableflow/hyperliquid` provides a focused integration surface.
+
+The package split lets teams adopt StableFlow gradually. Use `dry: true` for fast previews and route comparison, switch to `dry: false` for executable deposit parameters, enable app fees, proxy deposit addresses, permit signatures, or custom RPC endpoints only when your business needs them. Wallets, exchanges, OTC desks, payment products, and cross-chain DApps can use StableFlow either as a lightweight API client or as a complete cross-chain execution layer.
+
+#### Community
+
+For questions or support, visit:
+
+* [Github Repository](https://github.com/stableflow-ai/stableflow-sdk)
+* [Discord](https://discord.gg/stableflow)
+* [X](https://twitter.com/stableflowai)
+
+### 1.2 Migration Guide
+
+If you are migrating from v1.x, install `@stableflow/core` and import the methods you need from it.
+
+If you are migrating from v2.x, note the following changes:
+
+The previous `stableflow-ai-sdk` package has been moved into the `@stableflow/` organization and split by responsibility. The old `stableflow-ai-sdk` package now acts as an aggregate entry that pulls in `@stableflow/*` packages and upgrades from v2.x to v3.x. It will not continue to be maintained, so new integrations should migrate to `@stableflow/*`.
+
+The v1.x and v2.x methods `OpenAPI`, `SFA.getTokens()`, `SFA.getQuote()`, `SFA.submitDepositTx()`, and `SFA.getExecutionStatus()` are now in `@stableflow/core`.
+
+The v2.x methods `SFA.getAllQuote()`, `SFA.send()`, and `SFA.getStatus()` are now in `@stableflow/bridges`:
+
+```typescript
+import { BridgeSFA } from "@stableflow/bridges";
+
+BridgeSFA.getAllQuote();
+BridgeSFA.send();
+BridgeSFA.getStatus();
+```
+
+The v2.x Hyperliquid flow is now in `@stableflow/hyperliquid`:
+
+```typescript
+import { Hyperliquid } from "@stableflow/hyperliquid";
+
+Hyperliquid.quote();
+Hyperliquid.transfer();
+Hyperliquid.deposit();
+Hyperliquid.getStatus();
+```
+
+## 2. Getting Started
+
+### 2.1 Installation
+
+```bash
+# npm
+npm install @stableflow/core
+
+# pnpm
+pnpm add @stableflow/core
+
+# yarn
+yarn add @stableflow/core
+```
+
+StableFlow includes the following packages:
 
 | Package | Role |
 |---------|------|
 | `@stableflow/core` | API client, models, token/chain config, `SFA` |
 | `@stableflow/bridges` | `BridgeSFA`, `ServiceMap`, all bridge route implementations |
-| `@stableflow/wallet-*` | Per-chain `WalletConfig` adapters (sign, send, approve, quote simulation) |
-| `@stableflow/utils-evm` / `@stableflow/utils-solana` | Internal RPC and protocol helpers |
-| `@stableflow/hyperliquid` | Hyperliquid deposit flow on top of OneClick + Arbitrum USDC permit |
+| `@stableflow/wallet-*` | Per-chain `WalletConfig` adapters for sign, send, approve, and quote simulation |
+| `@stableflow/utils-*` | Internal RPC and protocol helpers |
+| `@stableflow/hyperliquid` | Hyperliquid deposit flow on top of OneClick and Arbitrum USDC permit |
 
-**Typical integration path**
+**Typical integration paths**
 
-1. Install `@stableflow/core` + `@stableflow/bridges` + the wallet package(s) for your chains.
-2. Construct a wallet adapter and pass `wallet.wallet` (`WalletConfig`) into `BridgeSFA`.
-3. Call `BridgeSFA.getAllQuote` with `dry: true` to compare routes quickly.
-4. Re-quote the chosen route with `dry: false`, then `BridgeSFA.send`.
+For HTTP-only access, such as simple OneClick quote and status checks, `SFA` from `@stableflow/core` is sufficient.
 
-For HTTP-only access (tokens list, simple OneClick quote/status), `SFA` on `@stableflow/core` is sufficient.
+For a full bridge integration:
 
-```mermaid
-flowchart TB
-  App[Your application]
-  BridgeSFA[BridgeSFA]
-  ServiceMap[ServiceMap]
-  Wallets[wallet-evm / solana / ...]
-  API[api.stableflow.ai]
-  App --> BridgeSFA
-  BridgeSFA --> ServiceMap
-  ServiceMap --> Wallets
-  BridgeSFA --> API
-  Wallets --> API
-```
+- Install `@stableflow/core`, `@stableflow/bridges`, and the wallet package or packages for your supported chains.
+- Connect your wallet layer and instantiate the required `@stableflow/wallet-*` adapters.
+- Call `BridgeSFA.getAllQuote` with `dry: true` to compare routes quickly.
+- Re-quote the chosen route with `dry: false`, then call `BridgeSFA.send`.
+- Call `BridgeSFA.getStatus` to read the result.
 
----
+#### Reading Path and Security Notes
 
-## Configuration
+Start with section 2.3 if you only need HTTP APIs. Read section 2.4 and sections 3.3 to 3.5 if your app connects wallets, compares routes, approves tokens, signs permits, and sends transactions directly. Read section 2.5 if your only product flow is Hyperliquid deposit.
 
-### Authentication
+Do not commit JWT tokens, WalletConnect project IDs, or private RPC URLs. The examples use `.env.local`; production deployments should inject these values through a backend or a secret manager.
 
-**JWT Token**: Required for API access
+### 2.2 Configuration
+
+#### Authentication
+
+**JWT Token**: Required for API access.
 
 **👉 [Apply for JWT Token](https://docs.google.com/forms/u/3/d/e/1FAIpQLSdTeV7UaZ1MiFxdJ2jH_PU60PIN3iqYJ1WXEOFY45TsAy6O5g/viewform)**
 
 After receiving the token, set it before API calls:
 
-```ts
-import { OpenAPI } from '@stableflow/core';
+```typescript
+import { OpenAPI } from "@stableflow/core";
 
-OpenAPI.TOKEN = 'your-jwt-token';
+OpenAPI.TOKEN = "your-jwt-token";
 ```
 
-### RPC URLs (optional)
+#### RPC URLs (optional)
 
-Bridge quotes and sends may read chain state (balances, gas, ATA existence). Override RPC endpoints if needed:
+Bridge quotes and sends may read chain state, including balances, gas, and ATA existence. Override RPC endpoints if needed:
 
-```ts
-import { setRpcUrls } from '@stableflow/core';
+```typescript
+import { setRpcUrls } from "@stableflow/core";
 
 setRpcUrls({
-  eth: ['https://your-eth-rpc.example.com'],
-  arb: ['https://your-arb-rpc.example.com'],
-  sol: ['https://your-solana-rpc.example.com'],
+  eth: ["https://your-eth-rpc.example.com"],
+  arb: ["https://your-arb-rpc.example.com"],
+  sol: ["https://your-solana-rpc.example.com"],
 });
 ```
 
-Use `getChainRpcUrl(chainKey)` to read the active URL(s) for a chain.
+Use `getChainRpcUrl(chainKey)` to read the active URL or URLs for a chain.
 
----
+#### Debug Logs (optional)
 
-## Quote performance: the `dry` flag
+```typescript
+import { OpenAPI } from "@stableflow/core";
 
-The `dry` flag is the most important tuning knob for quote latency.
+OpenAPI.DEBUG = true;
+```
 
-### API semantics (`QuoteRequest`)
+### 2.3 API Integration Flow
 
-For OneClick / HTTP quotes, `QuoteRequest.dry` is documented as follows:
+Use this flow when you only need OneClick cross-chain transfers and already have your own wallet or transaction-sending logic. Install `@stableflow/core`, request a quote with `SFA.getQuote({ dry: false, ... })`, send the quoted amount to the returned `depositAddress`, optionally submit the deposit transaction hash, and poll status.
 
-- **`dry: true`** — dry run. The response does **not** include `depositAddress`, `timeWhenInactive`, or `deadline`.
-- **`dry: false`** — full quote with a real deposit address and deadlines.
+`SFA.getQuote` uses basis points for `QuoteRequest.slippageTolerance`. For example, `50` means `0.5%`. By contrast, the bridge and Hyperliquid examples use `0.5` to mean `0.5%`; those packages convert the value internally for OneClick routes.
 
-Because generating deposit addresses and running heavier validation is slower, **`dry: true` is recommended for route comparison and UI previews**. Switch to **`dry: false` only when the user is ready to deposit or you are about to call `send`**.
+```typescript
+import {
+  QuoteRequest,
+  SFA,
+  type QuoteResponse,
+  type TokenResponse,
+  GetExecutionStatusResponse,
+} from "@stableflow/core";
 
-### Bridge and wallet layers
+const [tokens, setTokens] = useState<TokenResponse[]>([]);
+const [quote, setQuote] = useState<QuoteResponse | null>(null);
 
-`BridgeSFA.getAllQuote` forwards `dry` to every eligible route in `ServiceMap`. Individual wallet adapters also branch on `dry`:
+const all = await SFA.getTokens();
+setTokens(filterEvmTokens(all));
 
-- **EVM**: skips or simplifies gas estimation paths when `dry: true` (e.g. uses default gas limits instead of live estimates).
-- **Solana / Tron / others**: may skip building or broadcasting transactions when `dry: true`.
+const quoteRes = await SFA.getQuote({
+  dry: false,
+  swapType: QuoteRequest.swapType.EXACT_INPUT,
+  slippageTolerance: 50,
+  originAsset: fromToken.assetId,
+  destinationAsset: toToken.assetId,
+  amount: "1000000",
+  refundTo: "0x...",
+  refundType: QuoteRequest.refundType.ORIGIN_CHAIN,
+  recipient: "0x...",
+  recipientType: QuoteRequest.recipientType.DESTINATION_CHAIN,
+  depositType: QuoteRequest.depositType.ORIGIN_CHAIN,
+  deadline: new Date(Date.now() + 3600_000).toISOString(),
+});
+setQuote(quoteRes);
 
-### Recommended pattern
+if (!quoteRes.quote.depositAddress) {
+  throw new Error("Missing deposit address");
+}
 
-```ts
-// 1) Fast scan — compare all routes
+const tokenContract = new Contract(
+  fromToken.contractAddress,
+  ["function transfer(address to, uint256 amount) returns (bool)"],
+  signer
+);
+const tx = await tokenContract.transfer(quoteRes.quote.depositAddress, "1000000");
+
+await SFA.submitDepositTx({
+  txHash: tx.hash,
+  depositAddress: quoteRes.quote.depositAddress,
+});
+
+const status = await SFA.getExecutionStatus(quoteRes.quote.depositAddress, quoteRes.quote.depositMemo);
+if (
+  [
+    GetExecutionStatusResponse.status.PENDING_DEPOSIT,
+    GetExecutionStatusResponse.status.KNOWN_DEPOSIT_TX,
+    GetExecutionStatusResponse.status.INCOMPLETE_DEPOSIT,
+    GetExecutionStatusResponse.status.PROCESSING,
+  ].includes(status.status)
+) {
+  // Still processing.
+}
+if (status.status === GetExecutionStatusResponse.status.SUCCESS) {
+  // Success.
+}
+if (
+  [
+    GetExecutionStatusResponse.status.FAILED,
+    GetExecutionStatusResponse.status.REFUNDED,
+  ].includes(status.status)
+) {
+  // Failed or refunded.
+}
+```
+
+See the runnable example at [demo-simple](./stableflow/examples/demo-simple/README.md).
+
+#### API Reference
+
+##### @stableflow/core SFA.getTokens()
+
+```typescript
+SFA.getTokens(): CancelablePromise<TokenResponse[]>
+```
+
+| Return field | Type | Description |
+|--------------|------|-------------|
+| `assetId` | `string` | StableFlow asset ID used by `originAsset` and `destinationAsset`. |
+| `decimals` | `number` | Token decimals. Amounts should be passed in the smallest unit. |
+| `blockchain` | `TokenResponse.blockchain` | Chain key, such as `eth`, `arb`, `sol`, or `tron`. |
+| `symbol` | `string` | Token symbol. |
+| `price` | `number` | Current USD price. |
+| `priceUpdatedAt` | `string` | Price update timestamp. |
+| `contractAddress` | `string \| undefined` | Token contract address when applicable. |
+
+##### @stableflow/core SFA.getQuote()
+
+```typescript
+SFA.getQuote(requestBody: QuoteRequest): CancelablePromise<QuoteResponse>
+```
+
+The table below follows the current `@stableflow/core` `QuoteRequest` type and adds semantic details from the [Near Intents OneClick Request a swap quote](https://docs.near-intents.org/api-reference/oneclick/request-a-swap-quote) reference. Upstream OneClick may support additional fields before the generated SDK types expose them. Prefer the installed SDK types unless you intentionally extend the request through a custom request layer.
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `dry` | `boolean` | Yes | `true` for preview. `false` returns executable deposit parameters. |
+| `depositMode` | `SIMPLE \| MEMO` | No | Deposit address mode. Usually defaults to `SIMPLE`. `MEMO` requires both `depositAddress` and `depositMemo`, for example on memo-based chains. |
+| `swapType` | `EXACT_INPUT \| EXACT_OUTPUT \| FLEX_INPUT` | Yes | How to interpret `amount`. See the detailed semantics below. |
+| `slippageTolerance` | `number` | Yes | Slippage in basis points. `100` means `1%`. |
+| `originAsset` | `string` | Yes | Source asset ID. |
+| `depositType` | `ORIGIN_CHAIN \| INTENTS` | Yes | Deposit address type. |
+| `destinationAsset` | `string` | Yes | Destination asset ID. |
+| `amount` | `string` | Yes | Integer string in the token's smallest unit. Do not pass decimal strings like `"0.01"`. |
+| `refundTo` | `string` | Yes | Refund address. |
+| `refundType` | `ORIGIN_CHAIN \| INTENTS` | Yes | Refund address type. |
+| `recipient` | `string` | Yes | Recipient address matching `recipientType`. |
+| `virtualChainRecipient` | `string` | No | EVM recipient for virtual-chain flows. |
+| `virtualChainRefundRecipient` | `string` | No | EVM refund recipient for virtual-chain flows. |
+| `recipientType` | `DESTINATION_CHAIN \| INTENTS` | Yes | Recipient address type. |
+| `deadline` | `string` | Yes | ISO timestamp after which refund handling may begin. It must be later than the expected source-chain deposit confirmation time. Chains such as Bitcoin may need a longer deadline. |
+| `quoteWaitingTimeMs` | `number` | No | How long to wait for relay quotes. Defaults to `0`, meaning return the fastest quote as soon as possible. |
+| `appFees` | `AppFee[]` | No | OneClick app fee configuration. |
+
+`swapType` details:
+
+| Value | Description |
+|-------|-------------|
+| `EXACT_INPUT` | `amount` is the fixed input amount. Deposits below `amountIn` are refunded after the deadline; deposits above `amountIn` are processed and the excess is refunded to `refundTo`. |
+| `EXACT_OUTPUT` | `amount` is the fixed output amount. The returned `amountIn` usually includes a slippage buffer, while `minAmountIn` is the minimum required input. Excess input is refunded to `refundTo`; deposits below `minAmountIn` are refunded after the deadline. |
+| `FLEX_INPUT` | Allows flexible input and partial deposits. Slippage applies to both `minAmountIn` and `minAmountOut`. Use it for variable deposit flows. |
+
+| Return field | Type | Description |
+|--------------|------|-------------|
+| `correlationId` | `string` | Upstream OneClick request tracing ID. The current SDK type may not declare it explicitly, but the response may include it and it is useful for debugging. |
+| `timestamp` | `string` | Quote timestamp. |
+| `signature` | `string` | StableFlow signature for the quote and deposit address. Store it with the quote. |
+| `quoteRequest` | `QuoteRequest` | Request body used by the service. |
+| `quote` | `Quote` | Quote details. |
+
+Important `Quote` fields:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `depositAddress` | `string \| undefined` | Returned when `dry: false`. |
+| `depositMemo` | `string \| undefined` | Required by some chains together with `depositAddress`. |
+| `amountIn` / `amountInFormatted` / `amountInUsd` | `string` | Input amount fields. |
+| `minAmountIn` | `string` | Minimum input amount after slippage, often used by exact-output routes. |
+| `amountOut` / `amountOutFormatted` / `amountOutUsd` | `string` | Output amount fields. |
+| `minAmountOut` | `string` | Minimum output after slippage. |
+| `deadline` | `string \| undefined` | Deposit address expiration time. Returned when `dry: false`. |
+| `timeWhenInactive` | `string \| undefined` | Time when the deposit address becomes cold. Returned when `dry: false`. |
+| `timeEstimate` | `number` | Estimated execution time in seconds after deposit confirmation. |
+| `customRecipientMsg` | `string \| undefined` | NEAR `ft_transfer_call` message. Experimental. |
+| `refundFee` | `string \| undefined` | Fee charged for refunding assets to `refundTo`, denominated in the smallest unit of the origin asset. |
+
+##### @stableflow/core SFA.submitDepositTx()
+
+```typescript
+SFA.submitDepositTx(body: SubmitDepositTxRequest): CancelablePromise<SubmitDepositTxResponse>
+```
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `txHash` | `string` | Yes | Source-chain transaction hash sent to the deposit address. |
+| `depositAddress` | `string` | Yes | Deposit address from `SFA.getQuote({ dry: false })`. |
+
+The response includes `quoteResponse`, `status`, `updatedAt`, and `swapDetails`. Calling this method helps the service associate the deposit transaction sooner.
+
+##### @stableflow/core SFA.getExecutionStatus()
+
+```typescript
+SFA.getExecutionStatus(
+  depositAddress: string,
+  depositMemo?: string
+): CancelablePromise<GetExecutionStatusResponse>
+```
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `depositAddress` | `string` | Yes | Deposit address from the quote. |
+| `depositMemo` | `string` | No | Memo from the quote, if any. |
+
+| Return field | Type | Description |
+|--------------|------|-------------|
+| `quoteResponse` | `QuoteResponse` | Original quote. |
+| `status` | `KNOWN_DEPOSIT_TX \| PENDING_DEPOSIT \| INCOMPLETE_DEPOSIT \| PROCESSING \| SUCCESS \| REFUNDED \| FAILED` | Execution status. |
+| `updatedAt` | `string` | Last update timestamp. |
+| `swapDetails` | `SwapDetails` | Swap and withdrawal details. |
+
+### 2.4 Full Integration Flow
+
+The full integration flow uses `@stableflow/core`, `@stableflow/bridges`, and the required `@stableflow/wallet-*` adapters. Use it when your app needs to connect wallets, compare multiple routes, approve tokens, sign permits, send transactions, and poll status.
+
+See the runnable full demo at [demo-full](./stableflow/examples/demo-full/README.md). The main app code is in `stableflow/examples/demo-full/src/App.tsx`.
+
+#### Run demo-full
+
+From the monorepo root `stableflow/`:
+
+```bash
+pnpm install
+pnpm build
+pnpm dev:demo-full
+```
+
+The dev server runs at `http://localhost:3011`.
+
+```env
+VITE_STABLEFLOW_JWT_TOKEN=your-jwt-here
+VITE_WALLET_CONNECT_PROJECT_ID=your-walletconnect-project-id
+```
+
+#### Integration Steps
+
+1. Read `tokens` from `@stableflow/core` and filter by `chainType`, `symbol`, or `services`.
+2. Connect the source-chain wallet and adapt it to `WalletConfig`.
+3. Build `GetAllQuoteParams` and call `BridgeSFA.getAllQuote`.
+4. In production, quote first with `dry: true`, then re-quote the selected `singleService` with `dry: false`.
+5. Filter routes where `quote && !error`, then choose by output, fees, time estimate, or business preference.
+6. If `quote.needPermit`, generate a permit signature. If `quote.needApprove`, approve first.
+7. Call `BridgeSFA.send(serviceType, { wallet, quote, permitSignature })`.
+8. Poll `BridgeSFA.getStatus(serviceType, { depositAddress, hash })`.
+
+```typescript
+import Big from "big.js";
+import { BridgeSFA, getQuoteModes, type GetAllQuoteParams } from "@stableflow/bridges";
+
+const quoteRequest: GetAllQuoteParams = {
+  dry: true,
+  prices,
+  fromToken,
+  toToken,
+  wallet: fromWallet.wallet,
+  recipient,
+  refundTo: fromWalletAddress,
+  amountWei: Big(amount).times(10 ** fromToken.decimals).toFixed(0, 0),
+  slippageTolerance: 0.5,
+  oneclickParams: {
+    appFees: [{ recipient: "stableflow.near", fee: 100 }],
+  },
+};
+
+const previews = await BridgeSFA.getAllQuote(quoteRequest);
+const best = previews.find((item) => item.quote && !item.error);
+if (!best) throw new Error("No valid route");
+
+const [finalRoute] = await BridgeSFA.getAllQuote({
+  ...quoteRequest,
+  dry: false,
+  singleService: best.serviceType,
+});
+
+const { isExactOutput } = getQuoteModes({
+  quoteData: finalRoute.quote,
+  bridgeStore: { quoteDataService: finalRoute.serviceType },
+});
+const amountToApprove = isExactOutput
+  ? finalRoute.quote.quote?.minAmountIn
+  : finalRoute.quote.quoteParam.amountWei;
+
+const txHash = await BridgeSFA.send(finalRoute.serviceType, {
+  wallet: fromWallet.wallet,
+  quote: finalRoute.quote,
+  permitSignature,
+});
+```
+
+#### API Reference
+
+##### @stableflow/bridges BridgeSFA.getAllQuote()
+
+```typescript
+BridgeSFA.getAllQuote(
+  params: GetAllQuoteParams
+): Promise<Array<{ serviceType: Service; quote?: any; error?: string }>>
+```
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `singleService` | `Service` | No | Quote only one route. |
+| `disabledServices` | `Service[]` | No | Disable specific routes. |
+| `dry` | `boolean` | No | Use `true` for preview and `false` before sending. |
+| `prices` | `Record<string, string>` | Yes | Price map used for gas and fee estimates. |
+| `fromToken` | `TokenConfig` | Yes | Source token. |
+| `toToken` | `TokenConfig` | Yes | Destination token. |
+| `wallet` | `WalletConfig` | Yes | Source-chain wallet adapter. |
+| `evmWallet` | `WalletConfig` | No | EVM wallet for mixed routes or permits. |
+| `evmAddress` | `string` | No | Address for `evmWallet`. |
+| `recipient` | `string` | Yes | Destination recipient address. |
+| `refundTo` | `string` | Yes | Source-chain refund address. |
+| `amountWei` | `string` | Yes | Source amount in the smallest unit. |
+| `slippageTolerance` | `number` | Yes | Percentage value. `0.5` means `0.5%`; OneClick routes convert it internally. |
+| `minInputAmount` | `string` | No | Minimum input amount. Defaults to `1`. |
+| `appFees` | `{ recipient; fee }[]` | No | Deprecated. Use `oneclickParams.appFees`. |
+| `oneclickParams` | `object` | No | OneClick-specific `appFees`, `swapType`, and `isProxy`. |
+
+Return items:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `serviceType` | `Service` | Route type. |
+| `quote` | `any` | Route quote, usually including `quoteParam`, `sendParam`, fees, `outputAmount`, `needApprove`, `approveSpender`, and `needPermit`. |
+| `error` | `string` | Route-level error. Other routes may still succeed. |
+
+##### @stableflow/bridges BridgeSFA.send()
+
+```typescript
+BridgeSFA.send(
+  serviceType: Service,
+  params: {
+    wallet: WalletConfig;
+    quote: any;
+    permitSignature?: {
+      amount: string;
+      deadline: number;
+      nonce: string;
+      owner: string;
+      r: string;
+      s: string;
+      v: 27 | 28;
+    };
+  }
+): Promise<string>
+```
+
+Returns the source-chain transaction hash. `permitSignature` is required when `quote.needPermit === true`.
+
+##### @stableflow/bridges BridgeSFA.getStatus()
+
+```typescript
+BridgeSFA.getStatus(
+  serviceType: Service,
+  params: { depositAddress?: string; hash?: string }
+): Promise<{ status: TransactionStatus; toChainTxHash?: string }>
+```
+
+The returned `status` is normalized to `pending`, `success`, or `failed`. `toChainTxHash` may be returned after success.
+
+##### @stableflow/bridges getQuoteModes()
+
+| Return field | Description |
+|--------------|-------------|
+| `isExactOutput` | Use `quote.quote.minAmountIn` for approve/send input amount when true. |
+| `isOneClickService` | Whether the route uses OneClick send logic. |
+| `isQuoteParamDepositAddress` | Whether the deposit address is stored under `quote.quoteParam.depositAddress`. |
+| `isPermitWithNonce` | Whether the route needs a nonce-based permit. |
+
+##### @stableflow/core tokens
+
+`tokens` is the exported `TokenConfig[]` list from `@stableflow/core`. Demo helpers such as `getBridgeTokens` are local demo utilities, not SDK exports.
+
+### 2.5 Hyperliquid
+
+`@stableflow/hyperliquid` wraps the flow from an EVM source asset to OneClick, then to Arbitrum USDC, then to Hyperliquid deposit. Use it when your product only needs Hyperliquid deposits.
+
+See the runnable demo at [demo-hyperliquid](./stableflow/examples/demo-hyperliquid/README.md). The main app code is in `stableflow/examples/demo-hyperliquid/src/App.tsx`.
+
+#### Run demo-hyperliquid
+
+```bash
+pnpm dev:demo-hyperliquid
+```
+
+The dev server runs at `http://localhost:3010`.
+
+```env
+VITE_STABLEFLOW_JWT_TOKEN=your-jwt
+VITE_WALLET_CONNECT_PROJECT_ID=your-walletconnect-project-id
+```
+
+#### Integration Steps
+
+1. Pick a source token from `HyperliquidFromTokens`.
+2. Use `HyperliuquidMinAmount` to validate the minimum deposit amount. It is denominated in the smallest unit of `HyperliuquidToToken`.
+3. Debounce `Hyperliquid.quote({ dry: true })` for preview. The default is `dry: true`.
+4. If the quote returns `needApprove`, approve the source token and quote again.
+5. On user confirmation, call `Hyperliquid.quote({ dry: false })`.
+6. Call `Hyperliquid.transfer` to send the source-chain deposit and get `txhash`.
+7. Switch to Arbitrum and call `Hyperliquid.deposit`. It signs an Arbitrum USDC EIP-2612 permit internally and registers the deposit.
+8. Poll `Hyperliquid.getStatus({ depositId })`.
+
+```typescript
+import Big from "big.js";
+import {
+  Hyperliquid,
+  HyperliquidFromTokens,
+  HyperliuquidMinAmount,
+  HyperliuquidToToken,
+} from "@stableflow/hyperliquid";
+
+const fromToken = HyperliquidFromTokens.find((token) => token.chainType === "evm");
+const amountWei = Big(amount).times(10 ** fromToken.decimals).toFixed(0, 0);
+
+if (Big(amountWei).lt(HyperliuquidMinAmount)) {
+  throw new Error(`Min amount is ${HyperliuquidMinAmount}`);
+}
+
+const quoteParams = {
+  slippageTolerance: 0.5,
+  refundTo: wallet.account,
+  recipient: wallet.account,
+  wallet: wallet.wallet,
+  fromToken,
+  prices,
+  amountWei,
+};
+
+const preview = await Hyperliquid.quote({
+  ...quoteParams,
+  dry: true,
+});
+
+if (preview.error) throw new Error(preview.error);
+
+const finalQuote = await Hyperliquid.quote({
+  ...quoteParams,
+  dry: false,
+});
+if (!finalQuote.quote) throw new Error(finalQuote.error || "No quote");
+
+const txhash = await Hyperliquid.transfer({
+  wallet: wallet.wallet,
+  evmWallet: wallet.wallet,
+  evmWalletAddress: wallet.account,
+  quote: finalQuote.quote,
+});
+
+const depositRes = await Hyperliquid.deposit({
+  txhash,
+  wallet: wallet.wallet,
+  evmWallet: wallet.wallet,
+  evmWalletAddress: wallet.account,
+  quote: finalQuote.quote,
+});
+
+const status = await Hyperliquid.getStatus({
+  depositId: String(depositRes.data.depositId),
+});
+```
+
+#### API Reference
+
+##### @stableflow/hyperliquid Hyperliquid.quote()
+
+```typescript
+Hyperliquid.quote(
+  params: HyperliquidQuoteParams
+): Promise<{ quote: any; error: string | null }>
+```
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `slippageTolerance` | `number` | Yes | Percentage value. `0.5` means `0.5%`. |
+| `refundTo` | `string` | Yes | Source-chain refund address. |
+| `recipient` | `string` | Yes | Recipient/sender address used by the deposit flow. |
+| `wallet` | `WalletConfig` | Yes | Source EVM wallet adapter. |
+| `fromToken` | `TokenConfig` | Yes | Source token. |
+| `prices` | `Record<string, string>` | Yes | Price map. |
+| `amountWei` | `string` | Yes | Source amount in the smallest unit. |
+| `dry` | `boolean` | No | Defaults to `true`; `false` generates a real deposit address. |
+| `oneclickParams.appFees` | `{ recipient; fee }[]` | No | App fee configuration. |
+
+##### @stableflow/hyperliquid Hyperliquid.transfer()
+
+```typescript
+Hyperliquid.transfer(params: HyperliquidTransferParams): Promise<string>
+```
+
+Returns the source-chain transaction hash.
+
+##### @stableflow/hyperliquid Hyperliquid.deposit()
+
+```typescript
+Hyperliquid.deposit(params: HyperliquidDepositParams): Promise<HyperliquidDepositResponse>
+```
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `txhash` | `string` | Yes | Source-chain transaction hash from `transfer`. |
+| `wallet` | `WalletConfig` | Yes | Source wallet. |
+| `evmWallet` | `WalletConfig` | Yes | EVM wallet used to sign the Arbitrum USDC permit. |
+| `evmWalletAddress` | `string` | Yes | Permit owner address. |
+| `quote` | `any` | Yes | Quote from `Hyperliquid.quote({ dry: false })`. |
+
+Returns `{ code, data: { depositId } }`.
+
+##### @stableflow/hyperliquid Hyperliquid.getStatus()
+
+```typescript
+Hyperliquid.getStatus(
+  params: { depositId: string }
+): Promise<HyperliquidDepositStatusResponse>
+```
+
+Returns `{ code, data: { status, txHash } }`, where `status` is `PROCESSING`, `SUCCESS`, `REFUNDED`, or `FAILED`.
+
+##### @stableflow/hyperliquid HyperliquidFromTokens
+
+Source token list for Hyperliquid deposits. Arbitrum USDC is excluded because it is the fixed destination token.
+
+##### @stableflow/hyperliquid HyperliuquidMinAmount
+
+Minimum deposit amount in the smallest unit of `HyperliuquidToToken`. The misspelled `Hyperliuquid` name is the actual SDK export and should be imported exactly as exported.
+
+##### @stableflow/hyperliquid HyperliuquidToToken
+
+Destination token, currently Arbitrum USDC. The misspelled `Hyperliuquid` name is the actual SDK export.
+
+## 3. Advanced
+
+### 3.1 Recommended Use of the `dry` Flag
+
+Use `dry: true` during the quote preview phase to improve response time and user experience. Use `dry: false` only when the user is ready to execute or when you are about to call `send`.
+
+For OneClick HTTP quotes, `QuoteRequest.dry` behaves as follows:
+
+- `dry: true`: dry run. The response does not include `depositAddress`, `timeWhenInactive`, or `deadline`.
+- `dry: false`: full quote with a real deposit address and deadlines.
+
+`BridgeSFA.getAllQuote` forwards `dry` to every eligible route in `ServiceMap`. Wallet adapters may also simplify gas estimation or skip transaction construction when `dry: true`.
+
+```typescript
+import { BridgeSFA, ServiceMap } from "@stableflow/bridges";
+
 const previews = await BridgeSFA.getAllQuote({
   ...params,
   dry: true,
 });
 
 const best = previews
-  .filter((r) => r.quote && !r.error)
+  .filter((route) => route.quote && !route.error)
   .sort(/* your comparator */)[0];
 
-// 2) Final quote — deposit address + accurate send params
 const [final] = await BridgeSFA.getAllQuote({
   ...params,
   dry: false,
   singleService: best.serviceType,
 });
 
-// 3) Approve (if quote.needApprove) then send
 const txHash = await BridgeSFA.send(best.serviceType, {
   wallet: wallet.wallet,
   quote: final.quote,
 });
 ```
 
-`Hyperliquid.quote` defaults to `dry: true` for the same reason; pass `dry: false` before `transfer`.
+### 3.2 `oneclickParams`
 
-> **Note:** Bridge demos (e.g. [demo-evm](examples/demo-evm/src/App.tsx)) use `dry: false` in `handleGetQuote` for simplicity so deposit addresses appear immediately. Production apps should prefer the two-step pattern above.
+`BridgeSFA.getAllQuote()` supports additional OneClick parameters. These concepts also apply to `SFA.getQuote()` where the same fields exist.
 
----
+#### appFees
 
-## SFA — direct HTTP API
+This only applies to OneClick routes, including mixed routes that contain OneClick. OneClick charges 0.0001% (1 pip) per transaction.
 
-`SFA` in `@stableflow/core` wraps StableFlow REST endpoints. Use it when you do not need multi-route wallet orchestration.
+All partners participate in a 50/50 revenue share by default. Half of the fee amount specified through `appFees` is sent to the OneClick protocol address, and the other half goes to the partner `recipient`.
 
-| Method | Endpoint | Purpose |
-|--------|----------|---------|
-| `SFA.getTokens()` | `GET /v0/tokens` | Supported assets |
-| `SFA.getQuote(body)` | `POST /v0/quote` | Single swap quote (`QuoteRequest`) |
-| `SFA.getExecutionStatus(depositAddress, depositMemo?)` | `GET /v0/status` | Swap status by deposit address |
-| `SFA.submitDepositTx(body)` | `POST /v0/deposit/submit` | Notify OneClick deposit tx hash |
-
-Example:
-
-```ts
-import { SFA, QuoteRequest } from '@stableflow/core';
-
-const tokens = await SFA.getTokens();
-
-const quote = await SFA.getQuote({
-  dry: true,
-  swapType: QuoteRequest.swapType.EXACT_INPUT,
-  slippageTolerance: 50, // basis points
-  originAsset: '...',
-  destinationAsset: '...',
-  amount: '1000000',
-  refundTo: '0x...',
-  refundType: QuoteRequest.refundType.ORIGIN_CHAIN,
-  recipient: '0x...',
-  recipientType: QuoteRequest.recipientType.DESTINATION_CHAIN,
-  depositType: QuoteRequest.depositType.ORIGIN_CHAIN,
-  deadline: new Date(Date.now() + 3600_000).toISOString(),
-});
+```typescript
+oneclickParams: {
+  appFees: [
+    {
+      recipient: "yourapp.near",
+      fee: 100, // 1%
+    }
+  ]
+}
 ```
 
-For full cross-chain bridge flows (multiple services, wallet-signed sends), use **`BridgeSFA`** instead.
+Fee units:
 
----
+| Value | Fee |
+|-------|-----|
+| `100` | `1.00%` |
+| `50` | `0.50%` |
+| `10` | `0.10%` |
+| `1` | `0.01%` |
 
-## BridgeSFA — full cross-chain flows
+#### swapType
 
-Install `@stableflow/bridges` with `@stableflow/core` and at least one `@stableflow/wallet-*` package.
+| Value | Description | Common use |
+|-------|-------------|------------|
+| `EXACT_INPUT` | Fixed input amount, quote calculates output. | User enters how much to send. |
+| `EXACT_OUTPUT` | Fixed output amount, quote calculates required input and refunds excess. | Hyperliquid deposit or fixed destination amount. |
+| `FLEX_INPUT` | Flexible input amount. | Partial or variable deposit flows. |
 
-### Services
+#### isProxy
 
-Routes are identified by `Service` from `@stableflow/core`:
+`isProxy` only applies to OneClick routes and mixed routes that contain OneClick. When enabled, OneClick uses proxy deposit address mode, which makes deposit addresses more stable. This is useful when institutions, exchanges, custodians, or enterprise wallets need transfer allowlists.
 
-| `Service` | Description |
-|-----------|-------------|
-| `oneclick` | NEAR Intents / OneClick |
-| `usdt0` | LayerZero USDT0 (USD₮0) |
-| `cctp` | Circle CCTP |
-| `fraxzero` | FraxZero |
-| `usdt0-oneclick` / `oneclick-usdt0` | Composite USDT0 ↔ OneClick |
-| `fraxzero-oneclick` / `oneclick-fraxzero` | Composite FraxZero ↔ OneClick |
-| `native` | Native transfers |
+The tradeoff is higher execution cost on some chains. For example, Tron transfers can cost more than 50% extra gas. Prefer `isProxy: true` for allowlist or compliance flows, and leave it off for ordinary users when lowest gas cost matters more. In production, compare fees with `dry: true`, then re-quote with the same `isProxy` value and `dry: false` before execution.
 
-`BridgeSFA.getAllQuote` discovers eligible services from token metadata (`fromToken.services`, `toToken.services`) and composite rules in `packages/bridges/src/sfa.ts`.
+### 3.3 approve
 
-### `getAllQuote`
+`approve` is required when a route needs token allowance before it can transfer an ERC-20 or similar token from the user's wallet. A quote may return `needApprove: true` and `approveSpender`.
 
-```ts
-import { BridgeSFA, type GetAllQuoteParams } from '@stableflow/bridges';
-import { tokens } from '@stableflow/core';
+Use `getQuoteModes` to determine the amount to approve:
 
-const params: GetAllQuoteParams = {
-  dry: true,
-  prices: { ETH: '3000', SOL: '120', BNB: '900' }, // USD prices for fee display
-  fromToken, // TokenConfig from tokens registry
-  toToken,
-  wallet: sourceWallet.wallet,
-  recipient: '0xRecipient...',
-  refundTo: '0xRefund...',
-  amountWei: '1000000',
-  slippageTolerance: 0.5, // percent; multiplied by 100 for OneClick routes
-  minInputAmount: '1',
-  oneclickParams: {
-    appFees: [{ recipient: 'your.near', fee: 100 }],
-    swapType: 'EXACT_INPUT',
-  },
-  // Optional: restrict or disable routes
-  // singleService: Service.OneClick,
-  // disabledServices: [Service.CCTP],
-  // EVM helper wallet for cross-vm permits
-  evmWallet: evmAdapter.wallet,
-  evmAddress: '0x...',
-};
-
-const results = await BridgeSFA.getAllQuote(params);
-// { serviceType, quote?, error? }[]
-```
-
-**`prices`** — map of native gas token symbols to USD price strings; used when estimating fees in quotes.
-
-**`oneclickParams`** — preferred over deprecated top-level `appFees`. Slippage for OneClick routes is `slippageTolerance * 100` (basis points) inside `BridgeSFA`.
-
-### `send`
-
-```ts
-import { BridgeSFA } from '@stableflow/bridges';
-import { getQuoteModes } from '@stableflow/bridges';
+```typescript
+import Big from "big.js";
+import { getQuoteModes } from "@stableflow/bridges";
 
 const { isExactOutput } = getQuoteModes({
   quoteData: quote,
   bridgeStore: { quoteDataService: serviceType },
 });
 
-// Handle quote.needApprove via wallet.approve(...) first
+const amountWei = isExactOutput
+  ? quote.quote?.minAmountIn
+  : quote.quoteParam.amountWei;
+```
 
-const txHash = await BridgeSFA.send(serviceType, {
-  wallet: sourceWallet.wallet,
+Then call the wallet adapter:
+
+```typescript
+if (quote.needApprove && wallet.approve) {
+  const approveRes = await wallet.approve({
+    contractAddress: quote.quoteParam.fromToken.contractAddress,
+    spender: quote.approveSpender,
+    amountWei,
+    isDetails: true,
+  });
+
+  if (!approveRes.success) {
+    throw new Error(approveRes.message || "Approve failed");
+  }
+}
+```
+
+`@stableflow/wallet-evm` supports `isDetails: true` and returns `success`, `data.txHash`, `data.blockNumber`, `data.confirmations`, and `message`.
+
+For some Ethereum ERC-20 tokens, changing allowance from one non-zero value to another non-zero value can fail. The full demo first approves `0` when an existing allowance is greater than `0`, then approves the required amount. The `dry: true` quote stage skips on-chain allowance checks, so check `needApprove` again on the final `dry: false` quote before sending.
+
+After approve succeeds, re-quote or refresh the final quote because allowance and gas estimates may have changed. You can also call `ServiceMap[serviceType].estimateTransaction` to refresh the fee estimate.
+
+### 3.4 permit signature
+
+Permit signatures let users authorize token spending by signing EIP-712 typed data instead of sending an approve transaction.
+
+#### BridgeSFA
+
+When `quote.needPermit === true`, `BridgeSFA.send` requires `permitSignature`.
+
+```typescript
+const signature = await evmWallet.signTypedData({
+  fromToken: quote.permitToken,
+  amountWei: quote.permitAmountWei,
+  spender: quote.permitSpender,
+});
+
+const permitSignature = {
+  amount: signature.value,
+  deadline: signature.deadline,
+  nonce: signature.nonce,
+  owner: signature.owner,
+  r: signature.r,
+  s: signature.s,
+  v: signature.v,
+  ...quote.permitAdditionalData,
+};
+
+await BridgeSFA.send(serviceType, {
+  wallet: fromWallet.wallet,
   quote,
-  permitSignature, // required when quote.needPermit
+  permitSignature,
 });
 ```
 
-`send` delegates to `ServiceMap[serviceType].send`, then best-effort reports the trade via `POST /v0/trade/add`.
+The EVM wallet adapter builds the EIP-712 `Permit`, reads `nonces(owner)`, signs typed data, and verifies the signature with a static `permit` call. Mixed routes such as `OneClickUsdt0`, `OneClickFraxZero`, and `FraxZeroOneClick` are handled inside `BridgeSFA.send`; integrators only pass the normalized `permitSignature`.
 
-### `getStatus`
+#### Hyperliquid
 
-```ts
-import { BridgeSFA } from '@stableflow/bridges';
-import { Service, TransactionStatus } from '@stableflow/core';
+`Hyperliquid.deposit` generates the permit internally. The token is fixed to `HyperliuquidToToken` (Arbitrum USDC), and the spender is maintained inside `@stableflow/hyperliquid`.
 
-const { status, toChainTxHash } = await BridgeSFA.getStatus(Service.OneClick, {
-  depositAddress: quote.quote.depositAddress,
-});
+The caller must provide an `evmWallet` that supports `signTypedData`, an `evmWalletAddress` that owns the funds, and a working Arbitrum RPC through `getChainRpcUrl("arb")`.
 
-// status: TransactionStatus.Pending | Success | Failed
-```
+### 3.5 Error Handling
 
-Supported status normalization varies by service (OneClick, USDT0, CCTP) — see `packages/bridges/src/sfa.ts`.
+StableFlow errors fall into three layers: HTTP API errors, route quote/execution errors, and wallet or chain errors.
 
-### Low-level `ServiceMap`
+#### SFA
 
-For advanced use, import individual bridge modules through `ServiceMap`:
+HTTP methods throw `ApiError` for non-2xx responses. Important fields are `status`, `statusText`, `body`, `message`, and `url`.
 
-```ts
-import { ServiceMap } from '@stableflow/bridges';
-import { Service } from '@stableflow/core';
+| Method | HTTP error | Suggested handling |
+|--------|------------|-------------------|
+| `SFA.getQuote` | `400` | Validate assets, amount, deadline, recipient, and refund fields. |
+| `SFA.getQuote` | `401` | Check `OpenAPI.TOKEN`. |
+| `SFA.submitDepositTx` | `400` | Validate `txHash` and `depositAddress`. |
+| `SFA.getExecutionStatus` | `404` | Check that the quote was `dry: false` and that memo/address are correct. |
 
-const quote = await ServiceMap[Service.Usdt0].quote({ dry: true, ... });
-```
+`GetExecutionStatusResponse.status` is a business status, not an exception. Continue polling for `PENDING_DEPOSIT`, `KNOWN_DEPOSIT_TX`, `INCOMPLETE_DEPOSIT`, and `PROCESSING`. Treat `SUCCESS`, `REFUNDED`, and `FAILED` as terminal states.
 
----
+#### BridgeSFA
 
-## Wallet adapters
+`BridgeSFA.getAllQuote` can either throw or return route-level errors. It throws for invalid parameters, amounts lower than `minInputAmount`, and unsupported token pairs. It returns `{ serviceType, error }` when one route fails but other routes may still succeed.
 
-Each `@stableflow/wallet-*` package exports a class that wraps your chain SDK and exposes `.wallet: WalletConfig`.
+`BridgeSFA.send` may throw `Invalid service type`, `Quote data is required`, `Permit signature is required`, wallet rejection, insufficient balance, insufficient gas, or RPC errors. `BridgeSFA.getStatus` throws if the service type is invalid or status is unsupported; otherwise it returns normalized `TransactionStatus`.
 
-| Chain | Package | Export |
-|-------|---------|--------|
-| EVM | `@stableflow/wallet-evm` | `EVMWallet` |
-| Solana | `@stableflow/wallet-solana` | `SolanaWallet` |
-| NEAR | `@stableflow/wallet-near` | `NearWallet` |
-| TON | `@stableflow/wallet-ton` | `TonWallet` |
-| Aptos | `@stableflow/wallet-aptos` | `AptosWallet` |
-| Tron | `@stableflow/wallet-tron` | `TronWallet` |
-| Sui | `@stableflow/wallet-sui` | `SuiWallet` |
+#### Hyperliquid
 
-### Integration pattern
+`Hyperliquid.quote` usually returns `{ quote: null, error }` for quote failures or amounts below `HyperliuquidMinAmount`. `Hyperliquid.transfer` can fail because of wallet rejection, insufficient balance, network issues, or missing deposit address. `Hyperliquid.deposit` can fail when `signTypedData` is unavailable or rejected, Arbitrum RPC cannot read `nonces`, or the API response has `code !== 200`.
 
-```ts
-import { EVMWallet } from '@stableflow/wallet-evm';
-import { BridgeSFA } from '@stableflow/bridges';
-import { tokens } from '@stableflow/core';
-
-const evm = new EVMWallet(/* wagmi / ethers signer */);
-
-const fromToken = tokens.find((t) => t.chainName === 'Ethereum' && t.symbol === 'USDT');
-const toToken = tokens.find((t) => t.chainName === 'Arbitrum' && t.symbol === 'USDC');
-
-const quotes = await BridgeSFA.getAllQuote({
-  dry: true,
-  prices: { ETH: '3000' },
-  fromToken: fromToken!,
-  toToken: toToken!,
-  wallet: evm.wallet,
-  recipient: await evm.getAddress(),
-  refundTo: await evm.getAddress(),
-  amountWei: '100000000', // 100 USDT (6 decimals)
-  slippageTolerance: 0.5,
-  evmWallet: evm.wallet,
-  evmAddress: await evm.getAddress(),
-});
-```
-
-`WalletConfig` methods (approve, transfer, signTypedData, etc.) are invoked by bridge services during `quote` and `send`. See each package README for peer dependencies (LayerZero, Solana web3, TronWeb, etc.).
-
-### Token registry
-
-Use `tokens`, `usdtChains`, `usdcChains`, and related exports from `@stableflow/core` rather than hardcoding contract addresses. Each `TokenConfig` includes `services` — the list of `Service` values valid for that asset.
-
----
-
-## Hyperliquid
-
-`@stableflow/hyperliquid` deposits assets into Hyperliquid via OneClick into **USDC on Arbitrum**.
-
-### Constraints
-
-- **Minimum amount**: `HyperliuquidMinAmount` (export name retains a typo — use this exact symbol).
-- **Destination**: `HyperliuquidToToken` — USDC on Arbitrum.
-- **Sources**: `HyperliquidFromTokens` — all supported tokens except Arbitrum USDC.
-
-### End-to-end flow
-
-```ts
-import { Hyperliquid, HyperliuquidMinAmount } from '@stableflow/hyperliquid';
-import { EVMWallet } from '@stableflow/wallet-evm';
-import SolanaWallet from '@stableflow/wallet-solana';
-
-// 1) Quote (fast)
-let { quote, error } = await Hyperliquid.quote({
-  dry: true,
-  fromToken,
-  wallet: sourceWallet.wallet,
-  recipient: hyperliquidAddress,
-  refundTo: sourceAddress,
-  amountWei: '10000000',
-  slippageTolerance: 0.5,
-  prices: { SOL: '120' },
-});
-
-// 2) Final quote with deposit address
-({ quote, error } = await Hyperliquid.quote({ ...params, dry: false }));
-
-// 3) Source-chain transfer to deposit address
-const txhash = await Hyperliquid.transfer({
-  wallet: sourceWallet.wallet,
-  evmWallet: arbWallet.wallet,
-  evmWalletAddress: arbAddress,
-  quote,
-});
-
-// 4) Arbitrum USDC permit + register deposit
-const depositRes = await Hyperliquid.deposit({
-  wallet: sourceWallet.wallet,
-  evmWallet: arbWallet.wallet,
-  evmWalletAddress: arbAddress,
-  quote,
-  txhash,
-});
-
-const depositId = String(depositRes.data.depositId);
-
-// 5) Poll status
-const status = await Hyperliquid.getStatus({ depositId });
-// status.data.status: PROCESSING | SUCCESS | REFUNDED | FAILED
-```
-
-`transfer` uses `ServiceMap[Service.OneClick].send`. `deposit` signs an EIP-2612-style permit on Arbitrum USDC and posts to `POST /v0/deposit`.
-
----
-
-## Troubleshooting
-
-| Symptom | Likely cause | What to do |
-|---------|--------------|------------|
-| `401 Unauthorized` | Missing or invalid JWT | Set `OpenAPI.TOKEN` |
-| `Invalid parameters` from `getAllQuote` | Missing token, recipient, or amount below `minInputAmount` | Validate `TokenConfig`, addresses, `amountWei` |
-| `Token pair not supported` | Tokens not in `tokens` registry or no shared service | Pick supported pair from `tokens` / `SFA.getTokens()` |
-| All quotes return `error` | Route disabled, insufficient liquidity, or `dry: false` required | Try `dry: true` first; read per-route `error` strings |
-| `Permit signature is required` | Route needs EIP-2612 permit | Sign and pass `permitSignature` to `BridgeSFA.send` |
-| Slow quote UI | Using `dry: false` for every route | Use `dry: true` for comparison; `singleService` + `dry: false` for final quote |
-| RPC / gas failures | Default RPC unreachable | `setRpcUrls` with reliable endpoints |
-| Hyperliquid `Amount is too low` | Below `HyperliuquidMinAmount` | Increase `amountWei` |
-
----
-
-## Examples
-
-Runnable Vite apps under `examples/`. All `@stableflow/*` dependencies use the **beta** dist-tag.
-
-**demo-full** combines every bridge-chain wallet demo (EVM, Aptos, NEAR, Solana, Sui, TON, Tron). It does not replace **demo-simple** (SFA HTTP only) or **demo-hyperliquid**.
-
-| Example | README | Dev command | Port |
-|---------|--------|-------------|------|
-| EVM bridge | [demo-evm](examples/demo-evm/README.md) | `pnpm dev:demo-evm` | 3002 |
-| Aptos + EVM | [demo-aptos](examples/demo-aptos/README.md) | `pnpm dev:demo-aptos` | 3003 |
-| NEAR + EVM | [demo-near](examples/demo-near/README.md) | `pnpm dev:demo-near` | 3004 |
-| Solana + EVM | [demo-solana](examples/demo-solana/README.md) | `pnpm dev:demo-solana` | 3005 |
-| Sui + EVM | [demo-sui](examples/demo-sui/README.md) | `pnpm dev:demo-sui` | 3006 |
-| TON + EVM | [demo-ton](examples/demo-ton/README.md) | `pnpm dev:demo-ton` | 3007 |
-| Tron + EVM | [demo-tron](examples/demo-tron/README.md) | `pnpm dev:demo-tron` | 3008 |
-| SFA HTTP only | [demo-simple](examples/demo-simple/README.md) | `pnpm dev:demo-simple` | 3009 |
-| Hyperliquid | [demo-hyperliquid](examples/demo-hyperliquid/README.md) | `pnpm dev:demo-hyperliquid` | 3010 |
-| All bridge chains | [demo-full](examples/demo-full/README.md) | `pnpm dev:demo-full` | 3011 |
-
----
-
-## Package documentation
-
-- [Monorepo README](README.md)
-- [@stableflow/core](packages/core/README.md)
-- [@stableflow/bridges](packages/bridges/README.md)
-- [Wallet packages](packages/wallet-evm/README.md)
-- [@stableflow/hyperliquid](packages/hyperliquid/README.md)

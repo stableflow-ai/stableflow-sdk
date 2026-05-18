@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Big from 'big.js';
 import {
+  GetExecutionStatusResponse,
   QuoteRequest,
   SFA,
   type QuoteResponse,
@@ -101,6 +102,29 @@ function App() {
     setError(null);
     try {
       const res = await SFA.getExecutionStatus(depositAddress, quote?.quote?.depositMemo);
+      if (
+        [
+          GetExecutionStatusResponse.status.PENDING_DEPOSIT,
+          GetExecutionStatusResponse.status.KNOWN_DEPOSIT_TX,
+          GetExecutionStatusResponse.status.INCOMPLETE_DEPOSIT,
+        ].includes(res.status)
+      ) {
+        alert("Pending deposit, please wait for the transaction to be mined");
+      }
+      if (res.status === GetExecutionStatusResponse.status.PROCESSING) {
+        alert("Transaction is being processed");
+      }
+      if (res.status === GetExecutionStatusResponse.status.SUCCESS) {
+        alert("Transaction successful");
+      }
+      if (
+        [
+          GetExecutionStatusResponse.status.FAILED,
+          GetExecutionStatusResponse.status.REFUNDED,
+        ].includes(res.status)
+      ) {
+        alert("Transaction failed");
+      }
       setStatusJson(JSON.stringify(res, null, 2));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Status check failed');
@@ -173,6 +197,7 @@ function App() {
       const token = new Contract(originToken.contractAddress, ERC20_TRANSFER_ABI, signer);
       const tx = await token.transfer(depositAddress, amountIn);
       setDepositTxHash(tx.hash);
+      handleSubmitDeposit({ depositAddress, txHash: tx.hash });
       const receipt = await tx.wait();
       if (receipt?.hash) {
         setDepositTxHash(receipt.hash);
@@ -184,16 +209,15 @@ function App() {
     }
   };
 
-  const handleSubmitDeposit = async () => {
-    const depositAddress = quote?.quote?.depositAddress;
-    if (!depositAddress || !depositTxHash) {
+  const handleSubmitDeposit = async (params: { depositAddress: string; txHash: string; }) => {
+    if (!params.depositAddress || !params.txHash) {
       setError('depositAddress and tx hash are required');
       return;
     }
     setLoading(true);
     setError(null);
     try {
-      const res = await SFA.submitDepositTx({ txHash: depositTxHash, depositAddress });
+      const res = await SFA.submitDepositTx(params);
       setStatusJson(JSON.stringify(res, null, 2));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Submit deposit failed');
@@ -332,20 +356,6 @@ function App() {
           Poll status once
         </button>
         {statusJson && <pre className="pre">{statusJson}</pre>}
-      </section>
-
-      <section className="card">
-        <h2>5. Submit deposit tx (SFA.submitDepositTx)</h2>
-        <label>Source chain transaction hash</label>
-        <input
-          type="text"
-          value={depositTxHash}
-          onChange={(e) => setDepositTxHash(e.target.value)}
-          placeholder="0x..."
-        />
-        <button type="button" onClick={() => void handleSubmitDeposit()} disabled={loading}>
-          Submit deposit hash
-        </button>
       </section>
     </div>
   );

@@ -7,8 +7,8 @@ Minimal example: **`@stableflow/core`** for `SFA` HTTP API; **`ethers`** for a o
 1. `SFA.getTokens()` — filter to EVM `blockchain` values only
 2. `SFA.getQuote()` — with **dry run off**, obtain `depositAddress` and `amountIn`
 3. **Browser wallet** — connect MetaMask (or any `window.ethereum` wallet), switch to the correct EVM network when possible, call ERC20 `transfer(depositAddress, amountIn)`
-4. `SFA.getExecutionStatus()` — poll by `depositAddress`
-5. `SFA.submitDepositTx()` — optional; deposit hash is auto-filled after step 3
+4. `SFA.submitDepositTx()` — report deposit tx hash
+5. `SFA.getExecutionStatus()` — get transaction status by `depositAddress`
 
 ## Run
 

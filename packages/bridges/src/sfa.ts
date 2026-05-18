@@ -35,7 +35,7 @@ export interface GetAllQuoteParams {
   appFees?: { recipient: string; fee: number; }[];
   oneclickParams?: {
     appFees?: { recipient: string; fee: number; }[];
-    swapType?: "EXACT_INPUT" | "EXACT_OUTPUT";
+    swapType?: "EXACT_INPUT" | "EXACT_OUTPUT" | "FLEX_INPUT";
     isProxy?: boolean;
   };
 }
