@@ -1,6 +1,6 @@
 {
   "name": "@stableflow/wallet-evm",
-  "version": "3.0.0",
+  "version": "3.0.0-rc-184a042b9f-20260518",
   "description": "EVM wallet adapter for StableFlow SDK",
   "license": "MIT",
  "repository": {
