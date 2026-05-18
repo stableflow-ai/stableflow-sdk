@@ -7,8 +7,11 @@ import {
   HyperliuquidToToken,
   type HyperliquidQuoteParams,
 } from '@stableflow/hyperliquid';
-import type { TokenConfig } from '@stableflow/core';
+import { Service, type TokenConfig } from '@stableflow/core';
+import { TransactionHistory } from './components/TransactionHistory';
 import { useEvmWalletContext } from './providers/EvmWalletContext';
+import { useTransactionStore } from './stores/transactionStore';
+import { mapHyperliquidDepositStatus } from './utils/hyperliquidStatus';
 import './App.css';
 
 const fromTokens = HyperliquidFromTokens.filter((t) => t.chainType === 'evm');
@@ -28,6 +31,7 @@ const prices: Record<string, string> = {
 
 function App() {
   const { wallet, currentChainId, onSwitchChain } = useEvmWalletContext();
+  const addTransaction = useTransactionStore((s) => s.addTransaction);
   const [fromToken, setFromToken] = useState<TokenConfig | null>(null);
   const [amount, setAmount] = useState('');
   const [quote, setQuote] = useState<Record<string, unknown> | null>(null);
@@ -35,6 +39,7 @@ function App() {
   const [quoting, setQuoting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [statusMsg, setStatusMsg] = useState('');
+  const [historyOpen, setHistoryOpen] = useState(false);
 
   const minHuman = useMemo(
     () => Big(HyperliuquidMinAmount).div(10 ** toToken.decimals).toString(),
@@ -145,10 +150,40 @@ function App() {
       }
 
       const depositId = depositRes.data?.depositId;
+      const recordId =
+        depositId != null ? String(depositId) : txhash;
+
+      let depositStatus = mapHyperliquidDepositStatus(undefined);
+      let toChainTxHash: string | undefined;
+
       if (depositId != null) {
-        const status = await Hyperliquid.getStatus({ depositId: String(depositId) });
-        setStatusMsg(`Deposit ${depositId}: ${JSON.stringify(status.data)}`);
+        const statusRes = await Hyperliquid.getStatus({ depositId: String(depositId) });
+        depositStatus = mapHyperliquidDepositStatus(statusRes.data?.status);
+        toChainTxHash = statusRes.data?.txHash;
+        setStatusMsg(`Deposit ${depositId}: ${JSON.stringify(statusRes.data)}`);
       }
+
+      const quotePayload = finalQuote as {
+        quote?: { depositAddress?: string };
+      };
+
+      addTransaction({
+        id: recordId,
+        fromToken,
+        toToken,
+        fromChain: fromToken.chainName,
+        toChain: toToken.chainName,
+        amount,
+        fromAddress: wallet.account,
+        toAddress: wallet.account,
+        depositAddress: quotePayload.quote?.depositAddress,
+        txHash: txhash,
+        toChainTxHash,
+        status: depositStatus,
+        timestamp: Date.now(),
+        serviceType: Service.OneClick,
+      });
+
       alert('Deposit submitted. Check status below.');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Transfer failed');
@@ -172,9 +207,43 @@ function App() {
   return (
     <div className="app">
       <header className="app-header">
-        <h1>StableFlow Demo-Hyperliquid</h1>
+        <div className="app-header-top">
+          <h1>StableFlow Demo-Hyperliquid</h1>
+          <button
+            type="button"
+            className="btn-history"
+            onClick={() => setHistoryOpen(true)}
+          >
+            History
+          </button>
+        </div>
         <p>Deposit EVM assets to Hyperliquid via @stableflow/hyperliquid</p>
       </header>
+      {historyOpen && (
+        <div
+          className="history-modal-overlay"
+          onClick={() => setHistoryOpen(false)}
+          role="presentation"
+        >
+          <div
+            className="history-modal-panel"
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="history-modal-title"
+          >
+            <button
+              type="button"
+              className="history-modal-close"
+              onClick={() => setHistoryOpen(false)}
+              aria-label="Close"
+            >
+              ×
+            </button>
+            <TransactionHistory />
+          </div>
+        </div>
+      )}
       <main className="app-main bridge-form">
         {error && <div className="error-message break-all">{error}</div>}
         <div className="form-section">
