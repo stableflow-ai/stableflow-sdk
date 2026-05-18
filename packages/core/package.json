@@ -1,6 +1,6 @@
 {
   "name": "@stableflow/core",
-  "version": "3.0.0-rc-184a042b9f-20260518",
+  "version": "3.0.0-rc-a593caa0fe-20260518",
   "description": "StableFlow core: HTTP client, models, bridge services, and chain-agnostic APIs",
   "license": "MIT",
   "repository": {

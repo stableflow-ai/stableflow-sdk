@@ -1,6 +1,6 @@
 {
   "name": "@stableflow/wallet-near",
-  "version": "3.0.0-rc-184a042b9f-20260518",
+  "version": "3.0.0-rc-a593caa0fe-20260518",
   "description": "NEAR wallet adapter for StableFlow SDK",
   "license": "MIT",
   "repository": {
