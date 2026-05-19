@@ -367,6 +367,11 @@ export class BridgeSFA {
         reportData.deposit_address = _depositAddress;
       }
 
+      if (serviceType === Service.Native) {
+        const quoteIds = quote?.orders?.map?.((order: any) => order.quoteId) || [];
+        reportData.quoteIds = quoteIds;
+      }
+
       csl("BridgeSFA.send", "blue-400", "reportData: %o", reportData);
 
       submitOthersTx(reportData);
