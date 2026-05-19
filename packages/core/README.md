@@ -29,15 +29,17 @@ For full cross-chain bridge flows (multi-route quote, send, status), use [`@stab
 
 See `dist/index.d.ts` after running `pnpm build`.
 
-## Authentication (optional)
+## Authentication
 
-If your integration requires JWT authentication:
+Required for API access:
 
 ```ts
 import { OpenAPI } from '@stableflow/core';
 
 OpenAPI.TOKEN = 'your-jwt-token';
 ```
+
+**👉 [Apply for JWT Token](https://docs.google.com/forms/u/3/d/e/1FAIpQLSdTeV7UaZ1MiFxdJ2jH_PU60PIN3iqYJ1WXEOFY45TsAy6O5g/viewform)**
 
 ## RPC configuration (optional)
 
@@ -50,6 +52,16 @@ setRpcUrls({
   eth: ['https://your-eth-rpc.example.com'],
   arb: ['https://your-arb-rpc.example.com'],
 });
+```
+
+Use `getChainRpcUrl(chainKey)` to read the active URL or URLs for a chain.
+
+## Debug Logs (optional)
+
+```typescript
+import { OpenAPI } from "@stableflow/core";
+
+OpenAPI.DEBUG = true;
 ```
 
 ## See also
