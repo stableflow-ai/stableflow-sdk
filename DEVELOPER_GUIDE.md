@@ -88,6 +88,54 @@ Hyperliquid.deposit();
 Hyperliquid.getStatus();
 ```
 
+#### Wallet adapters (`stableflow-ai-sdk` → `@stableflow/wallet-*`)
+
+In v2.x, chain wallet classes were exported from the single `stableflow-ai-sdk` package. In v3.x they live in **per-chain packages**. Install only the adapters your app supports (for example `@stableflow/wallet-evm` for EVM-only flows).
+
+
+| v2.x import (`stableflow-ai-sdk`) | v3.x package                | v3.x import                                                |
+| --------------------------------- | --------------------------- | ---------------------------------------------------------- |
+| `EVMWallet`                       | `@stableflow/wallet-evm`    | `import { EVMWallet } from "@stableflow/wallet-evm"`       |
+| `SolanaWallet`                    | `@stableflow/wallet-solana` | `import { SolanaWallet } from "@stableflow/wallet-solana"` |
+| `NearWallet`                      | `@stableflow/wallet-near`   | `import { NearWallet } from "@stableflow/wallet-near"`     |
+| `TronWallet`                      | `@stableflow/wallet-tron`   | `import { TronWallet } from "@stableflow/wallet-tron"`     |
+| `AptosWallet`                     | `@stableflow/wallet-aptos`  | `import { AptosWallet } from "@stableflow/wallet-aptos"`   |
+| `SuiWallet`                       | `@stableflow/wallet-sui`    | `import { SuiWallet } from "@stableflow/wallet-sui"`       |
+| `TonWallet`                       | `@stableflow/wallet-ton`    | `import { TonWallet } from "@stableflow/wallet-ton"`       |
+
+
+**Before (v2.x):**
+
+```typescript
+import { EVMWallet } from "stableflow-ai-sdk";
+import { ethers } from "ethers";
+
+const provider = new ethers.BrowserProvider(window.ethereum);
+const signer = await provider.getSigner();
+const wallet = new EVMWallet(provider, signer);
+```
+
+**After (v3.x):**
+
+```bash
+pnpm add @stableflow/wallet-evm @stableflow/core @stableflow/bridges
+```
+
+```typescript
+import { EVMWallet } from "@stableflow/wallet-evm";
+import { ethers } from "ethers";
+
+const provider = new ethers.BrowserProvider(window.ethereum);
+const signer = await provider.getSigner();
+const wallet = new EVMWallet(provider, signer);
+
+const walletConfig = wallet;
+```
+
+The constructor APIs for each adapter are unchanged; only the import path and package install step differ. Each package also supports a default export (for example `import EVMWallet from "@stableflow/wallet-evm"`).
+
+For React demos, see the `examples/demo-*` apps (for example `[examples/demo-evm](examples/demo-evm)` for wagmi + `EVMWallet`, `[examples/demo-solana](examples/demo-solana)` for `SolanaWallet`).
+
 ## 2. Getting Started
 
 ### 2.1 Installation
@@ -399,13 +447,20 @@ VITE_WALLET_CONNECT_PROJECT_ID=your-walletconnect-project-id
 ```typescript
 import Big from "big.js";
 import { BridgeSFA, getQuoteModes, type GetAllQuoteParams } from "@stableflow/bridges";
+import { EVMWallet } from "@stableflow/wallet-evm";
+import { ethers } from "ethers";
+
+const provider = new ethers.BrowserProvider(window.ethereum);
+const signer = await provider.getSigner();
+const fromWalletAddress = await signer.getAddress();
+const fromWallet = new EVMWallet(provider, signer);
 
 const quoteRequest: GetAllQuoteParams = {
   dry: true,
   prices,
   fromToken,
   toToken,
-  wallet: fromWallet.wallet,
+  wallet: fromWallet,
   recipient,
   refundTo: fromWalletAddress,
   amountWei: Big(amount).times(10 ** fromToken.decimals).toFixed(0, 0),
@@ -434,7 +489,7 @@ const amountToApprove = isExactOutput
   : finalRoute.quote.quoteParam.amountWei;
 
 const txHash = await BridgeSFA.send(finalRoute.serviceType, {
-  wallet: fromWallet.wallet,
+  wallet: fromWallet,
   quote: finalRoute.quote,
   permitSignature,
 });
@@ -562,6 +617,13 @@ import {
   HyperliuquidMinAmount,
   HyperliuquidToToken,
 } from "@stableflow/hyperliquid";
+import { EVMWallet } from "@stableflow/wallet-evm";
+import { ethers } from "ethers";
+
+const provider = new ethers.BrowserProvider(window.ethereum);
+const signer = await provider.getSigner();
+const address = await signer.getAddress();
+const fromWallet = new EVMWallet(provider, signer);
 
 const fromToken = HyperliquidFromTokens.find((token) => token.chainType === "evm");
 const amountWei = Big(amount).times(10 ** fromToken.decimals).toFixed(0, 0);
@@ -572,9 +634,10 @@ if (Big(amountWei).lt(HyperliuquidMinAmount)) {
 
 const quoteParams = {
   slippageTolerance: 0.5,
-  refundTo: wallet.account,
-  recipient: wallet.account,
-  wallet: wallet.wallet,
+  refundTo: address,
+  // This example only shows usage for EVM chains; for other chains, pass the destination chain address.
+  recipient: address,
+  wallet: fromWallet,
   fromToken,
   prices,
   amountWei,
@@ -594,17 +657,17 @@ const finalQuote = await Hyperliquid.quote({
 if (!finalQuote.quote) throw new Error(finalQuote.error || "No quote");
 
 const txhash = await Hyperliquid.transfer({
-  wallet: wallet.wallet,
-  evmWallet: wallet.wallet,
-  evmWalletAddress: wallet.account,
+  wallet: fromWallet,
+  evmWallet: fromWallet,
+  evmWalletAddress: address,
   quote: finalQuote.quote,
 });
 
 const depositRes = await Hyperliquid.deposit({
   txhash,
-  wallet: wallet.wallet,
-  evmWallet: wallet.wallet,
-  evmWalletAddress: wallet.account,
+  wallet: fromWallet,
+  evmWallet: fromWallet,
+  evmWalletAddress: address,
   quote: finalQuote.quote,
 });
 
@@ -696,6 +759,13 @@ For OneClick HTTP quotes, `QuoteRequest.dry` behaves as follows:
 
 ```typescript
 import { BridgeSFA, ServiceMap } from "@stableflow/bridges";
+import { EVMWallet } from "@stableflow/wallet-evm";
+import { ethers } from "ethers";
+
+const provider = new ethers.BrowserProvider(window.ethereum);
+const signer = await provider.getSigner();
+const address = await signer.getAddress();
+const fromWallet = new EVMWallet(provider, signer);
 
 const previews = await BridgeSFA.getAllQuote({
   ...params,
@@ -713,7 +783,7 @@ const [final] = await BridgeSFA.getAllQuote({
 });
 
 const txHash = await BridgeSFA.send(best.serviceType, {
-  wallet: wallet.wallet,
+  wallet: fromWallet,
   quote: final.quote,
 });
 ```
@@ -832,7 +902,7 @@ const permitSignature = {
 };
 
 await BridgeSFA.send(serviceType, {
-  wallet: fromWallet.wallet,
+  wallet: fromWallet,
   quote,
   permitSignature,
 });

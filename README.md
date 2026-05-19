@@ -108,8 +108,11 @@ From the monorepo root:
 import { BridgeSFA } from '@stableflow/bridges';
 import { tokens } from '@stableflow/core';
 import { EVMWallet } from '@stableflow/wallet-evm';
+import { ethers } from "ethers";
 
-const wallet = new EVMWallet(/* your signer */);
+const provider = new ethers.BrowserProvider(window.ethereum);
+const signer = await provider.getSigner();
+const wallet = new EVMWallet(provider, signer);
 const fromToken = tokens.find((t) => t.chainName === 'Ethereum' && t.symbol === 'USDT')!;
 const toToken = tokens.find((t) => t.chainName === 'Arbitrum' && t.symbol === 'USDC')!;
 
