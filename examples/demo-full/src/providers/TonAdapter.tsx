@@ -4,7 +4,7 @@ import TonWallet from '@stableflow/wallet-ton';
 import useWalletsStore from '@/stores/use-wallets';
 import { useDebounceFn } from '@/hooks/useDebounceFn';
 
-const manifestUrl = `${import.meta.env.BASE_URL}tonconnect-manifest.json`;
+const manifestUrl = `https://stableflow-sdk-demo-full.pages.dev/tonconnect-manifest.json`;
 const apiKey = import.meta.env.VITE_TON_RPC_API_KEY;
 
 function TonWalletSync() {
