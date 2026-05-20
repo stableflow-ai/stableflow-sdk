@@ -1,6 +1,6 @@
 {
   "name": "@stableflow/hyperliquid",
-  "version": "3.0.0-rc-b2a7f262a6-20260519",
+  "version": "3.0.0-rc-b42c101df2-20260520",
   "description": "Hyperliquid helpers for StableFlow SDK",
   "license": "MIT",
   "repository": {
