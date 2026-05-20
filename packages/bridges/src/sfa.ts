@@ -27,8 +27,8 @@ export interface GetAllQuoteParams {
   fromToken: TokenConfig;
   toToken: TokenConfig;
   wallet: WalletConfig;
-  evmWallet?: WalletConfig;
-  evmAddress?: string;
+  evmWallet?: WalletConfig | null;
+  evmAddress?: string | null;
   recipient: string;
   refundTo: string;
   amountWei: string;

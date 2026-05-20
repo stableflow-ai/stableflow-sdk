@@ -1,17 +1,17 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { useTransactionStore } from './stores/transactionStore';
 import { ChainSelector } from './components/ChainSelector';
 import { QuoteResult } from './components/QuoteResult';
 import { WalletConnector } from './components/WalletConnector';
 import { TransactionHistory } from './components/TransactionHistory';
 import { AnimatedGradientBackdrop } from './components/AnimatedGradientBackdrop';
-import { getBridgeTokens, getChainByKey } from './utils/chains';
+import { getBridgeTokens } from './utils/chains';
 import type { QuoteResult as QuoteResultType, Transaction } from './types';
 import { useWallet } from './hooks/useWallet';
 import Big from 'big.js';
 import './App.css';
-import type { TokenConfig } from '@stableflow/core';
-import { Csl } from '@stableflow/core';
+import type { TokenConfig, WalletConfig } from '@stableflow/core';
+import { Csl, usdt0Chains } from '@stableflow/core';
 import { BridgeSFA, getQuoteModes, type GetAllQuoteParams } from '@stableflow/bridges';
 import useWalletsStore from './stores/use-wallets';
 import { useSwitchChain } from 'wagmi';
@@ -34,8 +34,9 @@ const prices: Record<string, string> = {
 const bridgeTokens = getBridgeTokens();
 
 function App() {
-  const [fromChain, setFromChain] = useState<string>();
-  const [toChain, setToChain] = useState<string>();
+  const [fromToken, setFromToken] = useState<TokenConfig>();
+  const [toToken, setToToken] = useState<TokenConfig>();
+
   const [amount, setAmount] = useState<string>('');
   const [toAddress, setToAddress] = useState<string>('');
   const [fromWalletAddress, setFromWalletAddress] = useState<string | null>(null);
@@ -51,19 +52,16 @@ function App() {
   const cs = new Csl(true);
   const csl = cs.log;
 
-  const [fromChainConfig, toChainConfig] = useMemo((): [TokenConfig | undefined, TokenConfig | undefined] => {
-    return [fromChain ? getChainByKey(fromChain) : undefined, toChain ? getChainByKey(toChain) : undefined];
-  }, [fromChain, toChain]);
-
-  const { wallet: fromWallet, switchNetwork } = useWallet(fromChainConfig ?? null);
+  const { wallet: fromWallet, switchNetwork } = useWallet(fromToken ?? null);
+  const { wallet: evmWallet, address: evmAddress, connect: connectEVM, disconnect: disconnectEVM } = useWallet(usdt0Chains["arb"]);
 
   const recipient =
     (toAddress || toWalletAddress || fromWalletAddress || '').trim() || fromWalletAddress || '';
 
   const handleGetQuote = async () => {
     if (
-      !fromChainConfig ||
-      !toChainConfig ||
+      !fromToken ||
+      !toToken ||
       !amount ||
       !fromWalletAddress ||
       !recipient ||
@@ -83,13 +81,13 @@ function App() {
         dry: false,
         minInputAmount: '0.1',
         prices,
-        fromToken: fromChainConfig,
-        toToken: toChainConfig,
-        wallet: fromWallet.wallet as GetAllQuoteParams['wallet'],
+        fromToken: fromToken,
+        toToken: toToken,
+        wallet: fromWallet.wallet as WalletConfig,
         recipient,
         refundTo: fromWalletAddress,
         amountWei: Big(amount)
-          .times(10 ** fromChainConfig.decimals)
+          .times(10 ** fromToken.decimals)
           .toString(),
         slippageTolerance: 0.5,
         oneclickParams: {
@@ -100,12 +98,8 @@ function App() {
             },
           ],
         },
-        ...(fromChainConfig.chainType === 'evm' && fromWallet?.wallet
-          ? {
-            evmWallet: fromWallet.wallet as GetAllQuoteParams['wallet'],
-            evmAddress: fromWalletAddress,
-          }
-          : {}),
+        evmWallet: evmWallet?.wallet as WalletConfig,
+        evmAddress: evmAddress ?? void 0,
       };
 
       const response = await BridgeSFA.getAllQuote(quoteRequest);
@@ -189,7 +183,7 @@ function App() {
   };
 
   const handleSubmitTransaction = async () => {
-    if (!selectedQuote || !fromChainConfig || !toChainConfig || !fromWalletAddress || !fromWallet?.wallet) {
+    if (!selectedQuote || !fromToken || !toToken || !fromWalletAddress || !fromWallet?.wallet) {
       setError('Please select a quote and ensure wallet is connected');
       return;
     }
@@ -229,7 +223,7 @@ function App() {
       const permitSignature = await getPermitSignature(quote);
 
       if (quote.needApprove && wallet.allowance && wallet.approve) {
-        if (fromChainConfig.chainName === 'Ethereum') {
+        if (fromToken.chainName === 'Ethereum') {
           const allowanceResult = await wallet.allowance({
             contractAddress: quote.quoteParam.fromToken.contractAddress,
             spender: quote.approveSpender,
@@ -268,10 +262,10 @@ function App() {
 
       const tx: Transaction = {
         id: txHash,
-        fromToken: fromChainConfig,
-        toToken: toChainConfig,
-        fromChain: fromChainConfig.chainName,
-        toChain: toChainConfig.chainName,
+        fromToken: fromToken,
+        toToken: toToken,
+        fromChain: fromToken.chainName,
+        toChain: toToken.chainName,
         txHash,
         toChainTxHash: '',
         amount,
@@ -301,7 +295,7 @@ function App() {
   const [fromChainBalanceLoading, setFromChainBalanceLoading] = useState(false);
   const getFromChainBalance = async (_fromChainConfig?: TokenConfig) => {
     setFromChainBalanceLoading(true);
-    const cfg = _fromChainConfig || fromChainConfig;
+    const cfg = _fromChainConfig || fromToken;
     const sdkWallet = fromWallet?.wallet as { getBalance?: (token: TokenConfig, account: string) => Promise<string> };
     if (!cfg || !fromWallet?.account || !sdkWallet?.getBalance) {
       setFromChainBalanceLoading(false);
@@ -321,15 +315,46 @@ function App() {
     setFromChainBalanceLoading(false);
   };
 
-  const amountLabel = fromChainConfig?.symbol ? `Amount (${fromChainConfig.symbol})` : 'Amount';
+  const amountLabel = fromToken?.symbol ? `Amount (${fromToken.symbol})` : 'Amount';
 
   return (
     <>
       <AnimatedGradientBackdrop />
       <div className="app">
         <header className="app-header">
-          <h1>StableFlow Demo-Full</h1>
-          <p>All-chain cross-chain bridge (EVM, Aptos, NEAR, Solana, Sui, TON, Tron)</p>
+          <div>
+            <div className="quote-header">
+              <img
+                src="/logo-stableflow.svg"
+                alt="StableFlow"
+                className="logo"
+              />
+              {
+                evmAddress ? (
+                  <div className="flex items-center gap-2">
+                    <div className="">{evmAddress.slice(0, 4)}...{evmAddress.slice(-6)}</div>
+                    <button
+                      type="button"
+                      className="disconnect-button"
+                      onClick={disconnectEVM}
+                    >
+                      Disconnect
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    className="connect-button"
+                    onClick={connectEVM}
+                  >
+                    Connect EVM Wallet
+                  </button>
+                )
+              }
+            </div>
+            <h1>StableFlow Demo-Full</h1>
+            <p>All-chain cross-chain bridge (EVM, Aptos, NEAR, Solana, Sui, TON, Tron)</p>
+          </div>
         </header>
 
         <main className="app-main">
@@ -338,23 +363,22 @@ function App() {
               <h2>From</h2>
               <ChainSelector
                 label="From Chain"
-                value={fromChain}
+                value={fromToken}
                 tokens={bridgeTokens}
                 placeholder="Select source chain"
-                onChange={(_fromContractAddress) => {
-                  const cfg = getChainByKey(_fromContractAddress);
-                  if (cfg?.chainType === 'evm') {
-                    switchNetwork(cfg);
+                onChange={(_fromToken) => {
+                  if (_fromToken?.chainType === 'evm') {
+                    switchNetwork(_fromToken);
                   }
-                  setFromChain(_fromContractAddress);
-                  void getFromChainBalance(cfg);
+                  setFromToken(_fromToken);
+                  void getFromChainBalance(_fromToken);
                 }}
-                excludeContractAddress={toChain}
+                excludeToken={toToken}
               />
-              {fromChainConfig && (
+              {fromToken && (
                 <div className="quote-header">
                   <WalletConnector
-                    chain={fromChainConfig}
+                    chain={fromToken}
                     onAddressChange={(addr) => {
                       setFromWalletAddress(addr ?? null);
                       if (!addr) {
@@ -386,11 +410,11 @@ function App() {
               <h2>To</h2>
               <ChainSelector
                 label="To Chain"
-                value={toChain}
+                value={toToken}
                 tokens={bridgeTokens}
                 placeholder="Select destination chain"
-                onChange={setToChain}
-                excludeContractAddress={fromChain}
+                onChange={setToToken}
+                excludeToken={fromToken}
               />
               <div className="to-address-input">
                 <label>Recipient Address (optional)</label>
@@ -402,9 +426,9 @@ function App() {
                   className="input-address"
                 />
               </div>
-              {toChainConfig && (
+              {toToken && (
                 <WalletConnector
-                  chain={toChainConfig}
+                  chain={toToken}
                   onAddressChange={(addr) => setToWalletAddress(addr ?? null)}
                 />
               )}
@@ -429,7 +453,7 @@ function App() {
               <button
                 type="button"
                 onClick={() => void handleGetQuote()}
-                disabled={loading || !fromChain || !toChain || !amount || !fromWalletAddress}
+                disabled={loading || !fromToken || !toToken || !amount || !fromWalletAddress}
                 className="btn-primary"
               >
                 {loading ? 'Getting Quote...' : 'Get Quote'}

@@ -10,7 +10,7 @@ const TronAdapterProvider = lazy(() => import("./TronAdapter"));
 
 export default function WalletsProvider({ children }: { children: React.ReactNode }) {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<div className="text-center text-white w-screen h-screen flex items-center justify-center">Loading...</div>}>
       <RainbowProvider>
         <AptosAdapterProvider>
           <SolanaAdapterProvider>

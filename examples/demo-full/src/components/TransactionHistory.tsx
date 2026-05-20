@@ -45,7 +45,7 @@ export const TransactionHistory: React.FC = () => {
         <h2>Transaction History</h2>
       </div>
       <div className="transaction-list">
-        {transactions.map((tx) => (
+        {transactions.map((tx: any) => (
           <div key={tx.id} className="transaction-item">
             <div className="transaction-info">
               <div className="transaction-row">
@@ -80,6 +80,12 @@ export const TransactionHistory: React.FC = () => {
                 <div className="transaction-row">
                   <span className="label">Received Tx Hash:</span>
                   <code className="tx-hash">{tx.toChainTxHash}</code>
+                </div>
+              )}
+              {tx.depositAddress && (
+                <div className="transaction-row">
+                  <span className="label">depositAddress:</span>
+                  <code className="tx-hash">{tx.depositAddress}</code>
                 </div>
               )}
               <div className="transaction-row">
