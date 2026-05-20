@@ -13,5 +13,6 @@ export type ApiRequestOptions = {
   readonly mediaType?: string;
   readonly responseHeader?: string;
   readonly errors?: Record<number, string>;
+  readonly timeout?: number;
 };
 

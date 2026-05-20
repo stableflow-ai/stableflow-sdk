@@ -8,22 +8,12 @@ import type { SubmitDepositTxRequest } from '../models/SubmitDepositTxRequest';
 import type { SubmitDepositTxResponse } from '../models/SubmitDepositTxResponse';
 import type { TokenResponse } from '../models/TokenResponse';
 import type { CancelablePromise } from '../core/CancelablePromise';
-import { OpenAPI } from '../core/OpenAPI';
-import { request as __request } from '../core/request';
+import { getRequest, postRequest } from '../core/Fetch';
 
 export const submitOneclickDepositTx = (
   requestBody: SubmitDepositTxRequest,
 ): CancelablePromise<SubmitDepositTxResponse> => {
-  return __request(OpenAPI, {
-    method: 'POST',
-    url: '/v0/deposit/submit',
-    body: requestBody,
-    mediaType: 'application/json',
-    errors: {
-      400: `Bad Request - Invalid input data`,
-      401: `Unauthorized - JWT token is invalid`,
-    },
-  });
+  return postRequest("/v0/deposit/submit", requestBody);
 };
 
 /**
@@ -38,10 +28,7 @@ export class SFA {
    * Retrieves a list of tokens currently supported by the StableFlow AI API for asset swaps.
    */
   public static getTokens(): CancelablePromise<Array<TokenResponse>> {
-    return __request(OpenAPI, {
-      method: 'GET',
-      url: '/v0/tokens',
-    });
+    return getRequest("/v0/tokens");
   }
 
   /**
@@ -51,18 +38,9 @@ export class SFA {
   public static getQuote(
     requestBody: QuoteRequest,
   ): CancelablePromise<QuoteResponse> {
-    return __request(OpenAPI, {
-      method: 'POST',
-      url: '/v0/quote',
-      body: {
-        ...requestBody,
-        referral: "stableflow",
-      },
-      mediaType: 'application/json',
-      errors: {
-        400: `Bad Request - Invalid input data`,
-        401: `Unauthorized - JWT token is invalid`,
-      },
+    return postRequest("/v0/quote", {
+      ...requestBody,
+      referral: "stableflow",
     });
   }
 
@@ -74,17 +52,9 @@ export class SFA {
     depositAddress: string,
     depositMemo?: string,
   ): CancelablePromise<GetExecutionStatusResponse> {
-    return __request(OpenAPI, {
-      method: 'GET',
-      url: '/v0/status',
-      query: {
-        'depositAddress': depositAddress,
-        'depositMemo': depositMemo,
-      },
-      errors: {
-        401: `Unauthorized - JWT token is invalid`,
-        404: `Deposit address not found`,
-      },
+    return getRequest("/v0/status", {
+      'depositAddress': depositAddress,
+      'depositMemo': depositMemo,
     });
   }
 

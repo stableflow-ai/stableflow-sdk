@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useTransactionStore } from '../stores/transactionStore';
 import { BridgeSFA } from '@stableflow/bridges';
 import type { Transaction } from '../types';
+import { getRequest } from '@stableflow/core';
 
 export const TransactionHistory: React.FC = () => {
   const { transactions, updateTransaction } = useTransactionStore();
@@ -13,7 +14,7 @@ export const TransactionHistory: React.FC = () => {
     try {
       const response = await BridgeSFA.getStatus(transaction.serviceType!, {
         hash: transaction.id,
-        depositAddress: transaction.depositAddress,
+        quote: transaction.quote,
       });
       updateTransaction(transaction.id, {
         status: response.status as Transaction['status'],
@@ -28,10 +29,13 @@ export const TransactionHistory: React.FC = () => {
 
   if (transactions.length === 0) {
     return (
-      <div className="transaction-history">
-        <h2>Transaction History</h2>
-        <p className="empty-state">No transactions yet</p>
-      </div>
+      <>
+        <div className="transaction-history">
+          <h2>Transaction History</h2>
+          <p className="empty-state">No transactions yet</p>
+        </div>
+        <QueryTransactionStatusManual />
+      </>
     );
   }
 
@@ -96,6 +100,65 @@ export const TransactionHistory: React.FC = () => {
           </div>
         ))}
       </div>
+      <QueryTransactionStatusManual />
     </div>
   );
 };
+
+function QueryTransactionStatusManual() {
+  const [depositAddress, setDepositAddress] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<any>(null);
+
+  const queryStatus = async () => {
+    setLoading(true);
+    if (!depositAddress) {
+      setLoading(false);
+      return;
+    }
+    const result = await getRequest("/v0/trade", {
+      deposit_address: depositAddress,
+    });
+    setResult(result);
+    setLoading(false);
+  };
+
+  return (
+    <div className="transaction-list quote-result">
+      <h2>
+        Query Transaction Status Manually
+      </h2>
+      <input
+        type="text"
+        placeholder="Input deposit address or hash"
+        className="input-amount"
+        value={depositAddress}
+        onChange={(e) => setDepositAddress(e.target.value)}
+      />
+      <button
+        type="button"
+        className="btn-primary btn-sm"
+        disabled={loading}
+        onClick={queryStatus}
+      >
+        Query
+      </button>
+      <button
+        type="button"
+        className="btn-primary btn-sm"
+        disabled={loading}
+        onClick={() => {
+          setDepositAddress("");
+          setResult(null);
+        }}
+      >
+        Clear
+      </button>
+      <div className="">
+        <pre>
+          {JSON.stringify(result, null, 2)}
+        </pre>
+      </div>
+    </div>
+  );
+}

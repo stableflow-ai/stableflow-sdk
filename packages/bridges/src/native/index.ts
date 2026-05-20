@@ -1,10 +1,7 @@
 import { formatNumber } from "../utils/format-number";
-import type { AxiosInstance } from "axios";
-import axios from "axios";
 import Big from "big.js";
 import { NativeChains, NativeV4Routes } from "./contract";
-import { ExecTime } from "@stableflow/core";
-import { request } from "@stableflow/core";
+import { ExecTime, getRequest, GetStatusParams, GetStatusStableflowResponse } from "@stableflow/core";
 import { OpenAPI } from "@stableflow/core";
 import { Service } from "@stableflow/core";
 import { Csl } from "@stableflow/core";
@@ -55,16 +52,7 @@ export class NativeService {
     }
 
     execTime.breakpoint();
-    const response: any = await request(OpenAPI, {
-      method: 'GET',
-      url: "/v0" + quoteUri,
-      query: quoteParams,
-      mediaType: 'application/json',
-      errors: {
-        400: `Bad Request - Invalid input data`,
-        401: `Unauthorized - JWT token is invalid`,
-      },
-    });
+    const response: any = await getRequest(`/v0${quoteUri}`, quoteParams);
     execTime.log("Native API, response: %o", response);
 
     if (!response?.success) {
@@ -165,22 +153,9 @@ export class NativeService {
     return txResponse.hash;
   }
 
-  public async getStatus(params: {
-    hash?: string;
-  }) {
-    return request(OpenAPI, {
-      method: 'GET',
-      url: "/v0/trade",
-      query: {
-        deposit_address: params.hash,
-      },
-      headers: {
-        "Content-Type": "application/json"
-      },
-      errors: {
-        400: `Bad Request - Invalid input data`,
-        401: `Unauthorized - JWT token is invalid`,
-      },
+  public getStatus(params: GetStatusParams) {
+    return getRequest<GetStatusStableflowResponse>("/v0/trade", {
+      deposit_address: params.depositAddress,
     });
   }
 }

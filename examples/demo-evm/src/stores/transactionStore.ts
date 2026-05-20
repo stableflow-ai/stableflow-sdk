@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { createJSONStorage, persist } from 'zustand/middleware';
 import type { Transaction } from '../types';
 
 interface TransactionStore {
@@ -31,7 +31,12 @@ export const useTransactionStore = create<TransactionStore>()(
       clearTransactions: () => set({ transactions: [] }),
     }),
     {
-      name: 'stableflow-demo1-transactions',
+      name: 'stableflow-demo-evm-transactions',
+      storage: createJSONStorage(() => localStorage, {
+        replacer: (_key, value) =>
+          typeof value === 'bigint' ? value.toString() : value,
+      }),
+      partialize: (state) => ({ transactions: state.transactions }),
     }
   )
 );

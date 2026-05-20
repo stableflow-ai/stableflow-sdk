@@ -1,7 +1,6 @@
-import type { SubmitDepositTxResponse } from '@stableflow/core';
+import type { GetStatusParams, SubmitDepositTxResponse } from '@stableflow/core';
 import {
   OpenAPI,
-  request as __request,
   Service,
   ServiceBackend,
   TransactionStatus,
@@ -11,6 +10,10 @@ import {
   getRouteStatus,
   Csl,
   CancelablePromise,
+  StableflowStatus,
+  LayerZeroStatus,
+  OneClickStatus,
+  postRequest,
 } from '@stableflow/core';
 import Big from 'big.js';
 import { ServiceMap } from './service-map';
@@ -60,16 +63,7 @@ const submitOthersTx = (
     frax_zero_permit?: unknown;
   },
 ): CancelablePromise<SubmitDepositTxResponse> => {
-  return __request(OpenAPI, {
-    method: 'POST',
-    url: '/v0/trade/add',
-    body: requestBody,
-    mediaType: 'application/json',
-    errors: {
-      400: `Bad Request - Invalid input data`,
-      401: `Unauthorized - JWT token is invalid`,
-    },
-  });
+  return postRequest('/v0/trade/add', requestBody);
 };
 
 /**
@@ -385,10 +379,13 @@ export class BridgeSFA {
   public static async getStatus(
     serviceType: Service,
     params: {
-      depositAddress?: string;
-      hash?: string;
+      quote: any;
+      hash: string;
     }
   ): Promise<{ status: TransactionStatus; toChainTxHash?: string; }> {
+    const cs = new Csl(OpenAPI.DEBUG);
+    const csl = cs.log;
+
     const service = ServiceMap[serviceType];
     if (!service) {
       throw new Error(`Invalid service type: ${serviceType}`);
@@ -398,42 +395,76 @@ export class BridgeSFA {
       throw new Error(`Service ${serviceType} does not support getStatus method`);
     }
 
+    const { quote, hash } = params;
+
+    const getStatusParams: GetStatusParams = {};
+
+    const { isOneClickService, isQuoteParamDepositAddress } = getQuoteModes({
+      quoteData: quote,
+      bridgeStore: { quoteDataService: serviceType },
+    });
+
+    getStatusParams.depositAddress = isOneClickService ? quote.quote.depositAddress : "";
+    getStatusParams.hash = hash;
+
+    if (!isOneClickService) {
+      let _depositAddress = hash;
+      if (isQuoteParamDepositAddress) {
+        _depositAddress = quote?.quoteParam?.depositAddress || hash;
+      }
+      getStatusParams.depositAddress = _depositAddress;
+    }
+
+    csl("getStatus", "fuchsia-500", "getStatusParams: %o", getStatusParams);
+
     const result: { status: TransactionStatus; toChainTxHash?: string; } = { status: TransactionStatus.Pending };
-    const response = await service.getStatus(params);
+    const response = await service.getStatus(getStatusParams);
 
-    if (serviceType === Service.OneClick) {
-      const status = response.status;
-
-      if (status === "SUCCESS") {
+    if (([Service.CCTP, Service.Native] as Service[]).includes(serviceType)) {
+      const _result = response?.data;
+      const status = _result?.status;
+      if (status === StableflowStatus.SUCCESS) {
         result.status = TransactionStatus.Success;
-        result.toChainTxHash = response.swapDetails?.destinationChainTxHashes?.[0]?.hash;
+        result.toChainTxHash = _result?.to_tx_hash;
       }
-
-      if (status === "REFUNDED" || status === "FAILED") {
+      if (status === StableflowStatus.FAILED) {
         result.status = TransactionStatus.Failed;
       }
     }
 
-    if (serviceType === Service.Usdt0) {
-      const _result = response.data[0];
-      const status = _result.status.name;
-      if (status === "DELIVERED") {
+    if (([Service.Usdt0] as Service[]).includes(serviceType)) {
+      const _result = response?.data?.[0];
+      const status = _result?.status?.name;
+      if (status === LayerZeroStatus.DELIVERED) {
         result.status = TransactionStatus.Success;
-        result.toChainTxHash = _result.destination?.tx?.txHash;
+        result.toChainTxHash = _result?.destination?.tx?.txHash;
       }
-      if (status === "FAILED" || status === "BLOCKED") {
+      if ([LayerZeroStatus.FAILED, LayerZeroStatus.BLOCKED].includes(status)) {
         result.status = TransactionStatus.Failed;
       }
     }
 
-    if (serviceType === Service.CCTP) {
-      const _result = response.data;
-      const status = _result.status;
-      if (status === 1) {
+    if (([Service.OneClick] as Service[]).includes(serviceType)) {
+      const status = response?.status;
+
+      if (status === OneClickStatus.SUCCESS) {
         result.status = TransactionStatus.Success;
-        result.toChainTxHash = _result.to_tx_hash;
+        result.toChainTxHash = response?.swapDetails?.destinationChainTxHashes?.[0]?.hash;
       }
-      if (status === 2) {
+
+      if ([OneClickStatus.REFUNDED, OneClickStatus.FAILED].includes(status)) {
+        result.status = TransactionStatus.Failed;
+      }
+    }
+
+    if (([Service.OneClickUsdt0, Service.Usdt0OneClick, Service.FraxZero, Service.OneClickFraxZero, Service.FraxZeroOneClick] as Service[]).includes(serviceType)) {
+      const _result = response?.data;
+      const status = _result?.status;
+      if (status === StableflowStatus.SUCCESS) {
+        result.status = TransactionStatus.Success;
+        result.toChainTxHash = _result?.to_tx_hash;
+      }
+      if (status === StableflowStatus.FAILED) {
         result.status = TransactionStatus.Failed;
       }
     }

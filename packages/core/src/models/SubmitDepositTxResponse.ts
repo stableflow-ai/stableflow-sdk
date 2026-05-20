@@ -2,13 +2,14 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { QuoteResponse } from './QuoteResponse';
+import { OneClickStatus } from './ServiceStatus';
 import type { SwapDetails } from './SwapDetails';
 export type SubmitDepositTxResponse = {
   /**
    * Quote response from the original request
    */
   quoteResponse: QuoteResponse;
-  status: SubmitDepositTxResponse.status;
+  status: OneClickStatus;
   /**
    * Last time the state was updated
    */
@@ -18,15 +19,3 @@ export type SubmitDepositTxResponse = {
    */
   swapDetails: SwapDetails;
 };
-export namespace SubmitDepositTxResponse {
-  export enum status {
-    KNOWN_DEPOSIT_TX = 'KNOWN_DEPOSIT_TX',
-    PENDING_DEPOSIT = 'PENDING_DEPOSIT',
-    INCOMPLETE_DEPOSIT = 'INCOMPLETE_DEPOSIT',
-    PROCESSING = 'PROCESSING',
-    SUCCESS = 'SUCCESS',
-    REFUNDED = 'REFUNDED',
-    FAILED = 'FAILED',
-  }
-}
-

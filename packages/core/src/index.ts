@@ -5,11 +5,14 @@ export { CancelablePromise, CancelError } from './core/CancelablePromise';
 export { OpenAPI } from './core/OpenAPI';
 export type { OpenAPIConfig } from './core/OpenAPI';
 export { request } from './core/request';
+export { getRequest, postRequest } from './core/Fetch';
 export { SendType } from './core/Send';
 export { Service, ServiceBackend, ServiceType } from './core/Service';
 
 export type { AppFee } from './models/AppFee';
 export type { BadRequestResponse } from './models/BadRequestResponse';
+export { OneClickStatus, LayerZeroStatus, StableflowStatus } from './models/ServiceStatus';
+export { GetStatusParams, GetStatusStableflowResponse } from './models/GetStatusParams';
 export { GetExecutionStatusResponse } from './models/GetExecutionStatusResponse';
 export type { Quote } from './models/Quote';
 export { QuoteRequest } from './models/QuoteRequest';

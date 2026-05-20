@@ -1,9 +1,9 @@
 import {
-  request as __request,
   usdcChains,
   Service,
   tokens,
-  OpenAPI,
+  postRequest,
+  getRequest,
 } from '@stableflow/core';
 import { formatQuoteError, ServiceMap } from '@stableflow/bridges';
 import type { WalletConfig, TokenConfig } from '@stableflow/core';
@@ -96,32 +96,14 @@ class HyperliquidService {
       permit: permitParams,
     };
 
-    const depositRes = await __request(OpenAPI, {
-      method: "POST",
-      url: "/v0/deposit",
-      body: depositParams,
-      mediaType: "application/json",
-      errors: {
-        400: `Bad Request - Invalid input data`,
-        401: `Unauthorized - JWT token is invalid`,
-      },
-    });
+    const depositRes = await postRequest("/v0/deposit", depositParams);
 
     return depositRes as HyperliquidDepositResponse;
   }
 
-  public async getStatus(params: HyperliquidGetStatusParams): Promise<HyperliquidDepositStatusResponse> {
-    return __request(OpenAPI, {
-      method: "GET",
-      url: "/v0/deposit/status",
-      query: {
-        depositId: params.depositId,
-      },
-      mediaType: "application/json",
-      errors: {
-        400: `Bad Request - Invalid input data`,
-        401: `Unauthorized - JWT token is invalid`,
-      },
+  public getStatus(params: HyperliquidGetStatusParams): Promise<HyperliquidDepositStatusResponse> {
+    return getRequest("/v0/deposit/status", {
+      depositId: params.depositId,
     });
   }
 

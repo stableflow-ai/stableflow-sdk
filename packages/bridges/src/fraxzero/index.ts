@@ -3,7 +3,7 @@ import { FRAXZERO_ABI } from "./contract";
 import { calculateEstimateTime } from "../utils";
 import { Usdt0Service } from "../usdt0";
 import { OFT_ABI } from "../usdt0/contract";
-import { ExecTime } from "@stableflow/core";
+import { ExecTime, getRequest, GetStatusParams, GetStatusStableflowResponse } from "@stableflow/core";
 import { OpenAPI } from "@stableflow/core";
 import { Service } from "@stableflow/core";
 
@@ -83,6 +83,12 @@ export class FraxZeroService extends Usdt0Service {
     execTime.logTotal("FraxZeroService.quote");
 
     return result;
+  }
+
+  public getStatus(params: GetStatusParams) {
+    return getRequest<GetStatusStableflowResponse>("/v0/trade", {
+      deposit_address: params.depositAddress,
+    });
   }
 }
 

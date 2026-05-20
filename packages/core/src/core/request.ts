@@ -218,6 +218,7 @@ export const sendRequest = async <T>(
     withCredentials: config.WITH_CREDENTIALS,
     withXSRFToken: config.CREDENTIALS === 'include' ? config.WITH_CREDENTIALS : false,
     cancelToken: source.token,
+    timeout: options.timeout,
   };
 
   onCancel(() => source.cancel('The user aborted a request.'));
@@ -350,4 +351,3 @@ export const request = <T>(config: OpenAPIConfig, options: ApiRequestOptions, ax
     }
   });
 };
-

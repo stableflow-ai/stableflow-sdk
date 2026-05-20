@@ -5,7 +5,7 @@ import { MIDDLE_CHAIN_LAYERZERO_EXECUTOR, MIDDLE_CHAIN_REFOUND_ADDRESS, MIDDLE_T
 import { ExecTime } from "@stableflow/core";
 import { OpenAPI } from "@stableflow/core";
 import { numberRemoveEndZero } from "@stableflow/core";
-import { getPrice } from "@stableflow/core";
+import { getPrice, GetStatusParams, getRequest, GetStatusStableflowResponse } from "@stableflow/core";
 
 export class OneClickUsdt0Service {
   public async quote(params: any) {
@@ -167,8 +167,10 @@ export class OneClickUsdt0Service {
     return oneClickService.send(params);
   }
 
-  public async getStatus(params: any) {
-    return oneClickService.getStatus(params);
+  public getStatus(params: GetStatusParams) {
+    return getRequest<GetStatusStableflowResponse>("/v0/trade", {
+      deposit_address: params.depositAddress,
+    });
   }
 }
 

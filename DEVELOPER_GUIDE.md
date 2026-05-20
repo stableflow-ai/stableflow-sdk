@@ -231,7 +231,7 @@ import {
   SFA,
   type QuoteResponse,
   type TokenResponse,
-  GetExecutionStatusResponse,
+  OneClickStatus,
 } from "@stableflow/core";
 
 const [tokens, setTokens] = useState<TokenResponse[]>([]);
@@ -275,21 +275,21 @@ await SFA.submitDepositTx({
 const status = await SFA.getExecutionStatus(quoteRes.quote.depositAddress, quoteRes.quote.depositMemo);
 if (
   [
-    GetExecutionStatusResponse.status.PENDING_DEPOSIT,
-    GetExecutionStatusResponse.status.KNOWN_DEPOSIT_TX,
-    GetExecutionStatusResponse.status.INCOMPLETE_DEPOSIT,
-    GetExecutionStatusResponse.status.PROCESSING,
+    OneClickStatus.PENDING_DEPOSIT,
+    OneClickStatus.KNOWN_DEPOSIT_TX,
+    OneClickStatus.INCOMPLETE_DEPOSIT,
+    OneClickStatus.PROCESSING,
   ].includes(status.status)
 ) {
   // Still processing.
 }
-if (status.status === GetExecutionStatusResponse.status.SUCCESS) {
+if (status.status === OneClickStatus.SUCCESS) {
   // Success.
 }
 if (
   [
-    GetExecutionStatusResponse.status.FAILED,
-    GetExecutionStatusResponse.status.REFUNDED,
+    OneClickStatus.FAILED,
+    OneClickStatus.REFUNDED,
   ].includes(status.status)
 ) {
   // Failed or refunded.
@@ -442,7 +442,7 @@ VITE_WALLET_CONNECT_PROJECT_ID=your-walletconnect-project-id
 5. Filter routes where `quote && !error`, then choose by output, fees, time estimate, or business preference.
 6. If `quote.needPermit`, generate a permit signature. If `quote.needApprove`, approve first.
 7. Call `BridgeSFA.send(serviceType, { wallet, quote, permitSignature })`.
-8. Poll `BridgeSFA.getStatus(serviceType, { depositAddress, hash })`.
+8. Poll `BridgeSFA.getStatus(serviceType, { quote, hash })`. Persist the same `quote` object you passed to `send` (for example in your transaction record or local storage) so later polls can rebuild service-specific status query fields.
 
 ```typescript
 import Big from "big.js";
@@ -492,6 +492,11 @@ const txHash = await BridgeSFA.send(finalRoute.serviceType, {
   wallet: fromWallet,
   quote: finalRoute.quote,
   permitSignature,
+});
+
+await BridgeSFA.getStatus(finalRoute.serviceType, {
+  quote: finalRoute.quote,
+  hash: txHash,
 });
 ```
 
@@ -560,9 +565,15 @@ Returns the source-chain transaction hash. `permitSignature` is required when `q
 ```typescript
 BridgeSFA.getStatus(
   serviceType: Service,
-  params: { depositAddress?: string; hash?: string }
+  params: { quote: any; hash: string }
 ): Promise<{ status: TransactionStatus; toChainTxHash?: string }>
 ```
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `serviceType` | `Service` | Yes | Same route type as for `send`. |
+| `quote` | `any` | Yes | The quote object from `getAllQuote({ dry: false })`, identical to the one passed to `send`. The SDK derives deposit-address vs hash behavior internally. |
+| `hash` | `string` | Yes | Source-chain transaction hash returned by `BridgeSFA.send`. |
 
 The returned `status` is normalized to `pending`, `success`, or `failed`. `toChainTxHash` may be returned after success.
 
@@ -931,7 +942,7 @@ HTTP methods throw `ApiError` for non-2xx responses. Important fields are `statu
 | `SFA.submitDepositTx` | `400` | Validate `txHash` and `depositAddress`. |
 | `SFA.getExecutionStatus` | `404` | Check that the quote was `dry: false` and that memo/address are correct. |
 
-`GetExecutionStatusResponse.status` is a business status, not an exception. Continue polling for `PENDING_DEPOSIT`, `KNOWN_DEPOSIT_TX`, `INCOMPLETE_DEPOSIT`, and `PROCESSING`. Treat `SUCCESS`, `REFUNDED`, and `FAILED` as terminal states.
+`OneClickStatus` is a business status, not an exception. Continue polling for `PENDING_DEPOSIT`, `KNOWN_DEPOSIT_TX`, `INCOMPLETE_DEPOSIT`, and `PROCESSING`. Treat `SUCCESS`, `REFUNDED`, and `FAILED` as terminal states.
 
 #### BridgeSFA
 

@@ -21,4 +21,5 @@ export interface Transaction {
   timestamp: number;
   serviceType?: Service;
   depositAddress?: string;
+  quote?: any;
 }

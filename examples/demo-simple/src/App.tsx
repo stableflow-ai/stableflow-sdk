@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Big from 'big.js';
 import {
-  GetExecutionStatusResponse,
+  OneClickStatus,
   QuoteRequest,
   SFA,
   type QuoteResponse,
@@ -104,23 +104,23 @@ function App() {
       const res = await SFA.getExecutionStatus(depositAddress, quote?.quote?.depositMemo);
       if (
         [
-          GetExecutionStatusResponse.status.PENDING_DEPOSIT,
-          GetExecutionStatusResponse.status.KNOWN_DEPOSIT_TX,
-          GetExecutionStatusResponse.status.INCOMPLETE_DEPOSIT,
+          OneClickStatus.PENDING_DEPOSIT,
+          OneClickStatus.KNOWN_DEPOSIT_TX,
+          OneClickStatus.INCOMPLETE_DEPOSIT,
         ].includes(res.status)
       ) {
         alert("Pending deposit, please wait for the transaction to be mined");
       }
-      if (res.status === GetExecutionStatusResponse.status.PROCESSING) {
+      if (res.status === OneClickStatus.PROCESSING) {
         alert("Transaction is being processed");
       }
-      if (res.status === GetExecutionStatusResponse.status.SUCCESS) {
+      if (res.status === OneClickStatus.SUCCESS) {
         alert("Transaction successful");
       }
       if (
         [
-          GetExecutionStatusResponse.status.FAILED,
-          GetExecutionStatusResponse.status.REFUNDED,
+          OneClickStatus.FAILED,
+          OneClickStatus.REFUNDED,
         ].includes(res.status)
       ) {
         alert("Transaction failed");

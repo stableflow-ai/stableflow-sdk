@@ -56,6 +56,7 @@ const results = await BridgeSFA.getAllQuote({
 });
 
 const txHash = await BridgeSFA.send(serviceType, { wallet: wallet.wallet, quote });
+const status = await BridgeSFA.getStatus(serviceType, { quote, hash: txHash });
 ```
 
 ## See also

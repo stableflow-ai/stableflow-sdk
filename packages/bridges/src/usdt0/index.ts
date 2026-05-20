@@ -1,6 +1,6 @@
 import { USDT0_CONFIG, USDT0_DVN_COUNT } from "./config";
 import { OFT_ABI, SOLANA_IDL } from "./contract";
-import { SendType } from "@stableflow/core";
+import { getRequest, SendType } from "@stableflow/core";
 import { Service } from "@stableflow/core";
 import { OpenAPI } from '@stableflow/core';
 import { request } from '@stableflow/core';
@@ -237,18 +237,8 @@ export class Usdt0Service {
     return wallet.send(SendType.SEND, rest);
   }
 
-  public async getStatus(params: any) {
-    return request(OpenAPI, {
-      method: 'GET',
-      url: `/v0/messages/tx/${params.hash}`,
-      headers: {
-        "Content-Type": "application/json"
-      },
-      errors: {
-        400: `Bad Request - Invalid input data`,
-        401: `Unauthorized - JWT token is invalid`,
-      },
-    });
+  public getStatus(params: any) {
+    return getRequest(`/v0/messages/tx/${params.hash}`);
   }
 }
 

@@ -214,6 +214,16 @@ function App() {
     }
 
     console.log("quote: %o", quote);
+    try {
+      const newQuote = {
+        ...quote,
+        sendParam: void 0,
+        estimateSourceGas: quote.estimateSourceGas?.toString(),
+        totalEstimateSourceGas: quote.totalEstimateSourceGas?.toString(),
+        transferSourceGasFee: quote.transferSourceGasFee?.toString(),
+      };
+      console.log("Quote data: %o", JSON.stringify(newQuote));
+    } catch { }
 
     try {
       const permitSignature = await getPermitSignature(quote);
@@ -271,6 +281,7 @@ function App() {
         timestamp: Date.now(),
         serviceType: selectedQuote.serviceType,
         depositAddress: quote.quote?.depositAddress,
+        quote,
       };
 
       addTransaction(tx);

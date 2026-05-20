@@ -215,6 +215,7 @@ function App() {
         timestamp: Date.now(),
         serviceType: selectedQuote.serviceType,
         depositAddress: quote.quote?.depositAddress,
+        quote,
       };
 
       addTransaction(tx);

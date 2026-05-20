@@ -1,17 +1,6 @@
-import { OpenAPI, request } from '@stableflow/core';
+import { postRequest } from '@stableflow/core';
 
 export async function quoteSignature(params: any) {
-  const response: any = await request(OpenAPI, {
-    method: 'POST',
-    url: '/v0/cctp/sign',
-    body: params,
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    errors: {
-      400: `Bad Request - Invalid input data`,
-      401: `Unauthorized - JWT token is invalid`,
-    },
-  });
+  const response: any = await postRequest("/v0/cctp/sign", params);
   return response.data ?? {};
 }

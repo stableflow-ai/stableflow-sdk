@@ -1,7 +1,7 @@
 import oneClickService, { excludeFees as oneClickExcludeFees } from "../oneclick";
 import { FraxZeroService, excludeFees as fraxZeroExcludeFees } from ".";
 import { FRAXZERO_CONFIG, FRAXZERO_GAS_USED, FRAXZERO_MIDDLE_CHAIN_REFOUND_ADDRESS, FRAXZERO_MIDDLE_TOKEN_FRXUSD, FRAXZERO_MIDDLE_TOKEN_USDC, FRAXZERO_REDEEM_AND_MINT_CONTRACT, FRAXZERO_REDEEM_USDC_CONTRACT } from "./config";
-import { getPrice } from "@stableflow/core";
+import { getPrice, getRequest, GetStatusParams, GetStatusStableflowResponse } from "@stableflow/core";
 import { FRAXZERO_REDEEM_MINT_ABI } from "./contract";
 import Big from "big.js";
 import { numberRemoveEndZero } from "@stableflow/core";
@@ -363,6 +363,12 @@ export class OneClick2FraxZeroService extends FraxZeroService {
     }
 
     return quoteData;
+  }
+
+  public getStatus(params: GetStatusParams) {
+    return getRequest<GetStatusStableflowResponse>("/v0/trade", {
+      deposit_address: params.depositAddress,
+    });
   }
 }
 

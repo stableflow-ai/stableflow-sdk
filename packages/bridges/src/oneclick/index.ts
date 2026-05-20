@@ -1,12 +1,11 @@
 import Big from "big.js";
 import { ONECLICK_PROXY, ONECLICK_PROXY_ABI } from "./contract";
-import { numberRemoveEndZero } from "@stableflow/core";
+import { getRequest, GetStatusParams, numberRemoveEndZero, postRequest } from "@stableflow/core";
 import { getPrice } from "@stableflow/core";
 import { SendType } from "@stableflow/core";
 import { Service } from "@stableflow/core";
 import { DefaultAddresses } from "@stableflow/core";
 import { OpenAPI } from '@stableflow/core';
-import { request } from '@stableflow/core';
 import { ChainType } from "@stableflow/core";
 import { ExecTime } from "@stableflow/core";
 import { Csl } from "@stableflow/core";
@@ -216,16 +215,7 @@ export class OneClickService {
     }
 
     execTime.breakpoint();
-    const response: any = await request(OpenAPI, {
-      method: 'POST',
-      url: '/v0/quote',
-      body: quoteParams,
-      mediaType: 'application/json',
-      errors: {
-        400: `Bad Request - Invalid input data`,
-        401: `Unauthorized - JWT token is invalid`,
-      },
-    });
+    const response: any = await postRequest("/v0/quote", quoteParams);
     execTime.log("/v0/quote");
 
     execTime.breakpoint();
@@ -372,32 +362,12 @@ export class OneClickService {
     return hash;
   }
 
-  public async submitHash(params: { txHash: string; depositAddress: string }) {
-    return request(OpenAPI, {
-      method: 'POST',
-      url: '/v0/deposit/submit',
-      body: params,
-      mediaType: 'application/json',
-      errors: {
-        400: `Bad Request - Invalid input data`,
-        401: `Unauthorized - JWT token is invalid`,
-      },
-    });
+  public submitHash(params: { txHash: string; depositAddress: string }) {
+    return postRequest("/v0/deposit/submit", params);
   }
 
-  public async getStatus(params: {
-    depositAddress: string;
-    depositMemo?: string;
-  }) {
-    return request(OpenAPI, {
-      method: 'GET',
-      url: '/v0/status',
-      query: params,
-      errors: {
-        401: `Unauthorized - JWT token is invalid`,
-        404: `Deposit address not found`,
-      },
-    });
+  public getStatus(params: GetStatusParams) {
+    return getRequest("/v0/status", params);
   }
 }
 

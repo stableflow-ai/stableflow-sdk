@@ -1,7 +1,6 @@
 import { CCTP_TOKEN_PROXY, CCTP_TOKEN_PROXY_ABI } from "./contract";
 import { CCTP_DOMAINS } from "./config";
-import { OpenAPI } from '@stableflow/core';
-import { request } from '@stableflow/core';
+import { getRequest, GetStatusParams, GetStatusStableflowResponse, OpenAPI } from '@stableflow/core';
 import { SendType } from "@stableflow/core";
 import { Service } from "@stableflow/core";
 import Big from "big.js";
@@ -119,20 +118,9 @@ export class CCTPService {
     return wallet.send(SendType.SEND, rest);
   }
 
-  public async getStatus(params: any) {
-    return request(OpenAPI, {
-      method: 'GET',
-      url: "/v0/trade",
-      query: {
-        deposit_address: params.hash,
-      },
-      headers: {
-        "Content-Type": "application/json"
-      },
-      errors: {
-        400: `Bad Request - Invalid input data`,
-        401: `Unauthorized - JWT token is invalid`,
-      },
+  public getStatus(params: GetStatusParams) {
+    return getRequest<GetStatusStableflowResponse>("/v0/trade", {
+      deposit_address: params.depositAddress,
     });
   }
 }

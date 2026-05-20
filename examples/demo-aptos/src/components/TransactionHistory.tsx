@@ -8,12 +8,16 @@ export const TransactionHistory: React.FC = () => {
   const [loading, setLoading] = useState<Record<string, boolean>>({});
 
   const quoteTransferResult = async (transaction: Transaction) => {
+    if (!transaction.quote) {
+      return;
+    }
+
     setLoading((prev) => ({ ...prev, [transaction.id]: true }));
 
     try {
       const response = await BridgeSFA.getStatus(transaction.serviceType!, {
         hash: transaction.id,
-        depositAddress: transaction.depositAddress,
+        quote: transaction.quote,
       });
       updateTransaction(transaction.id, {
         status: response.status as Transaction['status'],
