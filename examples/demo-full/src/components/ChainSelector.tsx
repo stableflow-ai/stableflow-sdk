@@ -20,7 +20,7 @@ export const ChainSelector: React.FC<ChainSelectorProps> = ({
   tokens,
   placeholder = 'Select chain',
 }) => {
-  const tokenList = tokens.filter((token) => token.contractAddress !== excludeToken?.contractAddress && token.chainName !== excludeToken?.chainName);
+  const tokenList = tokens.filter((token) => !(token.contractAddress === excludeToken?.contractAddress && token.chainName === excludeToken?.chainName));
 
   return (
     <div className="chain-selector">

@@ -325,7 +325,7 @@ export class BridgeSFA {
       const reportData: any = {
         project: ServiceBackend[serviceType] as any,
         address: quote.quoteParam?.refundTo,
-        amount: Big(_amountWei || 0).div(10 ** (quote.fromToken?.decimals || 6)).toFixed(quote.fromToken?.decimals || 6, 0),
+        amount: isExactOutput ? quote.quote.amountInFormatted : Big(_amountWei || 0).div(10 ** (fromToken?.decimals || 6)).toFixed(fromToken?.decimals || 6, 0),
         out_amount: quote.outputAmount,
         deposit_address: isOneClickService ? quote.quote?.depositAddress : "",
         receive_address: quote.quoteParam?.recipient,
