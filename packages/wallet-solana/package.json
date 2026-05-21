@@ -1,6 +1,6 @@
 {
   "name": "@stableflow/wallet-solana",
-  "version": "3.0.0-rc-d4a7057809-20260521",
+  "version": "3.0.0-rc-66c0149ac3-20260521",
   "description": "Solana wallet adapter for StableFlow SDK",
   "license": "MIT",
   "repository": {
