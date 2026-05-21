@@ -137,7 +137,7 @@ export const getAvailableSolanaRpcUrl = async (options?: { isQuerySignature?: bo
   const cs = new Csl(OpenAPI.DEBUG);
   const csl = cs.log;
 
-  const rpcUrls = getChainRpcUrl("Solana").rpcUrls;
+  const rpcUrls = getChainRpcUrl("sol").rpcUrls;
   if (!rpcUrls?.length) {
     throw new Error("No Solana RPC URLs configured");
   }
@@ -177,7 +177,7 @@ export const getDestinationAssociatedTokenAddress = async (params: any) => {
   }
 
   try {
-    const connection = createSolanaFallbackConnection(getChainRpcUrl("Solana").rpcUrls);
+    const connection = createSolanaFallbackConnection(getChainRpcUrl("sol").rpcUrls);
     const wallet = new PublicKey(recipient);
     const TOKEN_MINT = new PublicKey(toToken.contractAddress);
 

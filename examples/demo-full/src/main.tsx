@@ -11,10 +11,12 @@ if (JWT_TOKEN) {
   OpenAPI.TOKEN = JWT_TOKEN;
 }
 
+const HeliusRpcApiKey = import.meta.env.VITE_HELIUS_RPC_API_KEY;
 setRpcUrls({
   eth: ['https://0xrpc.io/eth'],
   xlayer: ['https://rpc.xlayer.tech'],
   plasma: ['https://rpc.plasma.to'],
+  sol: [`https://mainnet.helius-rpc.com/?api-key=${HeliusRpcApiKey}`],
 });
 
 console.log(NetworkRpcUrlsMap);
