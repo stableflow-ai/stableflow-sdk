@@ -1,6 +1,6 @@
 {
   "name": "@stableflow/wallet-ton",
-  "version": "3.0.0-rc-d5e871f4af-20260521",
+  "version": "3.0.0-rc-d4a7057809-20260521",
   "description": "TON wallet adapter for StableFlow SDK",
   "license": "MIT",
   "repository": {
