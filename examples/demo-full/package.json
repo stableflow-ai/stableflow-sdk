@@ -49,6 +49,7 @@
     "@stableflow/wallet-sui": "rc",
     "@stableflow/wallet-ton": "rc",
     "@stableflow/wallet-tron": "rc",
+    "@stableflow/utils-solana": "rc",
     "@tanstack/react-query": "^5.87.1",
     "@ton/ton": "^16.2.4",
     "@tonconnect/ui-react": "^2.4.4",
