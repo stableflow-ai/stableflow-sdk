@@ -450,6 +450,7 @@ function App() {
               {selectedQuote && (
                 <>
                   <QuoteResult
+                    fromToken={fromToken}
                     quotes={quotes}
                     onSelectQuote={setSelectedQuote}
                     selectedQuote={selectedQuote}

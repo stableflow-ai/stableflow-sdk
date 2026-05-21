@@ -1,14 +1,17 @@
 import React from 'react';
 import type { QuoteResult as QuoteResultType } from '../types';
+import { TokenConfig } from '@stableflow/core';
 
 interface QuoteResultProps {
   quotes: QuoteResultType[];
+  fromToken?: TokenConfig;
   onSelectQuote: (quote: QuoteResultType) => void;
   selectedQuote?: QuoteResultType | null;
 }
 
 export const QuoteResult: React.FC<QuoteResultProps> = ({
   quotes,
+  fromToken,
   onSelectQuote,
   selectedQuote,
 }) => {
@@ -61,7 +64,7 @@ export const QuoteResult: React.FC<QuoteResultProps> = ({
               <div className="quote-details">
                 <div className="quote-row">
                   <span>Output Amount:</span>
-                  <strong>{outputAmount} USDT</strong>
+                  <strong>{outputAmount} {fromToken?.symbol}</strong>
                 </div>
                 <div className="quote-row">
                   <span>Total Fees:</span>
