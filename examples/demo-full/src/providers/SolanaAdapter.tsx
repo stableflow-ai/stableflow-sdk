@@ -1,10 +1,11 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ConnectionProvider, WalletProvider, useWallet } from '@solana/wallet-adapter-react';
 import { WalletModalProvider, useWalletModal } from '@solana/wallet-adapter-react-ui';
 import { PhantomWalletAdapter } from '@solana/wallet-adapter-phantom';
 import { SolflareWalletAdapter } from '@solana/wallet-adapter-solflare';
 import { getChainRpcUrl } from '@stableflow/core';
 import SolanaWallet from '@stableflow/wallet-solana';
+import { getAvailableSolanaRpcUrl } from '@stableflow/utils-solana';
 import useWalletsStore from '@/stores/use-wallets';
 import { useDebounceFn } from '@/hooks/useDebounceFn';
 import '@solana/wallet-adapter-react-ui/styles.css';
@@ -54,7 +55,20 @@ function SolanaWalletSync() {
 }
 
 export default function SolanaAdapterProvider({ children }: { children: React.ReactNode }) {
-  const endpoint = useMemo(() => getChainRpcUrl('sol').rpcUrls[0] ?? 'https://api.mainnet-beta.solana.com', []);
+  const [endpoint, setEndpoint] = useState(getChainRpcUrl("sol").rpcUrls[0]);
+
+  useEffect(() => {
+    const resolveEndpoint = async () => {
+      try {
+        const availableRpcUrl = await getAvailableSolanaRpcUrl();
+        setEndpoint(availableRpcUrl);
+      } catch (_error) {
+        // keep default primary rpc url
+      }
+    };
+
+    resolveEndpoint();
+  }, []);
 
   return (
     <ConnectionProvider endpoint={endpoint}>

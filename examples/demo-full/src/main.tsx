@@ -17,6 +17,7 @@ setRpcUrls({
   xlayer: ['https://rpc.xlayer.tech'],
   plasma: ['https://rpc.plasma.to'],
   sol: [`https://mainnet.helius-rpc.com/?api-key=${HeliusRpcApiKey}`],
+  pol: ['https://polygon-bor-rpc.publicnode.com'],
 });
 
 console.log(NetworkRpcUrlsMap);

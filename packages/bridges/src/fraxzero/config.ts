@@ -82,6 +82,12 @@ export const FRAXZERO_CONFIG: Record<string, FraxZeroConfig> = {
     confirmations: 5,
     oftApprovalRequired: true,
   },
+  Katana: {
+    ...LAYERZZERO_CHAINS["Katana"],
+    remoteHop: "0x5d8eb59a12bc98708702305a7b032f4b69dd5b5c",
+    confirmations: 5,
+    oftApprovalRequired: true,
+  },
 };
 
 export const FRAXZERO_MIDDLE_TOKEN_USDC = usdcChains["eth"];
@@ -92,15 +98,15 @@ export const FRAXZERO_REDEEM_USDC_CONTRACT = "0x4F95C5bA0C7c69FB2f9340E190cCeE89
 export const FRAXZERO_REDEEM_RWA_CONTRACT = "0x5fbAa3A3B489199338fbD85F7E3D444dc0504F33";
 export const FRAXZERO_REDEMPTION_CONTRACT = "0x4c21B7577C8FE8b0B0669165ee7C8f67fa1454Cf";
 
-export const FRAXZERO_REDEEM_AND_MINT_CONTRACT = "0x4b7fe4ac08c5f1e88231d35a382f6d70cf55cbb5";
+export const FRAXZERO_REDEEM_AND_MINT_CONTRACT = "0x466c34Fb4a758e80eBc7Ea7e636B755A0AE10397";
 
 // gas amount = gas limit * gas price
 export const FRAXZERO_GAS_USED = {
-  REDEEM: 358964n,
+  REDEEM: 0n, // 358964n
   MINT: {
-    TO_SOL: 756271n,
-    TO_FRAXTAL: 660997n,
-    TO_ETHEREUM: 334550n,
-    SEND: 756271n,
+    TO_SOL: 0n, // 756271n
+    TO_FRAXTAL: 0n, // 660997n
+    TO_ETHEREUM: 0n, // 334550n
+    SEND: 0n, // 756271n
   },
 };

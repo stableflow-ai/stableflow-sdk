@@ -252,7 +252,7 @@ export class OneClick2FraxZeroService extends FraxZeroService {
     }
 
     // 3. to other chain frxUSD
-    // The mintAndSend method of the FRAXZERO_REDEEM_AND_MINT_CONTRACT contract should be called here
+    // The mintAndSend method of the _FRAXZERO_REDEEM_AND_MINT_CONTRACT contract should be called here
     const originLayerzero = FRAXZERO_CONFIG[fromToken.chainName];
     const destinationLayerzero = FRAXZERO_CONFIG[toToken.chainName];
 

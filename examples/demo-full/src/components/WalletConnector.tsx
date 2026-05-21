@@ -18,7 +18,7 @@ export const WalletConnector: React.FC<WalletConnectorProps> = ({
 
   React.useEffect(() => {
     onAddressChange?.(address);
-  }, [address, onAddressChange]);
+  }, [address]);
 
   const handleConnect = async () => {
     setConnecting(true);
