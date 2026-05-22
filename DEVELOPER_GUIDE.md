@@ -908,7 +908,7 @@ Fee units:
 
 #### isProxy
 
-`isProxy` only applies to OneClick routes and mixed routes that contain OneClick. When enabled, OneClick uses proxy deposit address mode, which makes deposit addresses more stable. This is useful when institutions, exchanges, custodians, or enterprise wallets need transfer allowlists.
+`isProxy` only applies to OneClick routes and mixed routes that start from OneClick. When enabled, OneClick uses proxy deposit address mode, which makes deposit addresses more stable. This is useful when institutions, exchanges, custodians, or enterprise wallets need transfer allowlists.
 
 The tradeoff is higher execution cost on some chains. For example, Tron transfers can cost more than 50% extra gas. Prefer `isProxy: true` for allowlist or compliance flows, and leave it off for ordinary users when lowest gas cost matters more. In production, compare fees with `dry: true`, then re-quote with the same `isProxy` value and `dry: false` before execution.
 
