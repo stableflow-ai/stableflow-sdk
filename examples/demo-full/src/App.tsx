@@ -667,17 +667,11 @@ function App() {
       console.log("quotes response: %o", response);
 
       if (response && Array.isArray(response)) {
-        const validQuotes = response.filter((q) => q.quote && !q.error);
-
-        if (validQuotes.length === 0) {
-          const errors = response
-            .filter((q) => q.error)
-            .map((q) => `${q.serviceType}: ${q.error}`)
-            .join(', ');
-          setError(`No valid quotes available. ${errors || 'Please try again.'}`);
+        if (response.length === 0) {
+          setError(`No valid quotes available.`);
         } else {
-          setQuotes(validQuotes);
-          const firstValid = validQuotes.find((q) => q.quote && !q.error);
+          setQuotes(response);
+          const firstValid = response.find((q) => q.quote && !q.quote.errMsg);
           if (firstValid) {
             setSelectedQuote(firstValid);
           }
@@ -1052,10 +1046,16 @@ function App() {
                   <button
                     type="button"
                     onClick={() => void handleSubmitTransaction()}
-                    disabled={loading}
+                    disabled={loading || selectedQuote.quote?.errMsg}
                     className="btn-submit"
                   >
-                    {loading ? 'Submitting...' : 'Submit Transaction'}
+                    {
+                      loading
+                        ? 'Submitting...'
+                        : selectedQuote.quote?.errMsg
+                          ? selectedQuote.quote?.errMsg
+                          : 'Submit Transaction'
+                    }
                   </button>
                 </>
               )}
