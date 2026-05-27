@@ -11,13 +11,14 @@ if (JWT_TOKEN) {
   OpenAPI.TOKEN = JWT_TOKEN;
 }
 
-const HeliusRpcApiKey = import.meta.env.VITE_HELIUS_RPC_API_KEY;
+const CustomRpcHost = import.meta.env.VITE_CUSTOM_RPC_HOST;
 setRpcUrls({
   eth: ['https://0xrpc.io/eth'],
   xlayer: ['https://rpc.xlayer.tech'],
   plasma: ['https://rpc.plasma.to'],
-  sol: [`https://mainnet.helius-rpc.com/?api-key=${HeliusRpcApiKey}`],
+  sol: [`${CustomRpcHost}/solana`],
   pol: ['https://polygon-bor-rpc.publicnode.com'],
+  tron: [`${CustomRpcHost}/tron`],
 });
 
 console.log(NetworkRpcUrlsMap);

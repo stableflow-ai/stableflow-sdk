@@ -538,12 +538,31 @@ const prices: Record<string, string> = {
 };
 
 const bridgeTokens = getBridgeTokens();
+const SLIPPAGE_PRESETS = [0.01, 0.05, 0.1, 0.5] as const;
+const DEFAULT_SLIPPAGE = 0.05;
+const MIN_SLIPPAGE = 0.01;
+const MAX_SLIPPAGE = 1;
+
+const normalizeSlippage = (value: string): number | null => {
+  if (!value.trim()) {
+    return null;
+  }
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) {
+    return null;
+  }
+  const rounded = Math.round(parsed * 100) / 100;
+  return Math.min(MAX_SLIPPAGE, Math.max(MIN_SLIPPAGE, rounded));
+};
+
+const formatSlippageInput = (value: number): string => value.toFixed(2);
 
 function App() {
   const [fromToken, setFromToken] = useState<TokenConfig>();
   const [toToken, setToToken] = useState<TokenConfig>();
 
   const [amount, setAmount] = useState<string>('');
+  const [slippageInput, setSlippageInput] = useState<string>(formatSlippageInput(DEFAULT_SLIPPAGE));
   const [toAddress, setToAddress] = useState<string>('');
   const [fromWalletAddress, setFromWalletAddress] = useState<string | null>(null);
   const [toWalletAddress, setToWalletAddress] = useState<string | null>(null);
@@ -564,15 +583,50 @@ function App() {
   const recipient =
     (toAddress || toWalletAddress || fromWalletAddress || '').trim() || fromWalletAddress || '';
 
+  const resetQuotes = () => {
+    setQuotes([]);
+    setSelectedQuote(null);
+  };
+
+  const handleSlippageChange = (value: string) => {
+    if (!/^\d*\.?\d{0,2}$/.test(value)) {
+      return;
+    }
+    setSlippageInput(value);
+    resetQuotes();
+  };
+
+  const handleSlippageBlur = () => {
+    const normalizedSlippage = normalizeSlippage(slippageInput);
+    if (normalizedSlippage === null) {
+      setSlippageInput(formatSlippageInput(DEFAULT_SLIPPAGE));
+      setError('Slippage must be between 0.01 and 1.');
+      return;
+    }
+    setSlippageInput(formatSlippageInput(normalizedSlippage));
+  };
+
+  const handleSlippagePreset = (value: number) => {
+    setSlippageInput(formatSlippageInput(value));
+    setError(null);
+    resetQuotes();
+  };
+
   const handleGetQuote = async () => {
+    const normalizedSlippage = normalizeSlippage(slippageInput);
     if (
       !fromToken ||
       !toToken ||
       !amount ||
       !fromWalletAddress ||
       !recipient ||
-      !fromWallet?.wallet
+      !fromWallet?.wallet ||
+      normalizedSlippage === null
     ) {
+      if (normalizedSlippage === null) {
+        setError('Slippage must be between 0.01 and 1.');
+        return;
+      }
       setError('Please fill in all required fields and connect from chain wallet');
       return;
     }
@@ -595,7 +649,7 @@ function App() {
         amountWei: Big(amount)
           .times(10 ** fromToken.decimals)
           .toString(),
-        slippageTolerance: 0.5,
+        slippageTolerance: normalizedSlippage,
         oneclickParams: {
           appFees: [
             {
@@ -609,6 +663,8 @@ function App() {
       };
 
       const response = await BridgeSFA.getAllQuote(quoteRequest);
+
+      console.log("quotes response: %o", response);
 
       if (response && Array.isArray(response)) {
         const validQuotes = response.filter((q) => q.quote && !q.error);
@@ -939,6 +995,39 @@ function App() {
                 min="0"
                 className="input-amount"
               />
+
+              <div className="slippage-field">
+                <label htmlFor="slippage-input">Slippage tolerance (%)</label>
+                <div className="slippage-row">
+                  <input
+                    id="slippage-input"
+                    type="number"
+                    value={slippageInput}
+                    onChange={(e) => handleSlippageChange(e.target.value)}
+                    onBlur={handleSlippageBlur}
+                    placeholder="0.05"
+                    step="0.01"
+                    min="0.01"
+                    max="1"
+                    className="input-amount"
+                  />
+                  <div className="slippage-presets">
+                    {SLIPPAGE_PRESETS.map((preset) => {
+                      const presetValue = formatSlippageInput(preset);
+                      return (
+                        <button
+                          key={preset}
+                          type="button"
+                          className={`btn-slippage-preset${slippageInput === presetValue ? ' active' : ''}`}
+                          onClick={() => handleSlippagePreset(preset)}
+                        >
+                          {presetValue}%
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
             </div>
 
             {error && <div className="error-message break-all">{error}</div>}
