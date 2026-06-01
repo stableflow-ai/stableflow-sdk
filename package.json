@@ -22,8 +22,8 @@
     "dev:demo-hyperliquid": "pnpm --filter demo-hyperliquid dev",
     "dev:demo-full": "pnpm --filter demo-full dev",
     "pub": "pnpm -r publish --access public",
-    "pub:rc": "pnpm -r publish --access public --tag rc",
-    "pub:beta": "pnpm -r publish --access public --tag beta",
+    "pub:rc": "pnpm -r publish --access public --tag rc --no-git-checks",
+    "pub:beta": "pnpm -r publish --access public --tag beta --no-git-checks",
     "changeset": "changeset"
   },
   "devDependencies": {
