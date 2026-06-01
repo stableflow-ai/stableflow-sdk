@@ -26,6 +26,10 @@ export class Usdt0OneClickService {
     if (!middleChainWallet) {
       throw new Error("evmWallet is required");
     }
+    let middleChainRecipientAddress = evmAddress;
+    if (!middleChainRecipientAddress) {
+      throw new Error("evmAddress is required");
+    }
 
     const usdt0Params = {
       ...params,
@@ -39,7 +43,7 @@ export class Usdt0OneClickService {
       originAsset: MIDDLE_TOKEN_CHAIN.assetId,
       swapType: "FLEX_INPUT",
       isProxy: false,
-      refundTo: MIDDLE_CHAIN_REFOUND_ADDRESS,
+      refundTo: middleChainRecipientAddress,
       wallet: middleChainWallet,
     };
 

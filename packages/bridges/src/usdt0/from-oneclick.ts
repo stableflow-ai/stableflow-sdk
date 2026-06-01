@@ -1,7 +1,7 @@
 import oneClickService, { excludeFees as oneClickExcludeFees } from "../oneclick";
 import usdt0Service, { excludeFees as usdt0ExcludeFees } from "../usdt0";
 import Big from "big.js";
-import { MIDDLE_CHAIN_LAYERZERO_EXECUTOR, MIDDLE_CHAIN_REFOUND_ADDRESS, MIDDLE_TOKEN_CHAIN } from "./config";
+import { MIDDLE_CHAIN_LAYERZERO_EXECUTOR, MIDDLE_TOKEN_CHAIN } from "./config";
 import { ExecTime } from "@stableflow/core";
 import { OpenAPI } from "@stableflow/core";
 import { numberRemoveEndZero } from "@stableflow/core";
@@ -19,18 +19,18 @@ export class OneClickUsdt0Service {
     const execTime = new ExecTime({ type: "OneClickUsdt0", logStyle: "lime-500", isDebug: OpenAPI.DEBUG });
 
     let middleChainWallet = evmWallet;
-    let destinationRecipientAddress = evmAddress;
+    let middleChainRecipientAddress = evmAddress;
     if (!middleChainWallet) {
       throw new Error("evmWallet is required");
     }
-    if (!destinationRecipientAddress) {
+    if (!middleChainRecipientAddress) {
       throw new Error("evmAddress is required");
     }
 
     // First, call the usdt0 quote method
     // Retrieve sendParam, fees, and estimated costs
     // usdt0 is the second step, so the source chain is arb
-    // The refund address is MIDDLE_CHAIN_REFOUND_ADDRESS
+    // The refund address is middleChainRecipientAddress
     // Since the first step uses oneclick with EXACT_OUTPUT mode,
     // params.amountWei is the input amount for the second step
     const usdt0Params = {
@@ -38,7 +38,7 @@ export class OneClickUsdt0Service {
       amountWei: Big(params.amountWei || 0).div(10 ** fromToken.decimals).times(10 ** MIDDLE_TOKEN_CHAIN.decimals).toFixed(0),
       fromToken: MIDDLE_TOKEN_CHAIN,
       originChain: MIDDLE_TOKEN_CHAIN.chainName,
-      refundTo: MIDDLE_CHAIN_REFOUND_ADDRESS,
+      refundTo: middleChainRecipientAddress,
       wallet: middleChainWallet,
     };
 
@@ -85,7 +85,7 @@ export class OneClickUsdt0Service {
       destinationAsset: MIDDLE_TOKEN_CHAIN.assetId,
       swapType: "EXACT_OUTPUT",
       isProxy: true,
-      recipient: destinationRecipientAddress,
+      recipient: middleChainRecipientAddress,
       appFees: [
         {
           recipient: "reffer.near",
