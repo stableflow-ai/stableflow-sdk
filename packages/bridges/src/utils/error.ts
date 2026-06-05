@@ -9,7 +9,7 @@ export const formatQuoteError = (error: any, options: { service: Service; fromTo
   if (service === Service.OneClick) {
     const getQuoteErrorMessage = (): { message: string; sourceMessage: string; } => {
       const _messageResult = {
-        message: defaultErrorMessage,
+        message: error?.message || defaultErrorMessage,
         sourceMessage: error?.response?.data?.message || defaultErrorMessage,
       };
       if (

@@ -2,7 +2,6 @@ import { OpenAPI } from "./OpenAPI";
 import { request } from "./request";
 
 export const REQUEST_ERRORS: Record<number, string> = {
-  400: `Bad Request - Invalid input data`,
   401: `Unauthorized - JWT token is invalid`,
 };
 

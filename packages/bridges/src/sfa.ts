@@ -237,7 +237,6 @@ export class BridgeSFA {
             quote: quoteRes,
           });
         } catch (error) {
-          console.log("%s quote failed: %o", quoteService.service, error);
           const _err = formatQuoteError(error, { service: quoteService.service, fromToken });
           results.push(_err);
         }
@@ -370,7 +369,7 @@ export class BridgeSFA {
 
       submitOthersTx(reportData);
     } catch (error) {
-      console.log("%cReport tx failed: %o", "background:#f00;color:#fff;", error);
+      csl("BridgeSFA.send", "red-400", "report tx failed: %o", error);
     }
 
     return txhash;
