@@ -10,7 +10,6 @@
     "deploy": "npm run build && wrangler pages deploy dist"
   },
   "dependencies": {
-    "@layerzerolabs/lz-v2-utilities": "^3.0.151",
     "@stableflow/core": "rc",
     "@stableflow/wallet-evm": "rc",
     "@stableflow/wallet-tron": "rc",
