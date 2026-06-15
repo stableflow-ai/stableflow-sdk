@@ -88,10 +88,10 @@ function App() {
         slippageTolerance: 0.5,
         oneclickParams: {
           appFees: [
-            {
-              recipient: 'stableflow.tron',
-              fee: 100,
-            },
+            // {
+            //   recipient: 'stableflow.tron',
+            //   fee: 100,
+            // },
           ],
         },
         ...(fromChainConfig.chainType === 'evm' && fromWallet?.wallet
