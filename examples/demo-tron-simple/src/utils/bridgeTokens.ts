@@ -2,43 +2,112 @@ import { TokenResponse } from '@stableflow/core';
 
 const TRON_USDT_ASSET_ID =
   'nep141:tron-d28a265909efecdcee7c5028585214ea0b96f015.omft.near';
-const PLASMA_USDT0_ASSET_ID =
+const PLASMA_USDT_ASSET_ID =
   'nep141:plasma-0xb8ce59fc3717ada4c02eadf9682a9e934f625ebb.omft.near';
 
+/** EVM chains from the SFA token registry (all non-Tron EVM entries). */
+const EVM_BLOCKCHAINS = new Set<string>([
+  'base',
+  'eth',
+  'abs',
+  'arb',
+  'gnosis',
+  'bera',
+  'bsc',
+  'monad',
+  'xlayer',
+  'plasma',
+  'pol',
+  'op',
+  'avax',
+  'adi',
+  'scroll',
+  'movement',
+  'hypercore',
+]);
+
+const TRON_BLOCKCHAIN = TokenResponse.blockchain.TRON;
+
+/** Stablecoin symbols from the SFA token registry. */
+const STABLECOIN_SYMBOLS = new Set([
+  'usdc',
+  'frax',
+  'usdt',
+  'dai',
+  'usd1',
+  'usdt0',
+  'xdai',
+  'susdc',
+  'usad',
+  'usdcx',
+  'steakusdc',
+  'sparkusdc',
+  'mwusdc',
+  'gtusdcp',
+  'nrusdt',
+  'usdf',
+  'eure',
+  'gbpe',
+]);
+
+function normalizeTokenSymbol(symbol: string): string {
+  return symbol.replace(/₮/g, 'T').toLowerCase();
+}
+
 export function isStableToken(token: TokenResponse): boolean {
-  return [/^USDT$/i, /^USDC$/i, /^USDC\.e$/i, /^USD\.e$/i, /^USD₮0$/i, /^USDT0$/i].some(
-    (reg) => reg.test(token.symbol)
+  const normalized = normalizeTokenSymbol(token.symbol);
+  if (STABLECOIN_SYMBOLS.has(normalized)) return true;
+  return [/^usdc\.e$/i, /^usd\.e$/i].some((reg) => reg.test(normalized));
+}
+
+export function isDeprecatedToken(token: TokenResponse): boolean {
+  return /DEPRECATED/i.test(token.symbol);
+}
+
+export function isTronBlockchain(blockchain: string): boolean {
+  return blockchain === TRON_BLOCKCHAIN;
+}
+
+export function isEvmBlockchain(blockchain: string): boolean {
+  return EVM_BLOCKCHAINS.has(blockchain);
+}
+
+export function isSupportedBlockchain(blockchain: string): boolean {
+  return isTronBlockchain(blockchain) || isEvmBlockchain(blockchain);
+}
+
+export function filterAvailableTokens(tokens: TokenResponse[]): TokenResponse[] {
+  return tokens.filter(
+    (t) =>
+      !isDeprecatedToken(t) &&
+      isSupportedBlockchain(String(t.blockchain)) &&
+      isStableToken(t)
   );
-}
-
-export function filterTronTokens(tokens: TokenResponse[]): TokenResponse[] {
-  return tokens.filter((t) => t.blockchain === 'tron').filter(isStableToken);
-}
-
-export function filterPlasmaTokens(tokens: TokenResponse[]): TokenResponse[] {
-  return tokens.filter((t) => String(t.blockchain) === 'plasma').filter(isStableToken);
 }
 
 export function findDefaultPair(tokens: TokenResponse[]): {
   originAsset: string;
   destinationAsset: string;
 } {
-  const tronTokens = filterTronTokens(tokens);
-  const plasmaTokens = filterPlasmaTokens(tokens);
+  const available = filterAvailableTokens(tokens);
 
   const origin =
-    tronTokens.find((t) => /^USDT$/i.test(t.symbol)) ??
-    tronTokens.find((t) => t.assetId === TRON_USDT_ASSET_ID) ??
-    tronTokens[0];
+    available.find((t) => t.blockchain === TRON_BLOCKCHAIN && /^USDT$/i.test(t.symbol)) ??
+    available.find((t) => t.assetId === TRON_USDT_ASSET_ID) ??
+    available.find((t) => t.blockchain === TRON_BLOCKCHAIN);
 
   const destination =
-    plasmaTokens.find((t) => /^USD₮0$/i.test(t.symbol) || /^USDT0$/i.test(t.symbol)) ??
-    plasmaTokens.find((t) => /^USDT$/i.test(t.symbol)) ??
-    plasmaTokens.find((t) => t.assetId === PLASMA_USDT0_ASSET_ID) ??
-    plasmaTokens[0];
+    available.find((t) => String(t.blockchain) === 'plasma' && /^USDT$/i.test(t.symbol)) ??
+    available.find(
+      (t) =>
+        String(t.blockchain) === 'plasma' &&
+        (/^USD₮0$/i.test(t.symbol) || /^USDT0$/i.test(t.symbol))
+    ) ??
+    available.find((t) => t.assetId === PLASMA_USDT_ASSET_ID) ??
+    available.find((t) => String(t.blockchain) === 'plasma');
 
   return {
     originAsset: origin?.assetId ?? TRON_USDT_ASSET_ID,
-    destinationAsset: destination?.assetId ?? PLASMA_USDT0_ASSET_ID,
+    destinationAsset: destination?.assetId ?? PLASMA_USDT_ASSET_ID,
   };
 }

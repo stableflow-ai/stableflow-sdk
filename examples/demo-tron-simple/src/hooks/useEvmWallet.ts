@@ -1,7 +1,6 @@
 import { useCallback, useState } from 'react';
 import { BrowserProvider, type Eip1193Provider } from 'ethers';
 import EVMWallet from '@stableflow/wallet-evm';
-import { ensureEthereumChain, PLASMA_CHAIN_ID } from '../utils/chainIds';
 
 function getEthereumProvider(): Eip1193Provider | undefined {
   const eth = window.ethereum as Eip1193Provider | undefined;
@@ -26,8 +25,6 @@ export function useEvmWallet() {
       if (!address) {
         throw new Error('No EVM account returned from wallet.');
       }
-
-      await ensureEthereumChain(PLASMA_CHAIN_ID);
 
       const provider = new BrowserProvider(eth);
       const signer = await provider.getSigner();

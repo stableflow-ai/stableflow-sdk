@@ -8,10 +8,12 @@ import {
   type TokenResponse,
 } from '@stableflow/core';
 import {
-  filterPlasmaTokens,
-  filterTronTokens,
+  filterAvailableTokens,
   findDefaultPair,
+  isEvmBlockchain,
+  isTronBlockchain,
 } from './utils/bridgeTokens';
+import { getChainIdForTokenBlockchain, ensureEthereumChain } from './utils/chainIds';
 import { useTronWallet } from './hooks/useTronWallet';
 import { useEvmWallet } from './hooks/useEvmWallet';
 
@@ -33,15 +35,15 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const tronTokens = useMemo(() => filterTronTokens(tokens), [tokens]);
-  const plasmaTokens = useMemo(() => filterPlasmaTokens(tokens), [tokens]);
+  const availableTokens = useMemo(() => filterAvailableTokens(tokens), [tokens]);
 
   const loadTokens = useCallback(async () => {
     setTokensLoading(true);
     setError(null);
     try {
       const all = await SFA.getTokens();
-      setTokens(all);
+      const filtered = filterAvailableTokens(all);
+      setTokens(filtered);
       const defaults = findDefaultPair(all);
       setOriginAsset(defaults.originAsset);
       setDestinationAsset(defaults.destinationAsset);
@@ -57,14 +59,23 @@ function App() {
   }, [loadTokens]);
 
   const originToken = useMemo(
-    () => tronTokens.find((t) => t.assetId === originAsset),
-    [tronTokens, originAsset]
+    () => availableTokens.find((t) => t.assetId === originAsset),
+    [availableTokens, originAsset]
   );
 
   const destinationToken = useMemo(
-    () => plasmaTokens.find((t) => t.assetId === destinationAsset),
-    [plasmaTokens, destinationAsset]
+    () => availableTokens.find((t) => t.assetId === destinationAsset),
+    [availableTokens, destinationAsset]
   );
+
+  const originIsTron = originToken ? isTronBlockchain(String(originToken.blockchain)) : false;
+  const originIsEvm = originToken ? isEvmBlockchain(String(originToken.blockchain)) : false;
+  const destinationIsTron = destinationToken
+    ? isTronBlockchain(String(destinationToken.blockchain))
+    : false;
+  const destinationIsEvm = destinationToken
+    ? isEvmBlockchain(String(destinationToken.blockchain))
+    : false;
 
   const amountWei = useMemo(() => {
     if (!originToken || !amount) return '';
@@ -76,16 +87,32 @@ function App() {
   }, [originToken, amount]);
 
   const handleQuote = async () => {
-    if (!originToken || !destinationAsset || !amountWei) {
+    if (!originToken || !destinationToken || !amountWei) {
       setError('Select tokens and amount');
       return;
     }
-    if (!tron.account) {
-      setError('Connect Tron wallet first');
+
+    const refundTo = originIsTron ? tron.account : originIsEvm ? evm.account : null;
+    const recipient = destinationIsTron
+      ? tron.account
+      : destinationIsEvm
+        ? evm.account
+        : null;
+
+    if (!refundTo) {
+      setError(
+        originIsTron
+          ? 'Connect Tron wallet for origin refund address'
+          : 'Connect EVM wallet for origin refund address'
+      );
       return;
     }
-    if (!evm.account) {
-      setError('Connect EVM wallet first (Plasma recipient)');
+    if (!recipient) {
+      setError(
+        destinationIsTron
+          ? 'Connect Tron wallet for destination recipient'
+          : 'Connect EVM wallet for destination recipient'
+      );
       return;
     }
 
@@ -100,9 +127,9 @@ function App() {
         originAsset,
         destinationAsset,
         amount: amountWei,
-        refundTo: tron.account,
+        refundTo,
         refundType: QuoteRequest.refundType.ORIGIN_CHAIN,
-        recipient: evm.account,
+        recipient,
         recipientType: QuoteRequest.recipientType.DESTINATION_CHAIN,
         depositType: QuoteRequest.depositType.ORIGIN_CHAIN,
         deadline: new Date(Date.now() + 3600_000).toISOString(),
@@ -179,22 +206,45 @@ function App() {
       setError('Origin token has no contractAddress.');
       return;
     }
-    if (!tron.wallet || !tron.account) {
-      setError('Connect Tron wallet first');
-      return;
-    }
 
     setSendingDeposit(true);
     setError(null);
     try {
-      const txHash = await tron.wallet.transfer({
-        originAsset: originToken.contractAddress,
-        depositAddress,
-        amount: amountIn,
-      });
-      const hash = typeof txHash === 'string' ? txHash : String(txHash);
-      setDepositTxHash(hash);
-      await handleSubmitDeposit({ depositAddress, txHash: hash });
+      let txHash: string;
+
+      if (originIsTron) {
+        if (!tron.wallet || !tron.account) {
+          setError('Connect Tron wallet first');
+          return;
+        }
+        const result = await tron.wallet.transfer({
+          originAsset: originToken.contractAddress,
+          depositAddress,
+          amount: amountIn,
+        });
+        txHash = typeof result === 'string' ? result : String(result);
+      } else if (originIsEvm) {
+        if (!evm.wallet || !evm.account) {
+          setError('Connect EVM wallet first');
+          return;
+        }
+        const chainId = getChainIdForTokenBlockchain(originToken.blockchain);
+        if (chainId != null) {
+          await ensureEthereumChain(chainId);
+        }
+        const result = await evm.wallet.transfer({
+          originAsset: originToken.contractAddress,
+          depositAddress,
+          amount: amountIn,
+        });
+        txHash = typeof result === 'string' ? result : String(result);
+      } else {
+        setError('Unsupported origin chain for deposit in this demo.');
+        return;
+      }
+
+      setDepositTxHash(txHash);
+      await handleSubmitDeposit({ depositAddress, txHash });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Transfer failed');
     } finally {
@@ -247,7 +297,7 @@ function App() {
           {tokensLoading ? 'Loading...' : 'Reload tokens'}
         </button>
         <p style={{ fontSize: '0.85rem', color: '#94a3b8' }}>
-          {tronTokens.length} Tron tokens, {plasmaTokens.length} Plasma tokens loaded
+          {availableTokens.length} Tron / EVM stablecoins loaded (DEPRECATED hidden)
         </p>
       </section>
 
@@ -270,7 +320,7 @@ function App() {
           </button>
         </div>
         <p className="hint">
-          Tron wallet is refund/deposit address; EVM wallet receives funds on Plasma.
+          Connect Tron and/or EVM wallets depending on your selected origin and destination chains.
         </p>
       </section>
 
@@ -278,10 +328,10 @@ function App() {
         <h2>3. Quote (SFA.getQuote)</h2>
         <div className="row">
           <div>
-            <label>From (Tron)</label>
+            <label>From</label>
             <select value={originAsset} onChange={(e) => setOriginAsset(e.target.value)}>
               <option value="">Select origin</option>
-              {tronTokens.map((t) => (
+              {availableTokens.map((t) => (
                 <option key={t.assetId} value={t.assetId}>
                   {t.blockchain} — {t.symbol}
                 </option>
@@ -289,10 +339,10 @@ function App() {
             </select>
           </div>
           <div>
-            <label>To (Plasma)</label>
+            <label>To</label>
             <select value={destinationAsset} onChange={(e) => setDestinationAsset(e.target.value)}>
               <option value="">Select destination</option>
-              {plasmaTokens.map((t) => (
+              {availableTokens.map((t) => (
                 <option key={t.assetId} value={t.assetId}>
                   {t.blockchain} — {t.symbol}
                 </option>
@@ -320,10 +370,11 @@ function App() {
       </section>
 
       <section className="card">
-        <h2>4. Send deposit (TRC20 transfer)</h2>
+        <h2>4. Send deposit ({originIsTron ? 'TRC20' : originIsEvm ? 'ERC20' : 'token'} transfer)</h2>
         <p className="hint">
           After step 3 with <strong>dry run off</strong>, send the quoted <code>amountIn</code> of the
-          origin token to <code>depositAddress</code> from your Tron wallet.
+          origin token to <code>depositAddress</code> from your{' '}
+          {originIsTron ? 'Tron' : originIsEvm ? 'EVM' : 'origin-chain'} wallet.
         </p>
         {quote?.quote?.depositAddress ? (
           <>
@@ -342,7 +393,12 @@ function App() {
         <button
           type="button"
           onClick={() => void handleSendDepositTransfer()}
-          disabled={sendingDeposit || !quote?.quote?.depositAddress || !originToken?.contractAddress}
+          disabled={
+            sendingDeposit ||
+            !quote?.quote?.depositAddress ||
+            !originToken?.contractAddress ||
+            (!originIsTron && !originIsEvm)
+          }
         >
           {sendingDeposit ? 'Sending…' : 'Send token to deposit address'}
         </button>
