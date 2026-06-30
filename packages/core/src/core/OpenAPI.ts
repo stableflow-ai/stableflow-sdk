@@ -12,6 +12,7 @@ export type OpenAPIConfig = {
   WITH_CREDENTIALS: boolean;
   CREDENTIALS: 'include' | 'omit' | 'same-origin';
   TOKEN?: string | Resolver<string> | undefined;
+  NEARINTENTS_TOKEN?: string | Resolver<string> | undefined;
   USERNAME?: string | Resolver<string> | undefined;
   PASSWORD?: string | Resolver<string> | undefined;
   HEADERS?: Headers | Resolver<Headers> | undefined;
@@ -25,6 +26,7 @@ export const OpenAPI: OpenAPIConfig = {
   WITH_CREDENTIALS: false,
   CREDENTIALS: 'include',
   TOKEN: undefined,
+  NEARINTENTS_TOKEN: undefined,
   USERNAME: undefined,
   PASSWORD: undefined,
   HEADERS: undefined,

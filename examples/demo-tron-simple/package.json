@@ -10,9 +10,9 @@
     "deploy": "npm run build && wrangler pages deploy dist"
   },
   "dependencies": {
-    "@stableflow/core": "rc",
-    "@stableflow/wallet-evm": "rc",
-    "@stableflow/wallet-tron": "rc",
+    "@stableflow/core": "workspace:*",
+    "@stableflow/wallet-evm": "workspace:*",
+    "@stableflow/wallet-tron": "workspace:*",
     "@tronweb3/tronwallet-adapters": "^1.2.25",
     "big.js": "^7.0.1",
     "buffer": "^6.0.3",

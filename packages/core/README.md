@@ -41,6 +41,14 @@ OpenAPI.TOKEN = 'your-jwt-token';
 
 **👉 [Apply for JWT Token](https://docs.google.com/forms/u/3/d/e/1FAIpQLSdTeV7UaZ1MiFxdJ2jH_PU60PIN3iqYJ1WXEOFY45TsAy6O5g/viewform)**
 
+Optional for OneClick routes(SFA.getQuote) — pass your NearIntents JWT for authenticated OneClick API access and fee-free swaps:
+
+```ts
+OpenAPI.NEARINTENTS_TOKEN = 'your-nearintents-jwt-token';
+```
+
+**👉 [Apply for NearIntents JWT Token](https://partners.near-intents.org/home)**
+
 ## RPC configuration (optional)
 
 Override or extend chain RPC URLs when the built-in defaults are insufficient:

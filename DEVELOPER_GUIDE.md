@@ -250,6 +250,20 @@ import { OpenAPI } from "@stableflow/core";
 OpenAPI.TOKEN = "your-jwt-token";
 ```
 
+**NearIntents JWT Token** (optional): Pass your NearIntents JWT to enable authenticated OneClick API access and reduced fees on OneClick routes(and `SFA.getQuote()`).
+
+**👉 [Apply for NearIntents JWT Token](https://partners.near-intents.org/home)**
+
+After receiving the token, set it before OneClick-related API calls:
+
+```typescript
+import { OpenAPI } from "@stableflow/core";
+
+OpenAPI.NEARINTENTS_TOKEN = "your-nearintents-jwt-token";
+```
+
+In the example apps, set `VITE_STABLEFLOW_NEARINTENTS_JWT_TOKEN` in `.env.local`; it is wired to `OpenAPI.NEARINTENTS_TOKEN` at startup.
+
 #### RPC URLs (optional)
 
 Bridge quotes and sends may read chain state, including balances, gas, and ATA existence. Override RPC endpoints if needed:

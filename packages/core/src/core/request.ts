@@ -146,11 +146,12 @@ export const resolve = async <T>(options: ApiRequestOptions, resolver?: T | Reso
 };
 
 export const getHeaders = async (config: OpenAPIConfig, options: ApiRequestOptions, formData?: FormData): Promise<Record<string, string>> => {
-  const [token, username, password, additionalHeaders] = await Promise.all([
+  const [token, username, password, additionalHeaders, nearintentsToken] = await Promise.all([
     resolve(options, config.TOKEN),
     resolve(options, config.USERNAME),
     resolve(options, config.PASSWORD),
     resolve(options, config.HEADERS),
+    resolve(options, config.NEARINTENTS_TOKEN),
   ]);
 
   const formHeaders = typeof formData?.getHeaders === 'function' && formData?.getHeaders() || {}
@@ -169,6 +170,10 @@ export const getHeaders = async (config: OpenAPIConfig, options: ApiRequestOptio
 
   if (isStringWithValue(token)) {
     headers['Authorization'] = `Bearer ${token}`;
+  }
+
+  if (isStringWithValue(nearintentsToken)) {
+    headers['nearintent-api-key'] = nearintentsToken;
   }
 
   if (isStringWithValue(username) && isStringWithValue(password)) {
