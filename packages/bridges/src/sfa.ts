@@ -32,7 +32,7 @@ import {
 export interface PermitSignature {
   amount: string;
   deadline: number;
-  nonce: string;
+  nonce: number;
   owner: string;
   r: string;
   s: string;
