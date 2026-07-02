@@ -26,6 +26,7 @@
     "pub": "pnpm -r publish --access public",
     "pub:rc": "pnpm -r publish --access public --tag rc --no-git-checks",
     "pub:beta": "pnpm -r publish --access public --tag beta --no-git-checks",
+    "pub:canary": "pnpm -r publish --access public --tag canary --no-git-checks",
     "changeset": "changeset"
   },
   "devDependencies": {
