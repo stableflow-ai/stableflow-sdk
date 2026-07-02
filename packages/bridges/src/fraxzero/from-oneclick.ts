@@ -144,6 +144,7 @@ export class OneClick2FraxZeroService extends FraxZeroService {
         isProxy: true,
         recipient: middleChainRecipientAddress,
         appFees: [
+          ...(params.appFees || []),
           {
             recipient: "reffer.near",
             // No bridge fee will be charged temporarily

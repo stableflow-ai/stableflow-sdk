@@ -87,6 +87,7 @@ export class OneClickUsdt0Service {
       isProxy: true,
       recipient: middleChainRecipientAddress,
       appFees: [
+        ...(params.appFees || []),
         {
           recipient: "reffer.near",
           // No bridge fee will be charged temporarily

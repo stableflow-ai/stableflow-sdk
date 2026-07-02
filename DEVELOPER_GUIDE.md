@@ -740,6 +740,86 @@ BridgeSFA.send(
 
 Returns the source-chain transaction hash. `permitSignature` is required when `quote.needPermit === true`.
 
+##### @stableflow/bridges BridgeSFA.buildTransaction() — API-driven custody
+
+For MPC wallets (e.g. Fireblocks) that sign and broadcast through their own infrastructure, use `buildTransaction` instead of `send`. StableFlow produces serializable, unsigned transaction data (calldata / tx data) and EIP-712 typed data — it never requires a signer. EVM source chains only.
+
+```typescript
+BridgeSFA.buildTransaction(
+  serviceType: Service,
+  params: { quote: any }
+): Promise<{
+  chainId: number;
+  from: string;
+  approveTx?: EvmTxData;       // present when quote.needApprove
+  approveResetTx?: EvmTxData;  // present on Ethereum (reset allowance to 0 first)
+  permitTypedData?: PermitTypedData; // present when quote.needPermit (sign off-chain)
+  tx: EvmTxData;              // main source-chain transaction to broadcast
+}>
+
+interface EvmTxData {
+  chainId: number;
+  from: string;
+  to: string;
+  data: string;   // hex calldata, "0x" for a plain native transfer
+  value: string;  // wei, decimal string
+  gasLimit?: string;
+}
+```
+
+The integrator signs/broadcasts with their MPC signer, then reports the result:
+
+##### @stableflow/bridges BridgeSFA.report()
+
+```typescript
+BridgeSFA.report(
+  serviceType: Service,
+  params: {
+    quote: any;
+    hash: string;             // source-chain tx hash from the external broadcast
+    permitSignature?: PermitSignature; // required when quote.needPermit
+  }
+): Promise<SubmitDepositTxResponse>
+```
+
+`report` submits the broadcast transaction (and permit signature, if any) to StableFlow so it can execute the destination leg. This replaces the internal reporting that `send` performs automatically.
+
+End-to-end flow (see `examples/demo-evm-mpc`):
+
+```typescript
+// 1. Quote (a provider-only WalletConfig is sufficient; no signer required)
+const [route] = (await BridgeSFA.getAllQuote(params)).filter((q) => q.quote && !q.error);
+
+// 2. StableFlow builds unsigned tx data (no signer)
+const build = await BridgeSFA.buildTransaction(route.serviceType, { quote: route.quote });
+
+// 3. External MPC signer (Fireblocks, etc.) signs & broadcasts
+if (build.approveTx) {
+  if (build.approveResetTx) await mpcSendTransaction(build.approveResetTx); // Ethereum only
+  await mpcSendTransaction(build.approveTx);
+}
+let permitSignature;
+if (build.permitTypedData) {
+  const { domain, types, values, deadline, nonce, owner } = build.permitTypedData;
+  const sig = ethers.Signature.from(await mpcSignTypedData(domain, types, values));
+  permitSignature = { amount: values.value, deadline, nonce: String(nonce), owner, r: sig.r, s: sig.s, v: sig.v };
+}
+const hash = await mpcSendTransaction(build.tx);
+
+// 4. Report back to StableFlow
+await BridgeSFA.report(route.serviceType, { quote: route.quote, hash, permitSignature });
+
+// 5. Poll status as usual
+await BridgeSFA.getStatus(route.serviceType, { quote: route.quote, hash });
+```
+
+Notes:
+
+- EVM only. Non-EVM source chains throw `API-driven custody currently supports EVM chains only`.
+- On Ethereum, broadcast `approveResetTx` (approve 0) before `approveTx` for tokens that require resetting a stale allowance.
+- Permit-required routes (`OneClickUsdt0`, `OneClickFraxZero`, `FraxZeroOneClick`) return `permitTypedData`; sign it off-chain, split into `v/r/s`, and pass the assembled `permitSignature` to `report`.
+- Available from `@stableflow/bridges` `3.1.0`.
+
 ##### @stableflow/bridges BridgeSFA.getStatus()
 
 ```typescript
