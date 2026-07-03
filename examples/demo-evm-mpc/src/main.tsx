@@ -15,10 +15,11 @@ if (nearintentsJwt) {
   OpenAPI.NEARINTENTS_TOKEN = nearintentsJwt;
 }
 
+const CustomRpcHost = import.meta.env.VITE_CUSTOM_RPC_HOST;
 setRpcUrls({
-  eth: ['https://0xrpc.io/eth'],
-  xlayer: ['https://rpc.xlayer.tech'],
-  plasma: ['https://rpc.plasma.to'],
+  eth: [`${CustomRpcHost}/ethereum`],
+  plasma: [`${CustomRpcHost}/plasma`],
+  tron: [`${CustomRpcHost}/tron`],
 });
 
 console.log(NetworkRpcUrlsMap);
