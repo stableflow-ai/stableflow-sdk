@@ -1,6 +1,6 @@
 {
   "name": "@stableflow/utils-evm",
-  "version": "0.0.0-experimental-5a8afd7389-20260703",
+  "version": "0.0.0-experimental-dbda512b4f-20260703",
   "description": "EVM utilities for StableFlow SDK (RPC fallback, LayerZero compose)",
   "license": "MIT",
   "repository": {

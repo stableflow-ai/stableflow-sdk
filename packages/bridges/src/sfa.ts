@@ -139,7 +139,7 @@ export class BridgeSFA {
         Service.FraxZeroOneClick,
         Service.OneClickFraxZero,
       ] as Service[]).includes(service)) {
-        _params.slippageTolerance = params.slippageTolerance * 100;
+        // _params.slippageTolerance = params.slippageTolerance * 100;
         _params.originAsset = params.fromToken.assetId;
         _params.destinationAsset = params.toToken.assetId;
         _params.refundType = "ORIGIN_CHAIN";

@@ -279,6 +279,8 @@ function App() {
 
       const response = await BridgeSFA.getAllQuote(quoteRequest);
 
+      console.log("quote response: %o", response);
+
       if (response && Array.isArray(response)) {
         const validQuotes = response.filter((q) => q.quote && !q.error);
 
@@ -320,6 +322,14 @@ function App() {
 
     const quote = selectedQuote!.quote;
     const serviceType = selectedQuote!.serviceType;
+
+    console.log("selectedQuote: %o", quote);
+
+    if (quote.errMsg) {
+      setError(`invalid quote: ${quote.errMsg}`);
+      setLoading(false);
+      return;
+    }
 
     try {
       const build = await BridgeSFA.buildTransaction(serviceType, { quote });
