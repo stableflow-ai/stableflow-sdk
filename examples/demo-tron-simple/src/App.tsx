@@ -80,7 +80,7 @@ function App() {
   const amountWei = useMemo(() => {
     if (!originToken || !amount) return '';
     try {
-      return Big(amount).times(10 ** originToken.decimals).toFixed(0);
+      return Big(amount).times(10 ** originToken.decimals).toFixed(0, 0);
     } catch {
       return '';
     }

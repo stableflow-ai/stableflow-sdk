@@ -1,6 +1,6 @@
 {
   "name": "@stableflow/bridges",
-  "version": "3.0.2",
+  "version": "3.0.3-rc-fca5606ac4-20260703",
   "description": "StableFlow bridge services (OneClick, CCTP, USDT0, FraxZero)",
   "license": "MIT",
   "repository": {

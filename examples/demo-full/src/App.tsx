@@ -653,7 +653,7 @@ function App() {
         refundTo: fromWalletAddress,
         amountWei: Big(amount)
           .times(10 ** fromToken.decimals)
-          .toString(),
+          .toFixed(0, 0),
         slippageTolerance: normalizedSlippage,
         oneclickParams: {
           appFees: [

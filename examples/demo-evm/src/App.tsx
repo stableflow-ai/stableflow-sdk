@@ -80,7 +80,7 @@ function App() {
         refundTo: fromWalletAddress,
         amountWei: Big(amount)
           .times(10 ** fromChainConfig.decimals)
-          .toString(),
+          .toFixed(0, 0),
         slippageTolerance: 0.5,
         oneclickParams: {
           appFees: [
