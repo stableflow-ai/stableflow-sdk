@@ -1,6 +1,6 @@
 {
   "name": "@stableflow/wallet-sui",
-  "version": "3.0.3",
+  "version": "3.1.0",
   "description": "Sui wallet adapter for StableFlow SDK",
   "license": "MIT",
   "repository": {
