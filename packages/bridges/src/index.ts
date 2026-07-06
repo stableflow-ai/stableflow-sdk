@@ -1,6 +1,16 @@
 export { ServiceMap } from './service-map';
 export { BridgeSFA } from './sfa';
-export type { GetAllQuoteParams } from './sfa';
+export type { GetAllQuoteParams, PermitSignature } from './sfa';
+export {
+  buildSendTx,
+  buildApproveTx,
+  buildPermitTypedData,
+} from './tx-builder';
+export type {
+  EvmTxData,
+  PermitTypedData,
+  BuildTransactionResult,
+} from './tx-builder';
 export {
   getQuoteModes,
   addressToBytes32,

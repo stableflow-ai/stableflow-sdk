@@ -18,6 +18,26 @@ import {
 import Big from 'big.js';
 import { ServiceMap } from './service-map';
 import { formatQuoteError, getQuoteModes } from './utils';
+import {
+  buildApproveTx,
+  buildPermitTypedData,
+  buildSendTx,
+  type BuildTransactionResult,
+} from './tx-builder';
+
+/**
+ * Normalized ERC20 permit signature passed to `BridgeSFA.send` / `BridgeSFA.report`
+ * when a route requires a permit (`quote.needPermit === true`).
+ */
+export interface PermitSignature {
+  amount: string;
+  deadline: number;
+  nonce: number;
+  owner: string;
+  r: string;
+  s: string;
+  v: 27 | 28;
+}
 
 export interface GetAllQuoteParams {
   singleService?: Service;
@@ -72,6 +92,11 @@ const submitOthersTx = (
  */
 export class BridgeSFA {
   public static async getAllQuote(params: GetAllQuoteParams): Promise<Array<{ serviceType: Service; quote?: any; error?: string }>> {
+    const cs = new Csl(OpenAPI.DEBUG);
+    const csl = cs.log;
+
+    csl("BridgeSFA.getAllQuote", "blue-400", "params: %o", params);
+
     const results: Array<{ serviceType: Service; quote?: any; error?: string }> = [];
 
     let { minInputAmount = "1", disabledServices } = params;
@@ -114,7 +139,7 @@ export class BridgeSFA {
         Service.FraxZeroOneClick,
         Service.OneClickFraxZero,
       ] as Service[]).includes(service)) {
-        _params.slippageTolerance = params.slippageTolerance * 100;
+        // _params.slippageTolerance = params.slippageTolerance * 100;
         _params.originAsset = params.fromToken.assetId;
         _params.destinationAsset = params.toToken.assetId;
         _params.refundType = "ORIGIN_CHAIN";
@@ -151,6 +176,7 @@ export class BridgeSFA {
         return;
       }
       const quoteParams = formatQuoteParams(_service);
+      csl("BridgeSFA.getAllQuote", "blue-400", "%s quoteParams: %o", _service, quoteParams);
       quoteServices.push({
         service: _service,
         quote: () => {
@@ -227,6 +253,8 @@ export class BridgeSFA {
       return results;
     }
 
+    csl("BridgeSFA.getAllQuote", "blue-400", "quoteServices: %o", quoteServices);
+
     const promises: Promise<void>[] = [];
     for (const quoteService of quoteServices) {
       const promise = (async () => {
@@ -252,15 +280,7 @@ export class BridgeSFA {
     params: {
       wallet: any;
       quote: any;
-      permitSignature?: {
-        amount: string;
-        deadline: number;
-        nonce: string;
-        owner: string;
-        r: string;
-        s: string;
-        v: 27 | 28;
-      };
+      permitSignature?: PermitSignature;
     }
   ): Promise<string> {
     const cs = new Csl(OpenAPI.DEBUG);
@@ -291,12 +311,11 @@ export class BridgeSFA {
       wallet,
     };
 
-    const { isExactOutput, isOneClickService, isQuoteParamDepositAddress } = getQuoteModes({
+    const { isExactOutput, isOneClickService } = getQuoteModes({
       quoteData: quote,
       bridgeStore: { quoteDataService: serviceType },
     });
     const fromToken = quote.quoteParam.fromToken;
-    const toToken = quote.quoteParam.toToken;
     const depositAddress = quote.quote?.depositAddress;
     const sendParam = quote.sendParam;
 
@@ -321,49 +340,11 @@ export class BridgeSFA {
     const txhash = await service.send(sendParams);
 
     try {
-      const reportData: any = {
-        project: ServiceBackend[serviceType] as any,
-        address: quote.quoteParam?.refundTo,
-        amount: isExactOutput ? quote.quote.amountInFormatted : Big(_amountWei || 0).div(10 ** (fromToken?.decimals || 6)).toFixed(fromToken?.decimals || 6, 0),
-        out_amount: quote.outputAmount,
-        deposit_address: isOneClickService ? quote.quote?.depositAddress : "",
-        receive_address: quote.quoteParam?.recipient,
-        from_chain: fromToken.blockchain,
-        symbol: /^USD₮0$/i.test(fromToken.symbol) ? "USDT" : fromToken.symbol,
-        to_chain: toToken.blockchain,
-        to_symbol: /^USD₮0$/i.test(toToken.symbol) ? "USDT" : toToken.symbol,
-        tx_hash: "",
-      };
-
-      if (permitSignature) {
-        if (([Service.OneClickUsdt0] as Service[]).includes(serviceType)) {
-          reportData.layer_zero_permit = {
-            ...permitSignature,
-            ...quote.permitAdditionalData,
-          };
-        }
-        if (([Service.OneClickFraxZero, Service.FraxZeroOneClick] as Service[]).includes(serviceType)) {
-          reportData.frax_zero_permit = {
-            ...permitSignature,
-            ...quote.permitAdditionalData,
-          };
-        }
-      }
-
-      reportData.tx_hash = txhash;
-
-      let _depositAddress = txhash;
-      if (isQuoteParamDepositAddress) {
-        _depositAddress = quote.quoteParam?.depositAddress || txhash;
-      }
-      if (!reportData.deposit_address) {
-        reportData.deposit_address = _depositAddress;
-      }
-
-      if (serviceType === Service.Native) {
-        const quoteIds = quote?.orders?.map?.((order: any) => order.quoteId) || [];
-        reportData.quoteIds = quoteIds;
-      }
+      const reportData = BridgeSFA.buildReportData(serviceType, {
+        quote,
+        txhash,
+        permitSignature,
+      });
 
       csl("BridgeSFA.send", "blue-400", "reportData: %o", reportData);
 
@@ -373,6 +354,175 @@ export class BridgeSFA {
     }
 
     return txhash;
+  }
+
+  /**
+   * Build the backend report payload for a submitted source-chain transaction.
+   * Shared by `send` (fire-and-forget) and `report` (awaited).
+   */
+  private static buildReportData(
+    serviceType: Service,
+    params: {
+      quote: any;
+      txhash: string;
+      permitSignature?: PermitSignature;
+    }
+  ): Parameters<typeof submitOthersTx>[0] {
+    const { quote, txhash, permitSignature } = params;
+
+    const { isExactOutput, isOneClickService, isQuoteParamDepositAddress } = getQuoteModes({
+      quoteData: quote,
+      bridgeStore: { quoteDataService: serviceType },
+    });
+
+    const fromToken = quote.quoteParam.fromToken;
+    const toToken = quote.quoteParam.toToken;
+
+    let _amountWei = quote.quoteParam?.amountWei;
+    if (isExactOutput) {
+      _amountWei = quote.quote?.minAmountIn;
+    }
+
+    const reportData: any = {
+      project: ServiceBackend[serviceType] as any,
+      address: quote.quoteParam?.refundTo,
+      amount: isExactOutput ? quote.quote.amountInFormatted : Big(_amountWei || 0).div(10 ** (fromToken?.decimals || 6)).toFixed(fromToken?.decimals || 6, 0),
+      out_amount: quote.outputAmount,
+      deposit_address: isOneClickService ? quote.quote?.depositAddress : "",
+      receive_address: quote.quoteParam?.recipient,
+      from_chain: fromToken.blockchain,
+      symbol: /^USD₮0$/i.test(fromToken.symbol) ? "USDT" : fromToken.symbol,
+      to_chain: toToken.blockchain,
+      to_symbol: /^USD₮0$/i.test(toToken.symbol) ? "USDT" : toToken.symbol,
+      tx_hash: "",
+    };
+
+    if (permitSignature) {
+      if (([Service.OneClickUsdt0] as Service[]).includes(serviceType)) {
+        reportData.layer_zero_permit = {
+          ...permitSignature,
+          ...quote.permitAdditionalData,
+        };
+      }
+      if (([Service.OneClickFraxZero, Service.FraxZeroOneClick] as Service[]).includes(serviceType)) {
+        reportData.frax_zero_permit = {
+          ...permitSignature,
+          ...quote.permitAdditionalData,
+        };
+      }
+    }
+
+    reportData.tx_hash = txhash;
+
+    let _depositAddress = txhash;
+    if (isQuoteParamDepositAddress) {
+      _depositAddress = quote.quoteParam?.depositAddress || txhash;
+    }
+    if (!reportData.deposit_address) {
+      reportData.deposit_address = _depositAddress;
+    }
+
+    if (serviceType === Service.Native) {
+      const quoteIds = quote?.orders?.map?.((order: any) => order.quoteId) || [];
+      reportData.quoteIds = quoteIds;
+    }
+
+    return reportData;
+  }
+
+  /**
+   * API-driven custody: build the serializable, unsigned transaction data for a
+   * route WITHOUT a signer. Intended for MPC wallets (e.g. Fireblocks) that sign
+   * and broadcast through their own infrastructure.
+   *
+   * Returns any required `approveTx` (and `approveResetTx` on Ethereum), the
+   * `permitTypedData` to sign off-chain when `quote.needPermit`, and the main
+   * `tx`. After the integrator broadcasts `tx`, call `BridgeSFA.report` with the
+   * resulting hash (and the permit signature, if any) so StableFlow can execute
+   * the destination leg.
+   *
+   * EVM only for now; non-EVM source chains throw.
+   */
+  public static async buildTransaction(
+    serviceType: Service,
+    params: { quote: any }
+  ): Promise<BuildTransactionResult> {
+    const service = ServiceMap[serviceType];
+    if (!service) {
+      throw new Error(`Invalid service type: ${serviceType}`);
+    }
+
+    const { quote } = params;
+    if (!quote) {
+      throw new Error('Quote data is required');
+    }
+
+    const tx = buildSendTx(serviceType, quote);
+    const { approveTx, approveResetTx } = buildApproveTx(serviceType, quote);
+
+    const result: BuildTransactionResult = {
+      chainId: tx.chainId,
+      from: tx.from,
+      tx,
+    };
+
+    if (approveTx) {
+      result.approveTx = approveTx;
+    }
+    if (approveResetTx) {
+      result.approveResetTx = approveResetTx;
+    }
+
+    if (quote.needPermit) {
+      result.permitTypedData = await buildPermitTypedData({
+        permitToken: quote.permitToken,
+        permitAmountWei: quote.permitAmountWei,
+        permitSpender: quote.permitSpender,
+        owner: quote.quoteParam?.evmAddress || quote.quoteParam?.refundTo,
+      });
+    }
+
+    return result;
+  }
+
+  /**
+   * API-driven custody: report an externally signed & broadcast source-chain
+   * transaction back to StableFlow so it can track and execute the destination
+   * leg. Pair with `BridgeSFA.buildTransaction`.
+   *
+   * When `quote.needPermit === true`, `permitSignature` is required.
+   */
+  public static report(
+    serviceType: Service,
+    params: {
+      quote: any;
+      hash: string;
+      permitSignature?: PermitSignature;
+    }
+  ): CancelablePromise<SubmitDepositTxResponse> {
+    const service = ServiceMap[serviceType];
+    if (!service) {
+      throw new Error(`Invalid service type: ${serviceType}`);
+    }
+
+    const { quote, hash, permitSignature } = params;
+    if (!quote) {
+      throw new Error('Quote data is required');
+    }
+    if (!hash) {
+      throw new Error('Transaction hash is required');
+    }
+    if (quote.needPermit && !permitSignature) {
+      throw new Error('Permit signature is required');
+    }
+
+    const reportData = BridgeSFA.buildReportData(serviceType, {
+      quote,
+      txhash: hash,
+      permitSignature,
+    });
+
+    return submitOthersTx(reportData);
   }
 
   public static async getStatus(

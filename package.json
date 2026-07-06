@@ -12,6 +12,7 @@
     "build:hyperliquid": "pnpm --filter @stableflow/hyperliquid build",
     "build:examples": "pnpm --filter \"./examples/*\" build",
     "dev:demo-evm": "pnpm --filter demo-evm dev",
+    "dev:demo-evm-mpc": "pnpm --filter demo-evm-mpc dev",
     "dev:demo-aptos": "pnpm --filter demo-aptos dev",
     "dev:demo-near": "pnpm --filter demo-near dev",
     "dev:demo-solana": "pnpm --filter demo-solana dev",
@@ -25,6 +26,7 @@
     "pub": "pnpm -r publish --access public",
     "pub:rc": "pnpm -r publish --access public --tag rc --no-git-checks",
     "pub:beta": "pnpm -r publish --access public --tag beta --no-git-checks",
+    "pub:canary": "pnpm -r publish --access public --tag canary --no-git-checks",
     "changeset": "changeset"
   },
   "devDependencies": {

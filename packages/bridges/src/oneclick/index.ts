@@ -179,6 +179,7 @@ export class OneClickService {
       appFees = [],
       swapType = "EXACT_INPUT",
       isProxy = true,
+      slippageTolerance,
       ...restParams
     } = params;
 
@@ -201,6 +202,7 @@ export class OneClickService {
       ],
       referral: "stableflow",
       amount: amountWei,
+      slippageTolerance: slippageTolerance * 100,
     };
 
     if (swapType === "EXACT_OUTPUT") {

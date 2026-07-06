@@ -126,6 +126,7 @@ export class FraxZero2OneClickService extends FraxZeroService {
         refundTo: middleChainRecipientAddress,
         wallet: middleChainWallet,
         appFees: [
+          ...(params.appFees || []),
           {
             recipient: "reffer.near",
             // No bridge fee will be charged temporarily
