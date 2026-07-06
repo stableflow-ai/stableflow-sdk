@@ -21,6 +21,30 @@ import {
   type PermitSignature,
 } from '@stableflow/bridges';
 
+/**
+ * Token price map passed to `BridgeSFA.getAllQuote` for gas/fee USD estimates and route comparisons.
+ *
+ * TODO (production): Replace this hardcoded object with a live price API call. The response must
+ * cover every asset involved in the user's selected bridge route — not only the source/destination
+ * chains, but any intermediate chains used for gas or hop fees.
+ *
+ * Required price categories:
+ * 1. **Gas / native tokens** — one entry per chain's native asset, keyed by `TokenConfig.nativeToken.symbol`
+ *    from `@stableflow/core` (`tokens`, `usdtTokens`, `usdcTokens`, `frxusdTokens`, etc.).
+ *    Example: bridging from Ethereum requires `{ ETH: "1699.85" }` because `tokens` entries that
+ *    use `chains.eth` expose `nativeToken.symbol === "ETH"`.
+ * 2. **Bridge / stablecoin tokens** — one entry per transferable asset symbol (`TokenConfig.symbol`),
+ *    e.g. `USDT`, `USDC`, `frxUSD`. The SDK uses these to convert input/output amounts to USD.
+ *    Non-USD stablecoins will be added over time; each new stable must have its own price entry
+ *    (do not assume all stables are pegged to `$1` — use real market/oracle prices when available).
+ *
+ * Format: `Record<string, string>` — keys are token symbols, values are USD prices as decimal strings.
+ * Lookup is case-insensitive via `getPrice()` in `@stableflow/core`.
+ *
+ * Example response shape for an Ethereum → Arbitrum USDT route:
+ * `{ ETH: "1699.85", USDT: "1.0001" }`
+ * (Both chains share `nativeToken.symbol === "ETH"`; gas on either side is priced via the ETH entry.)
+ */
 const prices: Record<string, string> = {
   TRX: '0.317841',
   ETH: '1699.85',
