@@ -28,10 +28,11 @@ export { TransactionStatus } from './models/Status';
 
 export { SFA } from './services/SFA';
 
-export { tokens, usdtTokens, usdcTokens, frxusdTokens } from './wallets/config/tokens';
+export { tokens, usdtTokens, usdcTokens, frxusdTokens, eureTokens } from './wallets/config/tokens';
 export { usdtChains } from './wallets/config/usdt';
 export { usdcChains } from './wallets/config/usdc';
 export { frxusdChains } from './wallets/config/frxusd';
+export { eureChains, eureEvm } from './wallets/config/eure';
 export { usdt0Chains } from './wallets/config/usdt0';
 export { NetworkRpcUrlsMap, getRpcUrls, setRpcUrls, getChainRpcUrl } from './wallets/config/rpcs';
 export { DefaultAddresses } from './wallets/config/addresses';

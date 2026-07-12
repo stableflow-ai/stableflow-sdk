@@ -580,7 +580,7 @@ SFA.getTokens(): CancelablePromise<TokenResponse[]>
 |--------------|------|-------------|
 | `assetId` | `string` | StableFlow asset ID used by `originAsset` and `destinationAsset`. |
 | `decimals` | `number` | Token decimals. Amounts should be passed in the smallest unit. |
-| `blockchain` | `TokenResponse.blockchain` | Chain key, such as `eth`, `arb`, `sol`, or `tron`. |
+| `blockchain` | `string` | Chain key, such as `eth`, `arb`, `sol`, or `tron`. |
 | `symbol` | `string` | Token symbol. |
 | `price` | `number` | Current USD price. |
 | `priceUpdatedAt` | `string` | Price update timestamp. |

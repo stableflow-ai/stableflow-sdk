@@ -10,7 +10,7 @@
     "deploy": "npm run build && wrangler pages deploy dist"
   },
   "dependencies": {
-    "@stableflow/core": "workspace:*",
+    "@stableflow/core": "rc",
     "big.js": "^7.0.1",
     "ethers": "^6.13.5",
     "react": "^19.1.10",

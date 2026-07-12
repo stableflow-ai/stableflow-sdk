@@ -11,9 +11,9 @@ export type TokenResponse = {
    */
   decimals: number;
   /**
-   * Blockchain associated with the token
+   * Blockchain associated with the token (API chain key, e.g. eth, arb, tron, pharos)
    */
-  blockchain: TokenResponse.blockchain;
+  blockchain: string;
   /**
    * Token symbol (e.g. BTC, ETH)
    */
@@ -31,30 +31,3 @@ export type TokenResponse = {
    */
   contractAddress?: string;
 };
-export namespace TokenResponse {
-  /**
-   * Blockchain associated with the token
-   */
-  export enum blockchain {
-    NEAR = 'near',
-    ETH = 'eth',
-    BASE = 'base',
-    ARB = 'arb',
-    BTC = 'btc',
-    SOL = 'sol',
-    TON = 'ton',
-    DOGE = 'doge',
-    XRP = 'xrp',
-    ZEC = 'zec',
-    GNOSIS = 'gnosis',
-    BERA = 'bera',
-    BSC = 'bsc',
-    POL = 'pol',
-    TRON = 'tron',
-    SUI = 'sui',
-    OP = 'op',
-    AVAX = 'avax',
-    CARDANO = 'cardano',
-  }
-}
-

@@ -7,6 +7,7 @@ export const CCTP_TOKEN_MESSENGER: Record<string, string> = {
   ["Optimism"]: "0x28b5a0e9C621a5BadaA536219b3a228C8168cf5d",
   ["Avalanche"]: "0x28b5a0e9C621a5BadaA536219b3a228C8168cf5d",
   ["Solana"]: "CCTPV2vPZJS2u2BBsUoscuikbYjnpFmbFsvVuJdgUMQe",
+  ["Pharos"]: "0x28b5a0e9C621a5BadaA536219b3a228C8168cf5d",
 };
 
 export const CCTP_TOKEN_PROXY: Record<string, string> = {
@@ -17,6 +18,7 @@ export const CCTP_TOKEN_PROXY: Record<string, string> = {
   ["Avalanche"]: "0xB6E3a1165aC3E0c370e316C27E959482460dBeDD",
   ["Solana"]: "8whUZNSbjJXC2UDRpo3PXo5MHzhptwVTTwpSYuTgQJNY",
   ["Base"]: "0x7092B8E5445Fca836B0f9780c77C38C7cbb9A43D",
+  ["Pharos"]: "0x53812feae0fd2c43f8e6d8847a7f5d035f1d1f8f",
 };
 
 export const CCTP_TOKEN_MESSENGER_ABI = [

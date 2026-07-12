@@ -2,6 +2,7 @@ import { usdtChains } from "./usdt";
 import { usdt0Chains } from "./usdt0";
 import { usdcChains } from "./usdc";
 import { frxusdChains } from "./frxusd";
+import { eureChains } from "./eure";
 import { TokenConfig } from "../../models/Token";
 
 export const tokens: TokenConfig[] = [
@@ -9,8 +10,10 @@ export const tokens: TokenConfig[] = [
   ...Object.values(usdcChains),
   ...Object.values(usdt0Chains),
   ...Object.values(frxusdChains),
+  ...Object.values(eureChains),
 ];
 
 export const usdtTokens: TokenConfig[] = [...Object.values(usdtChains), ...Object.values(usdt0Chains)];
 export const usdcTokens: TokenConfig[] = Object.values(usdcChains);
 export const frxusdTokens: TokenConfig[] = Object.values(frxusdChains);
+export const eureTokens: TokenConfig[] = Object.values(eureChains);

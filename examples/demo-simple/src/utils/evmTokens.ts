@@ -1,15 +1,16 @@
 import { TokenResponse } from '@stableflow/core';
 
 const EVM_BLOCKCHAINS = new Set<string>([
-  TokenResponse.blockchain.ETH,
-  TokenResponse.blockchain.BASE,
-  TokenResponse.blockchain.ARB,
-  TokenResponse.blockchain.BSC,
-  TokenResponse.blockchain.POL,
-  TokenResponse.blockchain.OP,
-  TokenResponse.blockchain.AVAX,
-  TokenResponse.blockchain.BERA,
-  TokenResponse.blockchain.GNOSIS,
+  'eth',
+  'base',
+  'arb',
+  'bsc',
+  'pol',
+  'op',
+  'avax',
+  'bera',
+  'gnosis',
+  'pharos',
 ]);
 
 export function isEvmToken(token: TokenResponse): boolean {
@@ -17,7 +18,7 @@ export function isEvmToken(token: TokenResponse): boolean {
 }
 
 export function isStableToken(token: TokenResponse): boolean {
-   return [/^USDT$/i, /^USDC$/i, /^USDC.e$/i, /^USD.e$/i].some((reg) => reg.test(token.symbol));
+   return [/^USDT$/i, /^USDC$/i, /^USDC.e$/i, /^USD.e$/i, /^EURe$/i].some((reg) => reg.test(token.symbol));
 }
 
 export function filterEvmTokens(tokens: TokenResponse[]): TokenResponse[] {

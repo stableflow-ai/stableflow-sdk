@@ -13,9 +13,9 @@
   "dependencies": {
     "@layerzerolabs/lz-v2-utilities": "^3.0.151",
     "@rainbow-me/rainbowkit": "^2.2.8",
-    "@stableflow/bridges": "latest",
-    "@stableflow/core": "latest",
-    "@stableflow/wallet-evm": "latest",
+    "@stableflow/bridges": "rc",
+    "@stableflow/core": "rc",
+    "@stableflow/wallet-evm": "rc",
     "@tanstack/react-query": "^5.87.1",
     "big.js": "^7.0.1",
     "buffer": "^6.0.3",

@@ -475,6 +475,22 @@ const chains: Record<string, ChainConfig> = {
     },
     ...getChainRpcUrl("katana"),
   },
+  pharos: {
+    chainName: "Pharos",
+    blockchain: "pharos",
+    chainIcon: getStableflowChainLogo("Pharos"),
+    chainIconGray: getStableflowChainLogo("Pharos-gray"),
+    chainType: chainTypes.evm.value,
+    chainId: 1672,
+    blockExplorerUrl: "https://www.pharosscan.xyz/tx",
+    blockExplorerUrls: ["https://www.pharosscan.xyz"],
+    primaryColor: "#0066FF",
+    nativeToken: {
+      symbol: "PROS",
+      decimals: 18,
+    },
+    ...getChainRpcUrl("pharos"),
+  },
 };
 
 export default chains;

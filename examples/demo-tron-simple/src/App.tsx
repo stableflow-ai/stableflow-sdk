@@ -68,13 +68,13 @@ function App() {
     [availableTokens, destinationAsset]
   );
 
-  const originIsTron = originToken ? isTronBlockchain(String(originToken.blockchain)) : false;
-  const originIsEvm = originToken ? isEvmBlockchain(String(originToken.blockchain)) : false;
+  const originIsTron = originToken ? isTronBlockchain(originToken.blockchain) : false;
+  const originIsEvm = originToken ? isEvmBlockchain(originToken.blockchain) : false;
   const destinationIsTron = destinationToken
-    ? isTronBlockchain(String(destinationToken.blockchain))
+    ? isTronBlockchain(destinationToken.blockchain)
     : false;
   const destinationIsEvm = destinationToken
-    ? isEvmBlockchain(String(destinationToken.blockchain))
+    ? isEvmBlockchain(destinationToken.blockchain)
     : false;
 
   const amountWei = useMemo(() => {

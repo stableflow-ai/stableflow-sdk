@@ -43,7 +43,7 @@ import { getChainRpcUrl } from '@stableflow/core';
 import '@rainbow-me/rainbowkit/styles.css';
 import useWalletsStore from '@/stores/use-wallets';
 import { useDebounceFn } from '../hooks/useDebounceFn';
-import { fallback } from 'viem';
+import { fallback, defineChain } from 'viem';
 import {
   metaMaskWallet,
   okxWallet,
@@ -53,6 +53,18 @@ import {
 } from '@rainbow-me/rainbowkit/wallets';
 
 const projectId = import.meta.env.VITE_WALLET_CONNECT_PROJECT_ID as string;
+
+const pharos = defineChain({
+  id: 1672,
+  name: 'Pharos',
+  nativeCurrency: { name: 'PROS', symbol: 'PROS', decimals: 18 },
+  rpcUrls: {
+    default: { http: getChainRpcUrl('pharos').rpcUrls },
+  },
+  blockExplorers: {
+    default: { name: 'PharosScan', url: 'https://www.pharosscan.xyz' },
+  },
+});
 
 export const metadata = {
   name: 'StableFlow Demo-Full',
@@ -82,6 +94,7 @@ const RpcUrls: Record<number, any> = {
   [flare.id]: fallback(getChainRpcUrl("flare").rpcUrls.map((rpc) => http(rpc))),
   [fraxtal.id]: fallback(getChainRpcUrl("frax").rpcUrls.map((rpc) => http(rpc))),
   [katana.id]: fallback(getChainRpcUrl("katana").rpcUrls.map((rpc) => http(rpc))),
+  [pharos.id]: fallback(getChainRpcUrl("pharos").rpcUrls.map((rpc) => http(rpc))),
 };
 
 const connectors = connectorsForWallets(
@@ -129,6 +142,7 @@ const wagmiConfig = createConfig({
     flare,
     fraxtal,
     katana,
+    pharos,
   ],
   transports: {
     [mainnet.id]: RpcUrls[mainnet.id] || http(),
@@ -151,6 +165,7 @@ const wagmiConfig = createConfig({
     [flare.id]: RpcUrls[flare.id] || http(),
     [fraxtal.id]: RpcUrls[fraxtal.id] || http(),
     [katana.id]: RpcUrls[katana.id] || http(),
+    [pharos.id]: RpcUrls[pharos.id] || http(),
   },
 });
 

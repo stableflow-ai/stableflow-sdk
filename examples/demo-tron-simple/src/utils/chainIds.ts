@@ -1,22 +1,20 @@
-import { TokenResponse } from '@stableflow/core';
-
 export const PLASMA_CHAIN_ID = 9745;
 
 /** Map API `blockchain` to EIP-155 chain id for `wallet_switchEthereumChain`. */
-const BLOCKCHAIN_TO_CHAIN_ID: Partial<Record<TokenResponse.blockchain, number>> & Record<string, number> = {
-  [TokenResponse.blockchain.ETH]: 1,
-  [TokenResponse.blockchain.ARB]: 42161,
-  [TokenResponse.blockchain.BASE]: 8453,
-  [TokenResponse.blockchain.BSC]: 56,
-  [TokenResponse.blockchain.POL]: 137,
-  [TokenResponse.blockchain.OP]: 10,
-  [TokenResponse.blockchain.AVAX]: 43114,
-  [TokenResponse.blockchain.GNOSIS]: 100,
-  [TokenResponse.blockchain.BERA]: 80094,
+const BLOCKCHAIN_TO_CHAIN_ID: Record<string, number> = {
+  eth: 1,
+  arb: 42161,
+  base: 8453,
+  bsc: 56,
+  pol: 137,
+  op: 10,
+  avax: 43114,
+  gnosis: 100,
+  bera: 80094,
   plasma: PLASMA_CHAIN_ID,
 };
 
-export function getChainIdForTokenBlockchain(blockchain: TokenResponse.blockchain | string): number | undefined {
+export function getChainIdForTokenBlockchain(blockchain: string): number | undefined {
   return BLOCKCHAIN_TO_CHAIN_ID[blockchain];
 }
 

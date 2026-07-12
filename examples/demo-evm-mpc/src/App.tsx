@@ -58,6 +58,8 @@ const prices: Record<string, string> = {
   BERA: '0.218424',
   OKB: '80.07',
   XPL: '0.092194',
+  EURe: '1.14',
+  PROS: '0.01',
 };
 
 type StepKey = 'approveReset' | 'approve' | 'permit' | 'calldata' | 'report';

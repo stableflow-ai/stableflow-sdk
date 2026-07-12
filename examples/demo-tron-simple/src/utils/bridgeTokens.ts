@@ -26,7 +26,8 @@ const EVM_BLOCKCHAINS = new Set<string>([
   'hypercore',
 ]);
 
-const TRON_BLOCKCHAIN = TokenResponse.blockchain.TRON;
+const TRON_BLOCKCHAIN = 'tron';
+const PLASMA_BLOCKCHAIN = 'plasma';
 
 /** Stablecoin symbols from the SFA token registry. */
 const STABLECOIN_SYMBOLS = new Set([
@@ -80,7 +81,7 @@ export function filterAvailableTokens(tokens: TokenResponse[]): TokenResponse[] 
   return tokens.filter(
     (t) =>
       !isDeprecatedToken(t) &&
-      isSupportedBlockchain(String(t.blockchain)) &&
+      isSupportedBlockchain(t.blockchain) &&
       isStableToken(t)
   );
 }
@@ -97,14 +98,14 @@ export function findDefaultPair(tokens: TokenResponse[]): {
     available.find((t) => t.blockchain === TRON_BLOCKCHAIN);
 
   const destination =
-    available.find((t) => String(t.blockchain) === 'plasma' && /^USDT$/i.test(t.symbol)) ??
+    available.find((t) => t.blockchain === PLASMA_BLOCKCHAIN && /^USDT$/i.test(t.symbol)) ??
     available.find(
       (t) =>
-        String(t.blockchain) === 'plasma' &&
+        t.blockchain === PLASMA_BLOCKCHAIN &&
         (/^USD₮0$/i.test(t.symbol) || /^USDT0$/i.test(t.symbol))
     ) ??
     available.find((t) => t.assetId === PLASMA_USDT_ASSET_ID) ??
-    available.find((t) => String(t.blockchain) === 'plasma');
+    available.find((t) => t.blockchain === PLASMA_BLOCKCHAIN);
 
   return {
     originAsset: origin?.assetId ?? TRON_USDT_ASSET_ID,

@@ -25,6 +25,7 @@ export const NetworkRpcUrlsMap: Record<string, string[]> = {
   "ton": ["https://toncenter.com/api/v2/jsonRPC"],
   "sui": ["https://fullnode.mainnet.sui.io:443"],
   "katana": ["https://rpc.katana.network", "https://katana.drpc.org"],
+  "pharos": ["https://rpc.pharos.xyz"],
 };
 
 /**
