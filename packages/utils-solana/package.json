@@ -1,6 +1,6 @@
 {
   "name": "@stableflow/utils-solana",
-  "version": "3.1.0",
+  "version": "3.1.1-rc-8bfb4d5115-20260712",
   "description": "Solana utilities for StableFlow SDK (RPC fallback, ATA helpers)",
   "license": "MIT",
   "repository": {

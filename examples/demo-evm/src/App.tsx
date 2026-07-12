@@ -345,6 +345,7 @@ function App() {
             {selectedQuote && (
               <>
                 <QuoteResult
+                  toToken={toChainConfig}
                   quotes={quotes}
                   onSelectQuote={setSelectedQuote}
                   selectedQuote={selectedQuote}

@@ -1,7 +1,7 @@
 import oneClickService, { excludeFees as oneClickExcludeFees } from "../oneclick";
 import { FraxZeroService, excludeFees as fraxZeroExcludeFees } from ".";
 import { FRAXZERO_CONFIG, FRAXZERO_GAS_USED, FRAXZERO_MIDDLE_CHAIN_REFOUND_ADDRESS, FRAXZERO_MIDDLE_TOKEN_FRXUSD, FRAXZERO_MIDDLE_TOKEN_USDC, FRAXZERO_REDEEM_AND_MINT_CONTRACT, FRAXZERO_REDEEM_USDC_CONTRACT } from "./config";
-import { getPrice, getRequest, GetStatusParams, GetStatusStableflowResponse } from "@stableflow/core";
+import { getPrice, getRequest, GetStatusParams, GetStatusStableflowResponse, isStableToken } from "@stableflow/core";
 import { FRAXZERO_REDEEM_MINT_ABI } from "./contract";
 import Big from "big.js";
 import { numberRemoveEndZero } from "@stableflow/core";
@@ -70,12 +70,19 @@ export class OneClick2FraxZeroService extends FraxZeroService {
       }
       gasLimit = gasLimit * 120n / 100n;
 
+      let firstStepAmountWei = Big(params.amountWei || 0).div(10 ** fromToken.decimals).times(10 ** FRAXZERO_MIDDLE_TOKEN_USDC.decimals).toFixed(0, 0);
+      if (!isStableToken(fromToken)) {
+        const inputPrice = getPrice(prices, fromToken.symbol);
+        const inputValue = Big(params.amountWei || 0).div(10 ** fromToken.decimals).times(inputPrice);
+        firstStepAmountWei = Big(inputValue).times(10 ** FRAXZERO_MIDDLE_TOKEN_USDC.decimals).toFixed(0, 0);
+      }
+
       // Mint should be a 1:1 conversion from Ethereum USDC to Ethereum frxUSD.
       // The ratio can be obtained from the contract.
       execTime.breakpoint();
       previewMintResult = await middleChainWallet.previewMintFrxUSD({
         dry,
-        amountWei: Big(amountWei || 0).div(10 ** fromToken.decimals).times(10 ** FRAXZERO_MIDDLE_TOKEN_USDC.decimals).toFixed(0, 0),
+        amountWei: firstStepAmountWei,
         fromToken: FRAXZERO_MIDDLE_TOKEN_USDC,
         abi: FRAXZERO_REDEEM_MINT_ABI,
         usdcCustodianAddress: FRAXZERO_REDEEM_USDC_CONTRACT,
@@ -138,6 +145,7 @@ export class OneClick2FraxZeroService extends FraxZeroService {
       execTime.breakpoint();
       const firstStepResult = await oneClickService.quote({
         ...params,
+        amountWei: firstStepAmountWei,
         toToken: FRAXZERO_MIDDLE_TOKEN_USDC,
         destinationAsset: FRAXZERO_MIDDLE_TOKEN_USDC.assetId,
         swapType: "EXACT_OUTPUT",

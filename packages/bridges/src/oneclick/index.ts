@@ -205,9 +205,9 @@ export class OneClickService {
       slippageTolerance: slippageTolerance * 100,
     };
 
-    if (swapType === "EXACT_OUTPUT") {
-      quoteParams.amount = Big(amountWei || 0).div(10 ** fromToken.decimals).times(10 ** toToken.decimals).toFixed(0);
-    }
+    // if (swapType === "EXACT_OUTPUT") {
+    //   quoteParams.amount = Big(amountWei || 0).div(10 ** fromToken.decimals).times(10 ** toToken.decimals).toFixed(0);
+    // }
 
     for (const k in restParams) {
       if (["evmAddress", "evmWallet", "destinationChain", "originChain"].includes(k)) {

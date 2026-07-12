@@ -17,3 +17,7 @@ export const usdtTokens: TokenConfig[] = [...Object.values(usdtChains), ...Objec
 export const usdcTokens: TokenConfig[] = Object.values(usdcChains);
 export const frxusdTokens: TokenConfig[] = Object.values(frxusdChains);
 export const eureTokens: TokenConfig[] = Object.values(eureChains);
+
+export const isStableToken = (token: TokenConfig) => {
+  return !["EURe"].includes(token.symbol)
+};

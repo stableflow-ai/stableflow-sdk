@@ -28,7 +28,7 @@ export { TransactionStatus } from './models/Status';
 
 export { SFA } from './services/SFA';
 
-export { tokens, usdtTokens, usdcTokens, frxusdTokens, eureTokens } from './wallets/config/tokens';
+export { tokens, usdtTokens, usdcTokens, frxusdTokens, eureTokens, isStableToken } from './wallets/config/tokens';
 export { usdtChains } from './wallets/config/usdt';
 export { usdcChains } from './wallets/config/usdc';
 export { frxusdChains } from './wallets/config/frxusd';

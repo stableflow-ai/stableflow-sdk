@@ -153,6 +153,11 @@ export interface HyperliquidQuoteParams {
   wallet: WalletConfig;
   fromToken: TokenConfig;
   prices: Record<string, string>;
+  /**
+   * Desired output amount in the smallest unit of the destination token
+   * (Arbitrum USDC / HyperliuquidToToken), not fromToken.
+   * Hyperliquid.quote uses OneClick EXACT_OUTPUT and forwards this value as-is.
+   */
   amountWei: string;
   // Whether to generate deposit address
   // false will generate a deposit address
