@@ -3,7 +3,7 @@ import { ONECLICK_PROXY, ONECLICK_PROXY_ABI } from "./contract";
 import { getRequest, GetStatusParams, numberRemoveEndZero, postRequest } from "@stableflow/core";
 import { getPrice } from "@stableflow/core";
 import { SendType } from "@stableflow/core";
-import { Service } from "@stableflow/core";
+import { Service, OneClickSwapType } from "@stableflow/core";
 import { DefaultAddresses } from "@stableflow/core";
 import { OpenAPI } from '@stableflow/core';
 import { ChainType } from "@stableflow/core";
@@ -29,7 +29,7 @@ export class OneClickService {
     const { params } = res;
     const { isProxy = true, prices } = params;
 
-    const isExactOutput = params.swapType === "EXACT_OUTPUT";
+    const isExactOutput = params.swapType === OneClickSwapType.Output;
     const nativeTokenPrice = getPrice(prices, params.fromToken.nativeToken.symbol);
     const nativeTokenDecimals = params.fromToken.nativeToken.decimals;
 
@@ -52,12 +52,6 @@ export class OneClickService {
       let priceImpact = Big(0);
       let _amountInUsd = res.data?.quote?.amountInUsd || 0;
       let _amountOutUsd = res.data?.quote?.amountOutUsd || 0;
-      if (isExactOutput) {
-        res.data.quote.amountInFormatted = numberRemoveEndZero(Big(res.data?.quote?.minAmountIn || 0).div(10 ** params.fromToken.decimals).toFixed(params.fromToken.decimals, Big.roundUp));
-        // Since 1click does not return minAmountInUsd, we calculate it using our own price
-        _amountInUsd = Big(res.data.quote.amountInFormatted).times(getPrice(params.prices, params.fromToken.symbol));
-        _amountOutUsd = Big(res.data?.quote?.amountOutFormatted || 0).times(getPrice(params.prices, params.fromToken.symbol));
-      }
       try {
         priceImpact = Big(Big(_amountInUsd).minus(_amountOutUsd)).div(_amountInUsd || 1);
         if (Big(priceImpact).lt(0)) {
@@ -110,7 +104,7 @@ export class OneClickService {
           fromToken: params.fromToken,
           refundTo: params.refundTo,
           recipient: params.recipient,
-          amountWei: isExactOutput ? res.data?.quote?.minAmountIn : params.amountWei,
+          amountWei: isExactOutput ? res.data?.quote?.amountIn : params.amountWei,
           prices: params.prices,
           evmGasFees: params.evmGasFees,
           depositAddress: res.data?.quote?.depositAddress ?? DefaultAddresses[params.fromToken.chainType as ChainType],
@@ -167,7 +161,7 @@ export class OneClickService {
     prices: Record<string, string>;
     amountWei: string;
     appFees?: { recipient: string; fee: number; }[];
-    swapType?: "EXACT_INPUT" | "EXACT_OUTPUT" | "FLEX_INPUT";
+    swapType?: OneClickSwapType;
     isProxy?: boolean;
   }) {
     const {
@@ -177,7 +171,7 @@ export class OneClickService {
       prices,
       amountWei,
       appFees = [],
-      swapType = "EXACT_INPUT",
+      swapType = OneClickSwapType.Input,
       isProxy = true,
       slippageTolerance,
       ...restParams
@@ -188,7 +182,7 @@ export class OneClickService {
 
     const quoteParams: any = {
       depositMode: "SIMPLE",
-      swapType: swapType || "EXACT_INPUT",
+      swapType: swapType || OneClickSwapType.Input,
       depositType: "ORIGIN_CHAIN",
       sessionId: `session_${Date.now()}_${Math.random()
         .toString(36)
@@ -205,7 +199,7 @@ export class OneClickService {
       slippageTolerance: slippageTolerance * 100,
     };
 
-    // if (swapType === "EXACT_OUTPUT") {
+    // if (swapType === OneClickSwapType.Output) {
     //   quoteParams.amount = Big(amountWei || 0).div(10 ** fromToken.decimals).times(10 ** toToken.decimals).toFixed(0);
     // }
 

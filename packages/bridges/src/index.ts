@@ -28,3 +28,8 @@ export {
 } from './usdt0/config';
 export { OFT_ABI } from './usdt0/contract';
 export { FRAXZERO_MIDDLE_TOKEN_FRXUSD, FRAXZERO_MIDDLE_TOKEN_USDC } from './fraxzero/config';
+export {
+  MIDDLE_TOKEN_CHAIN as CCTP_MIDDLE_TOKEN_CHAIN,
+  CCTP_PROXY_RELAY_CONTRACT,
+  MIDDLE_CHAIN_REFOUND_ADDRESS as CCTP_MIDDLE_CHAIN_REFOUND_ADDRESS,
+} from './cctp/config';

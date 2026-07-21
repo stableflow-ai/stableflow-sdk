@@ -3,7 +3,7 @@ import oneClickService, { excludeFees as oneClickExcludeFees } from "../oneclick
 import usdt0Service, { excludeFees as usdt0ExcludeFees } from "../usdt0";
 import Big from "big.js";
 import { MIDDLE_CHAIN_REFOUND_ADDRESS, MIDDLE_TOKEN_CHAIN } from "./config";
-import { ExecTime } from "@stableflow/core";
+import { ExecTime, OneClickSwapType } from "@stableflow/core";
 import { OpenAPI } from "@stableflow/core";
 import { Csl } from "@stableflow/core";
 import { numberRemoveEndZero } from "@stableflow/core";
@@ -41,7 +41,7 @@ export class Usdt0OneClickService {
       ...params,
       fromToken: MIDDLE_TOKEN_CHAIN,
       originAsset: MIDDLE_TOKEN_CHAIN.assetId,
-      swapType: "FLEX_INPUT",
+      swapType: OneClickSwapType.Flex,
       isProxy: false,
       refundTo: middleChainRecipientAddress,
       wallet: middleChainWallet,

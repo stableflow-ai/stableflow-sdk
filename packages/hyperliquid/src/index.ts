@@ -1,6 +1,7 @@
 import {
   usdcChains,
   Service,
+  OneClickSwapType,
   tokens,
   postRequest,
   getRequest,
@@ -32,7 +33,7 @@ class HyperliquidService {
       amount: params.amountWei,
       refundType: "ORIGIN_CHAIN",
       appFees: params.oneclickParams?.appFees,
-      swapType: "EXACT_OUTPUT",
+      swapType: OneClickSwapType.Output,
       isProxy: false,
     };
 

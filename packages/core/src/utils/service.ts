@@ -16,6 +16,8 @@ export const getRouteStatus = (service: Service, disabledServices?: Service[]): 
   const IS_PAUSE_ONECLICK_USDT0 = disabledServices.includes(Service.OneClickUsdt0);
   const IS_PAUSE_FRAXZERO_ONECLICK = disabledServices.includes(Service.FraxZeroOneClick);
   const IS_PAUSE_ONECLICK_FRAXZERO = disabledServices.includes(Service.OneClickFraxZero);
+  const IS_PAUSE_CCTP_ONECLICK = disabledServices.includes(Service.CCTPOneClick);
+  const IS_PAUSE_ONECLICK_CCTP = disabledServices.includes(Service.OneClickCCTP);
   const IS_PAUSE_ALL = IS_PAUSE_ONECLICK
     && IS_PAUSE_USDT0
     && IS_PAUSE_CCTP
@@ -29,6 +31,13 @@ export const getRouteStatus = (service: Service, disabledServices?: Service[]): 
 
   if (service === Service.CCTP) {
     if (IS_PAUSE_CCTP) {
+      result.disabled = true;
+      return result;
+    }
+  }
+
+  if (([Service.CCTPOneClick, Service.OneClickCCTP] as Service[]).includes(service)) {
+    if (IS_PAUSE_ONECLICK || IS_PAUSE_CCTP) {
       result.disabled = true;
       return result;
     }
@@ -99,6 +108,20 @@ export const getRouteStatus = (service: Service, disabledServices?: Service[]): 
 
   if (service === Service.OneClickFraxZero) {
     if (IS_PAUSE_ONECLICK_FRAXZERO) {
+      result.disabled = true;
+      return result;
+    }
+  }
+
+  if (service === Service.CCTPOneClick) {
+    if (IS_PAUSE_CCTP_ONECLICK) {
+      result.disabled = true;
+      return result;
+    }
+  }
+
+  if (service === Service.OneClickCCTP) {
+    if (IS_PAUSE_ONECLICK_CCTP) {
       result.disabled = true;
       return result;
     }

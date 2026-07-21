@@ -122,7 +122,7 @@ const getSendAmountWei = (serviceType: Service, quote: any): string => {
     bridgeStore: { quoteDataService: serviceType },
   });
   if (isExactOutput) {
-    return quote?.quote?.minAmountIn;
+    return quote?.quote?.amountIn;
   }
   return quote?.quoteParam?.amountWei;
 };

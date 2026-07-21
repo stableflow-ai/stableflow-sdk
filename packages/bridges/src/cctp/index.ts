@@ -10,7 +10,7 @@ import { Csl } from "@stableflow/core";
 
 export const PayInLzToken = false;
 
-const excludeFees: string[] = ["estimateGasUsd"];
+export const excludeFees: string[] = ["estimateGasUsd"];
 
 export class CCTPService {
   constructor() {

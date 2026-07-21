@@ -1,7 +1,7 @@
 /**
  * @deprecated Please use Service instead
  */
-export type ServiceType = "oneclick" | "usdt0" | "cctp" | "fraxzero" | "fraxzero-oneclick" | "oneclick-fraxzero" | "usdt0-oneclick" | "oneclick-usdt0" | "native";
+export type ServiceType = "oneclick" | "usdt0" | "cctp" | "fraxzero" | "fraxzero-oneclick" | "oneclick-fraxzero" | "usdt0-oneclick" | "oneclick-usdt0" | "cctp-oneclick" | "oneclick-cctp" | "native";
 
 export const Service = {
   OneClick: "oneclick",
@@ -12,6 +12,8 @@ export const Service = {
   OneClickFraxZero: "oneclick-fraxzero",
   Usdt0OneClick: "usdt0-oneclick",
   OneClickUsdt0: "oneclick-usdt0",
+  CCTPOneClick: "cctp-oneclick",
+  OneClickCCTP: "oneclick-cctp",
   Native: "native",
 } as const;
 export type Service = (typeof Service)[keyof typeof Service];
@@ -25,6 +27,8 @@ export const ServiceBackend: Record<Service, string> = {
   [Service.OneClickFraxZero]: "intentfraxzero",
   [Service.Usdt0OneClick]: "zerointent",
   [Service.OneClickUsdt0]: "intentzero",
+  [Service.CCTPOneClick]: "cctpintent",
+  [Service.OneClickCCTP]: "intentcctp",
   [Service.Native]: "native",
 } as const;
 
@@ -38,6 +42,8 @@ export const enum ServiceProject {
   Usdt0OneClick = 3,
   OneClickUsdt0 = 4,
   Native = 5,
+  CCTPOneClick = 9,
+  OneClickCCTP = 10,
 }
 
 export const ServiceProjectMap: Record<ServiceProject, { name: string; service: Service; }> = {
@@ -50,4 +56,13 @@ export const ServiceProjectMap: Record<ServiceProject, { name: string; service: 
   [ServiceProject.Usdt0OneClick]: { name: "Usdt0OneClick", service: Service.Usdt0OneClick },
   [ServiceProject.OneClickUsdt0]: { name: "OneClickUsdt0", service: Service.OneClickUsdt0 },
   [ServiceProject.Native]: { name: "Native", service: Service.Native },
-}
+  [ServiceProject.CCTPOneClick]: { name: "CCTPOneClick", service: Service.CCTPOneClick },
+  [ServiceProject.OneClickCCTP]: { name: "OneClickCCTP", service: Service.OneClickCCTP },
+};
+
+export const OneClickSwapType = {
+  Input: "EXACT_INPUT",
+  Output: "EXACT_OUTPUT",
+  Flex: "FLEX_INPUT",
+} as const;
+export type OneClickSwapType = (typeof OneClickSwapType)[keyof typeof OneClickSwapType];

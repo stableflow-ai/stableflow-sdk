@@ -2,7 +2,7 @@ import oneClickService, { excludeFees as oneClickExcludeFees } from "../oneclick
 import usdt0Service, { excludeFees as usdt0ExcludeFees } from "../usdt0";
 import Big from "big.js";
 import { MIDDLE_CHAIN_LAYERZERO_EXECUTOR, MIDDLE_TOKEN_CHAIN } from "./config";
-import { ExecTime } from "@stableflow/core";
+import { ExecTime, OneClickSwapType } from "@stableflow/core";
 import { OpenAPI } from "@stableflow/core";
 import { numberRemoveEndZero } from "@stableflow/core";
 import { getPrice, GetStatusParams, getRequest, GetStatusStableflowResponse, isStableToken } from "@stableflow/core";
@@ -96,7 +96,7 @@ export class OneClickUsdt0Service {
       amountWei: secondStepAmountWei,
       toToken: MIDDLE_TOKEN_CHAIN,
       destinationAsset: MIDDLE_TOKEN_CHAIN.assetId,
-      swapType: "EXACT_OUTPUT",
+      swapType: OneClickSwapType.Output,
       isProxy: true,
       recipient: middleChainRecipientAddress,
       appFees: [

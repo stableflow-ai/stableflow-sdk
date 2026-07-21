@@ -3,6 +3,7 @@ import {
   OpenAPI,
   Service,
   ServiceBackend,
+  OneClickSwapType,
   TransactionStatus,
   tokens,
   type TokenConfig,
@@ -58,7 +59,7 @@ export interface GetAllQuoteParams {
   appFees?: { recipient: string; fee: number; }[];
   oneclickParams?: {
     appFees?: { recipient: string; fee: number; }[];
-    swapType?: "EXACT_INPUT" | "EXACT_OUTPUT" | "FLEX_INPUT";
+    swapType?: OneClickSwapType;
     isProxy?: boolean;
   };
 }
@@ -81,6 +82,7 @@ const submitOthersTx = (
     tx_hash?: string;
     layer_zero_permit?: unknown;
     frax_zero_permit?: unknown;
+    cctp_permit?: unknown;
   },
 ): CancelablePromise<SubmitDepositTxResponse> => {
   return postRequest('/v0/trade/add', requestBody);
@@ -136,6 +138,8 @@ export class BridgeSFA {
         Service.OneClick,
         Service.Usdt0OneClick,
         Service.OneClickUsdt0,
+        Service.CCTPOneClick,
+        Service.OneClickCCTP,
         Service.FraxZeroOneClick,
         Service.OneClickFraxZero,
       ] as Service[]).includes(service)) {
@@ -151,7 +155,9 @@ export class BridgeSFA {
         Service.Usdt0,
         Service.CCTP,
         Service.Usdt0OneClick,
-        Service.OneClickUsdt0
+        Service.OneClickUsdt0,
+        Service.CCTPOneClick,
+        Service.OneClickCCTP,
       ] as Service[]).includes(service)) {
         _params.originChain = params.fromToken.chainName;
         _params.destinationChain = params.toToken.chainName;
@@ -168,6 +174,8 @@ export class BridgeSFA {
 
     const isFromUsdt = ["USDT", "USD₮0"].includes(fromToken.symbol);
     const isToUsdt = ["USDT", "USD₮0"].includes(toToken.symbol);
+    const isFromUsdc = ["USDC"].includes(fromToken.symbol);
+    const isToUsdc = ["USDC"].includes(toToken.symbol);
 
     const quoteServices: any = [];
     const pushQuoteService = (_service: Service) => {
@@ -234,6 +242,34 @@ export class BridgeSFA {
       && toToken.services.includes(Service.FraxZero)
     ) {
       pushQuoteService(Service.OneClickFraxZero);
+    }
+
+    if (
+      fromToken.services.includes(Service.CCTP)
+      && toToken.services.includes(Service.OneClick)
+      && fromToken.chainName !== "Arbitrum"
+    ) {
+      if (isFromUsdc && isToUsdc) {
+        if (toToken.chainName !== "Arbitrum") {
+          pushQuoteService(Service.CCTPOneClick);
+        }
+      } else {
+        pushQuoteService(Service.CCTPOneClick);
+      }
+    }
+
+    if (
+      fromToken.services.includes(Service.OneClick)
+      && toToken.services.includes(Service.CCTP)
+      && toToken.chainName !== "Arbitrum"
+    ) {
+      if (isFromUsdc && isToUsdc) {
+        if (fromToken.chainName !== "Arbitrum") {
+          pushQuoteService(Service.OneClickCCTP);
+        }
+      } else {
+        pushQuoteService(Service.OneClickCCTP);
+      }
     }
 
     if (params.singleService) {
@@ -321,7 +357,7 @@ export class BridgeSFA {
 
     let _amountWei = quote.quoteParam?.amountWei;
     if (isExactOutput) {
-      _amountWei = quote.quote?.minAmountIn;
+      _amountWei = quote.quote?.amountIn;
     }
 
     if (isOneClickService) {
@@ -380,7 +416,7 @@ export class BridgeSFA {
 
     let _amountWei = quote.quoteParam?.amountWei;
     if (isExactOutput) {
-      _amountWei = quote.quote?.minAmountIn;
+      _amountWei = quote.quote?.amountIn;
     }
 
     const reportData: any = {
@@ -400,6 +436,12 @@ export class BridgeSFA {
     if (permitSignature) {
       if (([Service.OneClickUsdt0] as Service[]).includes(serviceType)) {
         reportData.layer_zero_permit = {
+          ...permitSignature,
+          ...quote.permitAdditionalData,
+        };
+      }
+      if (([Service.OneClickCCTP] as Service[]).includes(serviceType)) {
+        reportData.cctp_permit = {
           ...permitSignature,
           ...quote.permitAdditionalData,
         };
@@ -606,7 +648,7 @@ export class BridgeSFA {
       }
     }
 
-    if (([Service.OneClickUsdt0, Service.Usdt0OneClick, Service.FraxZero, Service.OneClickFraxZero, Service.FraxZeroOneClick] as Service[]).includes(serviceType)) {
+    if (([Service.OneClickUsdt0, Service.Usdt0OneClick, Service.CCTPOneClick, Service.OneClickCCTP, Service.FraxZero, Service.OneClickFraxZero, Service.FraxZeroOneClick] as Service[]).includes(serviceType)) {
       const _result = response?.data;
       const status = _result?.status;
       if (status === StableflowStatus.SUCCESS) {

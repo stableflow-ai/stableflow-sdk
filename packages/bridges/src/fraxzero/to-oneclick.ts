@@ -5,7 +5,7 @@ import Big from "big.js";
 import { getRequest, GetStatusParams, GetStatusStableflowResponse, numberRemoveEndZero } from "@stableflow/core";
 import { FRAXZERO_REDEEM_MINT_ABI } from "./contract";
 import { getPrice } from "@stableflow/core";
-import { ExecTime } from "@stableflow/core";
+import { ExecTime, OneClickSwapType } from "@stableflow/core";
 import { evmRpcFallbackProvider } from "@stableflow/utils-evm";
 import { Csl } from "@stableflow/core";
 import { OpenAPI } from "@stableflow/core";
@@ -121,7 +121,7 @@ export class FraxZero2OneClickService extends FraxZeroService {
         amountWei: ethereumUSDCAmountWei,
         fromToken: FRAXZERO_MIDDLE_TOKEN_USDC,
         originAsset: FRAXZERO_MIDDLE_TOKEN_USDC.assetId,
-        swapType: "FLEX_INPUT",
+        swapType: OneClickSwapType.Flex,
         isProxy: false,
         refundTo: middleChainRecipientAddress,
         wallet: middleChainWallet,

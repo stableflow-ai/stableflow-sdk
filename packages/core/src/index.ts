@@ -7,7 +7,7 @@ export type { OpenAPIConfig } from './core/OpenAPI';
 export { request } from './core/request';
 export { getRequest, postRequest } from './core/Fetch';
 export { SendType } from './core/Send';
-export { Service, ServiceBackend, ServiceType } from './core/Service';
+export { Service, ServiceBackend, ServiceType, OneClickSwapType } from './core/Service';
 
 export type { AppFee } from './models/AppFee';
 export type { BadRequestResponse } from './models/BadRequestResponse';

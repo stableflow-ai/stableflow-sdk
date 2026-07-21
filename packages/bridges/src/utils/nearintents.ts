@@ -8,7 +8,7 @@ export const getQuoteModes = (params: { quoteData?: any; bridgeStore?: { quoteDa
     if (typeof quoteDataService === "undefined") {
       return false;
     }
-    if (([Service.OneClickUsdt0] as Service[]).includes(quoteDataService)) {
+    if (([Service.OneClickUsdt0, Service.OneClickCCTP] as Service[]).includes(quoteDataService)) {
       return true;
     }
     if (quoteDataService === Service.OneClickFraxZero) {
@@ -25,7 +25,7 @@ export const getQuoteModes = (params: { quoteData?: any; bridgeStore?: { quoteDa
     if (typeof quoteDataService === "undefined") {
       return false;
     }
-    if (([Service.OneClickUsdt0, Service.OneClick] as Service[]).includes(quoteDataService)) {
+    if (([Service.OneClickUsdt0, Service.OneClick, Service.OneClickCCTP] as Service[]).includes(quoteDataService)) {
       return true;
     }
     if (quoteDataService === Service.OneClickFraxZero) {
@@ -42,7 +42,7 @@ export const getQuoteModes = (params: { quoteData?: any; bridgeStore?: { quoteDa
     if (typeof quoteDataService === "undefined") {
       return false;
     }
-    if (([Service.Usdt0OneClick] as Service[]).includes(quoteDataService)) {
+    if (([Service.Usdt0OneClick, Service.CCTPOneClick] as Service[]).includes(quoteDataService)) {
       return true;
     }
     if (quoteDataService === Service.FraxZeroOneClick) {
@@ -60,6 +60,6 @@ export const getQuoteModes = (params: { quoteData?: any; bridgeStore?: { quoteDa
     isExactOutput: getIsExactOutput(),
     isOneClickService: getIsOneClickService(),
     isQuoteParamDepositAddress: getIsQuoteParamDepositAddress(),
-    isPermitWithNonce: typeof quoteDataService === "undefined" ? false : ([Service.OneClickUsdt0, Service.OneClickFraxZero, Service.FraxZeroOneClick] as Service[]).includes(quoteDataService),
+    isPermitWithNonce: typeof quoteDataService === "undefined" ? false : ([Service.OneClickUsdt0, Service.OneClickCCTP, Service.OneClickFraxZero, Service.FraxZeroOneClick] as Service[]).includes(quoteDataService),
   };
 };
