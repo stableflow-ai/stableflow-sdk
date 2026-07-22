@@ -75,10 +75,3 @@ export const ServiceProjectMap: Record<ServiceProject, { name: string; service: 
   [ServiceProject.CCTPOneClick]: { name: "CCTPOneClick", service: Service.CCTPOneClick },
   [ServiceProject.OneClickCCTP]: { name: "OneClickCCTP", service: Service.OneClickCCTP },
 };
-
-export const OneClickSwapType = {
-  Input: "EXACT_INPUT",
-  Output: "EXACT_OUTPUT",
-  Flex: "FLEX_INPUT",
-} as const;
-export type OneClickSwapType = (typeof OneClickSwapType)[keyof typeof OneClickSwapType];

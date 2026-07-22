@@ -6,7 +6,6 @@ import {
   postRequest,
   getRequest,
   getPrices,
-  OneClickSwapType,
 } from '@stableflow/core';
 import { formatQuoteError, ServiceMap } from '@stableflow/bridges';
 import type { WalletConfig, TokenConfig } from '@stableflow/core';
