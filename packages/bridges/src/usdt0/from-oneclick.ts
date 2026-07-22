@@ -5,7 +5,7 @@ import { MIDDLE_CHAIN_LAYERZERO_EXECUTOR, MIDDLE_TOKEN_CHAIN } from "./config";
 import { ExecTime, OneClickSwapType } from "@stableflow/core";
 import { OpenAPI } from "@stableflow/core";
 import { numberRemoveEndZero } from "@stableflow/core";
-import { getPrice, GetStatusParams, getRequest, GetStatusStableflowResponse, isStableToken } from "@stableflow/core";
+import { getPrice, GetStatusParams, getRequest, GetStatusStableflowResponse, isStableToken, OneClickSwapType } from "@stableflow/core";
 
 export class OneClickUsdt0Service {
   public async quote(params: any) {

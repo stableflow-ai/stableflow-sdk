@@ -20,6 +20,7 @@ This guide helps developers integrate StableFlow features, including the HTTP-on
      - [3.2.2 Full Integration Flow](#322-full-integration-flow)
      - [3.2.3 Hyperliquid](#323-hyperliquid)
 4. [Advanced](#4-advanced)
+   - [Token prices](#token-prices)
    - [4.1 Recommended Use of the `dry` Flag](#41-recommended-use-of-the-dry-flag)
    - [4.2 `oneclickParams`](#42-oneclickparams)
    - [4.3 approve](#43-approve)
@@ -416,7 +417,7 @@ const fromWallet = new EVMWallet(provider, signer);
 
 const quoteRequest: GetAllQuoteParams = {
   dry: true,
-  prices,
+  // Token prices are fetched and managed internally by the SDK — do not pass `prices`.
   fromToken,
   toToken,
   wallet: fromWallet,
@@ -444,7 +445,7 @@ const { isExactOutput } = getQuoteModes({
   bridgeStore: { quoteDataService: finalRoute.serviceType },
 });
 const amountToApprove = isExactOutput
-  ? finalRoute.quote.quote?.minAmountIn
+  ? finalRoute.quote.quote?.amountIn
   : finalRoute.quote.quoteParam.amountWei;
 
 const txHash = await BridgeSFA.send(finalRoute.serviceType, {
@@ -521,7 +522,7 @@ const quoteParams = {
   recipient: address,
   wallet: fromWallet,
   fromToken,
-  prices,
+  // Token prices are fetched and managed internally by the SDK — do not pass `prices`.
   amountWei,
 };
 
@@ -619,7 +620,7 @@ The table below follows the current `@stableflow/core` `QuoteRequest` type and a
 | Value | Description |
 |-------|-------------|
 | `EXACT_INPUT` | `amount` is the fixed input amount. Deposits below `amountIn` are refunded after the deadline; deposits above `amountIn` are processed and the excess is refunded to `refundTo`. |
-| `EXACT_OUTPUT` | `amount` is the fixed output amount. The returned `amountIn` usually includes a slippage buffer, while `minAmountIn` is the minimum required input. Excess input is refunded to `refundTo`; deposits below `minAmountIn` are refunded after the deadline. |
+| `EXACT_OUTPUT` | `amount` is the fixed output amount. The returned `amountIn` includes a slippage buffer; `minAmountIn` is the minimum required input from the API. For approve and source-chain deposit, the SDK uses **`amountIn`** (not `minAmountIn`) so the first step does not fail when slippage moves against you; excess input is refunded to `refundTo`. Deposits below `minAmountIn` are refunded after the deadline. |
 | `FLEX_INPUT` | Allows flexible input and partial deposits. Slippage applies to both `minAmountIn` and `minAmountOut`. Use it for variable deposit flows. |
 
 | Return field | Type | Description |
@@ -637,7 +638,7 @@ Important `Quote` fields:
 | `depositAddress` | `string \| undefined` | Returned when `dry: false`. |
 | `depositMemo` | `string \| undefined` | Required by some chains together with `depositAddress`. |
 | `amountIn` / `amountInFormatted` / `amountInUsd` | `string` | Input amount fields. |
-| `minAmountIn` | `string` | Minimum input amount after slippage, often used by exact-output routes. |
+| `minAmountIn` | `string` | Minimum input amount after slippage (API field). |
 | `amountOut` / `amountOutFormatted` / `amountOutUsd` | `string` | Output amount fields. |
 | `minAmountOut` | `string` | Minimum output after slippage. |
 | `deadline` | `string \| undefined` | Deposit address expiration time. Returned when `dry: false`. |
@@ -695,7 +696,7 @@ BridgeSFA.getAllQuote(
 | `singleService` | `Service` | No | Quote only one route. |
 | `disabledServices` | `Service[]` | No | Disable specific routes. |
 | `dry` | `boolean` | No | Use `true` for preview and `false` before sending. |
-| `prices` | `Record<string, string>` | Yes | Price map used for gas and fee estimates. |
+| `prices` | `Record<string, string>` | No (deprecated) | Ignored. The SDK now fetches trusted token prices internally; see [Token prices](#token-prices). |
 | `fromToken` | `TokenConfig` | Yes | Source token. |
 | `toToken` | `TokenConfig` | Yes | Destination token. |
 | `wallet` | `WalletConfig` | Yes | Source-chain wallet adapter. |
@@ -841,7 +842,7 @@ The returned `status` is normalized to `pending`, `success`, or `failed`. `toCha
 
 | Return field | Description |
 |--------------|-------------|
-| `isExactOutput` | Use `quote.quote.minAmountIn` for approve/send input amount when true. |
+| `isExactOutput` | Use `quote.quote.amountIn` (includes slippage buffer) for approve/send input amount when true — not `minAmountIn`. |
 | `isOneClickService` | Whether the route uses OneClick send logic. |
 | `isQuoteParamDepositAddress` | Whether the deposit address is stored under `quote.quoteParam.depositAddress`. |
 | `isPermitWithNonce` | Whether the route needs a nonce-based permit. |
@@ -867,7 +868,7 @@ Hyperliquid.quote(
 | `recipient` | `string` | Yes | Recipient/sender address used by the deposit flow. |
 | `wallet` | `WalletConfig` | Yes | Source EVM wallet adapter. |
 | `fromToken` | `TokenConfig` | Yes | Source token. |
-| `prices` | `Record<string, string>` | Yes | Price map. |
+| `prices` | `Record<string, string>` | No (deprecated) | Ignored. The SDK now fetches trusted token prices internally; see [Token prices](#token-prices). |
 | `amountWei` | `string` | Yes | Source amount in the smallest unit. |
 | `dry` | `boolean` | No | Defaults to `true`; `false` generates a real deposit address. |
 | `oneclickParams.appFees` | `{ recipient; fee }[]` | No | App fee configuration. |
@@ -919,6 +920,43 @@ Minimum deposit amount in the smallest unit of `HyperliuquidToToken`. The misspe
 Destination token, currently Arbitrum USDC. The misspelled `Hyperliuquid` name is the actual SDK export.
 
 ## 4. Advanced
+
+### Token prices
+
+The SDK fetches trusted token USD prices internally and uses them for all
+fee/appFee and gas-cost estimation. You do **not** pass prices anymore: the
+`prices` field on `GetAllQuoteParams` / `HyperliquidQuoteParams` is deprecated
+and any value you provide is ignored and overridden. This prevents wrong
+caller-supplied prices from producing incorrect `appFees` and causing on-chain
+losses.
+
+- **Source**: `GET https://api.dapdap.net/get-token-price-by-dapdap` (the same
+  feed used by the StableFlow web interface). Response shape:
+  `{ code: 0, msg, data: Record<symbol, usdPriceString> }`.
+- **Caching**: prices are cached in memory for `PriceApiConfig.CACHE_TTL`
+  (default 60s). Quotes within that window reuse the cache; otherwise a fresh
+  fetch is performed.
+- **Failure is blocking**: if prices cannot be fetched (network/API error) or a
+  required token price is missing, quoting throws instead of falling back to a
+  distorted default — the SDK never computes amounts with a wrong price.
+
+The price endpoint is fixed and cannot be changed by integrators. You can only
+tune the cache TTL or read prices directly from `@stableflow/core`:
+
+```typescript
+import {
+  getPrices,
+  fetchPrices,
+  setPriceCacheTtl,
+  PriceApiConfig,
+} from "@stableflow/core";
+
+setPriceCacheTtl(120_000); // 2 minutes
+
+const prices = await getPrices();          // cached (throws if unavailable)
+const fresh = await getPrices({ force: true }); // bypass cache
+const raw = await fetchPrices();           // always a fresh network fetch
+```
 
 ### 4.1 Recommended Use of the `dry` Flag
 
@@ -1022,9 +1060,11 @@ const { isExactOutput } = getQuoteModes({
 });
 
 const amountWei = isExactOutput
-  ? quote.quote?.minAmountIn
+  ? quote.quote?.amountIn
   : quote.quoteParam.amountWei;
 ```
+
+For `EXACT_OUTPUT`, always approve and send **`amountIn`** (includes slippage buffer), not `minAmountIn`. Using the minimum can cause the first step to fail when slippage moves against you; any excess is refunded to `refundTo`.
 
 Then call the wallet adapter:
 

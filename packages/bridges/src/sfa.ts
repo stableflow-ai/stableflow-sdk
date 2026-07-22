@@ -15,6 +15,7 @@ import {
   LayerZeroStatus,
   OneClickStatus,
   postRequest,
+  getPrices,
 } from '@stableflow/core';
 import Big from 'big.js';
 import { ServiceMap } from './service-map';
@@ -44,7 +45,11 @@ export interface GetAllQuoteParams {
   singleService?: Service;
   disabledServices?: Service[];
   dry?: boolean;
-  prices: Record<string, string>;
+  /**
+   * @deprecated The SDK now fetches trusted token prices internally. Any value
+   * passed here is ignored and overridden by the built-in price source.
+   */
+  prices?: Record<string, string>;
   fromToken: TokenConfig;
   toToken: TokenConfig;
   wallet: WalletConfig;
@@ -118,6 +123,11 @@ export class BridgeSFA {
     ) {
       throw new Error('Invalid parameters');
     }
+
+    // Always use trusted prices fetched by the SDK. Any caller-supplied
+    // `params.prices` is ignored/overridden to prevent wrong prices from
+    // causing incorrect appFees and on-chain losses.
+    params.prices = await getPrices();
 
     const formatQuoteParams = (service: Service) => {
       const _params: any = {

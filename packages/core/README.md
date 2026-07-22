@@ -25,9 +25,22 @@ For full cross-chain bridge flows (multi-route quote, send, status), use [`@stab
 | Models | `QuoteRequest`, `QuoteResponse`, `TokenResponse`, `TokenConfig`, `WalletConfig`, … |
 | Token / chain config | `tokens`, `usdtChains`, `usdcChains`, `frxusdChains`, `usdt0Chains` |
 | RPC | `setRpcUrls`, `getRpcUrls`, `getChainRpcUrl`, `NetworkRpcUrlsMap` |
+| Token prices | `getPrices`, `fetchPrices`, `PriceApiConfig`, `setPriceCacheTtl` |
+| Swap type | `OneClickSwapType` |
 | Utilities | `numberRemoveEndZero`, `getRouteStatus`, `getPrice`, `Csl`, `ExecTime`, … |
 
 See `dist/index.d.ts` after running `pnpm build`.
+
+## Token prices
+
+The SDK fetches trusted token USD prices internally (from
+`https://api.dapdap.net/get-token-price-by-dapdap`) and uses them for fee and
+gas-cost estimation, so integrators do not pass a `prices` map. `getPrices()`
+returns an in-memory cached map (TTL `PriceApiConfig.CACHE_TTL`, default 60s)
+and throws when prices are unavailable, so quotes are never computed with
+missing/untrusted prices. The endpoint is fixed and not user-configurable; use
+`setPriceCacheTtl` to tune the cache TTL, and `fetchPrices()` for an uncached
+network fetch.
 
 ## Authentication
 

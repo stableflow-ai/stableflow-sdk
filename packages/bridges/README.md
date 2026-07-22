@@ -43,9 +43,10 @@ import { EVMWallet } from '@stableflow/wallet-evm';
 
 const wallet = new EVMWallet(/* provider */);
 
+// Token prices are fetched and managed internally by the SDK — do not pass a
+// `prices` map. The `prices` field is deprecated and any value is ignored.
 const results = await BridgeSFA.getAllQuote({
   dry: true, // fast comparison; use dry: false before send
-  prices: { ETH: '3000', BNB: '900' },
   fromToken,
   toToken,
   wallet: wallet.wallet,

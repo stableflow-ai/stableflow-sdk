@@ -5,6 +5,8 @@ import {
   tokens,
   postRequest,
   getRequest,
+  getPrices,
+  OneClickSwapType,
 } from '@stableflow/core';
 import { formatQuoteError, ServiceMap } from '@stableflow/bridges';
 import type { WalletConfig, TokenConfig } from '@stableflow/core';
@@ -22,6 +24,9 @@ class HyperliquidService {
       result.error = `Amount is too low, at least ${MIN_AMOUNT}`;
       return result;
     }
+
+    // Always use trusted prices fetched by the SDK; ignore any caller-supplied value.
+    params.prices = await getPrices();
 
     const quoteParams = {
       ...params,
@@ -153,7 +158,11 @@ export interface HyperliquidQuoteParams {
   recipient: string;
   wallet: WalletConfig;
   fromToken: TokenConfig;
-  prices: Record<string, string>;
+  /**
+   * @deprecated The SDK now fetches trusted token prices internally. Any value
+   * passed here is ignored and overridden by the built-in price source.
+   */
+  prices?: Record<string, string>;
   /**
    * Desired output amount in the smallest unit of the destination token
    * (Arbitrum USDC / HyperliuquidToToken), not fromToken.

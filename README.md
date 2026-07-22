@@ -116,10 +116,12 @@ const wallet = new EVMWallet(provider, signer);
 const fromToken = tokens.find((t) => t.chainName === 'Ethereum' && t.symbol === 'USDT')!;
 const toToken = tokens.find((t) => t.chainName === 'Arbitrum' && t.symbol === 'USDC')!;
 
-// Fast route comparison
+// Fast route comparison.
+// Token prices are fetched and managed internally by the SDK — you do not
+// (and should not) pass a `prices` map. This prevents wrong prices from
+// causing incorrect fees and on-chain losses.
 const quotes = await BridgeSFA.getAllQuote({
   dry: true,
-  prices: { ETH: '3000' },
   fromToken,
   toToken,
   wallet: wallet.wallet,

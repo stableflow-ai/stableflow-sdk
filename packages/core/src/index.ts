@@ -41,6 +41,8 @@ export type { ChainType } from './wallets/config/chains';
 export { default as erc20Abi } from './wallets/config/erc20';
 
 export { getPrice } from './utils/price';
+export { getPrices, fetchPrices, setPriceCacheTtl } from './services/PriceService';
+export { PriceApiConfig } from './config/price-api';
 export { numberRemoveEndZero } from './utils/number';
 export { Csl } from './utils/log';
 export { ExecTime } from './utils/exec-time';

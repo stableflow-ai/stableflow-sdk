@@ -17,18 +17,6 @@ import './App.css';
 const fromTokens = HyperliquidFromTokens.filter((t) => t.chainType === 'evm');
 const toToken = HyperliuquidToToken;
 
-const prices: Record<string, string> = {
-  TRX: '0.29',
-  ETH: '2954',
-  POL: '0.12',
-  NEAR: '1.45',
-  SOL: '123',
-  BNB: '901',
-  AVAX: '11.8',
-  APT: '1.56',
-  BERA: '0.6',
-};
-
 function App() {
   const { wallet, currentChainId, onSwitchChain } = useEvmWalletContext();
   const addTransaction = useTransactionStore((s) => s.addTransaction);
@@ -55,7 +43,6 @@ function App() {
       recipient: wallet.account,
       wallet: wallet.wallet,
       fromToken,
-      prices,
       // EXACT_OUTPUT swapMode, amountWei is the amount of destination token
       amountWei: Big(amount).times(10 ** toToken.decimals).toFixed(0, 0),
     };

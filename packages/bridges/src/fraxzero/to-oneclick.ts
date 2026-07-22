@@ -2,7 +2,7 @@ import { FraxZeroService, excludeFees as fraxExcludeFees } from ".";
 import { FRAXZERO_MIDDLE_CHAIN_REFOUND_ADDRESS, FRAXZERO_MIDDLE_TOKEN_USDC, FRAXZERO_MIDDLE_TOKEN_FRXUSD, FRAXZERO_REDEEM_USDC_CONTRACT, FRAXZERO_REDEEM_RWA_CONTRACT, FRAXZERO_REDEEM_AND_MINT_CONTRACT, FRAXZERO_GAS_USED, FRAXZERO_REDEMPTION_CONTRACT } from "./config";
 import oneClickService, { excludeFees as oneClickExcludeFees } from "../oneclick";
 import Big from "big.js";
-import { getRequest, GetStatusParams, GetStatusStableflowResponse, numberRemoveEndZero } from "@stableflow/core";
+import { getRequest, GetStatusParams, GetStatusStableflowResponse, numberRemoveEndZero, OneClickSwapType } from "@stableflow/core";
 import { FRAXZERO_REDEEM_MINT_ABI } from "./contract";
 import { getPrice } from "@stableflow/core";
 import { ExecTime, OneClickSwapType } from "@stableflow/core";
