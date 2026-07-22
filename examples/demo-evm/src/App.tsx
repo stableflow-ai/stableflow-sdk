@@ -130,9 +130,9 @@ function App() {
     });
 
     let _amountWei = quote.quoteParam.amountWei;
-    // In OneClick ExactOut mode, need to approve the returned minAmountIn
+    // EXACT_OUTPUT: approve/deposit amountIn (includes slippage buffer), not minAmountIn
     if (isExactOutput) {
-      _amountWei = quote.quote?.minAmountIn;
+      _amountWei = quote.quote?.amountIn;
     }
 
     try {

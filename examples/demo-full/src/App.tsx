@@ -239,7 +239,7 @@ function App() {
 
     let _amountWei = quote.quoteParam.amountWei;
     if (isExactOutput) {
-      _amountWei = quote.quote?.minAmountIn;
+      _amountWei = quote.quote?.amountIn;
     }
 
     try {

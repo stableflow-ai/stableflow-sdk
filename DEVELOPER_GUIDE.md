@@ -445,7 +445,7 @@ const { isExactOutput } = getQuoteModes({
   bridgeStore: { quoteDataService: finalRoute.serviceType },
 });
 const amountToApprove = isExactOutput
-  ? finalRoute.quote.quote?.minAmountIn
+  ? finalRoute.quote.quote?.amountIn
   : finalRoute.quote.quoteParam.amountWei;
 
 const txHash = await BridgeSFA.send(finalRoute.serviceType, {
@@ -620,7 +620,7 @@ The table below follows the current `@stableflow/core` `QuoteRequest` type and a
 | Value | Description |
 |-------|-------------|
 | `EXACT_INPUT` | `amount` is the fixed input amount. Deposits below `amountIn` are refunded after the deadline; deposits above `amountIn` are processed and the excess is refunded to `refundTo`. |
-| `EXACT_OUTPUT` | `amount` is the fixed output amount. The returned `amountIn` usually includes a slippage buffer, while `minAmountIn` is the minimum required input. Excess input is refunded to `refundTo`; deposits below `minAmountIn` are refunded after the deadline. |
+| `EXACT_OUTPUT` | `amount` is the fixed output amount. The returned `amountIn` includes a slippage buffer; `minAmountIn` is the minimum required input from the API. For approve and source-chain deposit, the SDK uses **`amountIn`** (not `minAmountIn`) so the first step does not fail when slippage moves against you; excess input is refunded to `refundTo`. Deposits below `minAmountIn` are refunded after the deadline. |
 | `FLEX_INPUT` | Allows flexible input and partial deposits. Slippage applies to both `minAmountIn` and `minAmountOut`. Use it for variable deposit flows. |
 
 | Return field | Type | Description |
@@ -638,7 +638,7 @@ Important `Quote` fields:
 | `depositAddress` | `string \| undefined` | Returned when `dry: false`. |
 | `depositMemo` | `string \| undefined` | Required by some chains together with `depositAddress`. |
 | `amountIn` / `amountInFormatted` / `amountInUsd` | `string` | Input amount fields. |
-| `minAmountIn` | `string` | Minimum input amount after slippage, often used by exact-output routes. |
+| `minAmountIn` | `string` | Minimum input amount after slippage (API field). |
 | `amountOut` / `amountOutFormatted` / `amountOutUsd` | `string` | Output amount fields. |
 | `minAmountOut` | `string` | Minimum output after slippage. |
 | `deadline` | `string \| undefined` | Deposit address expiration time. Returned when `dry: false`. |
@@ -842,7 +842,7 @@ The returned `status` is normalized to `pending`, `success`, or `failed`. `toCha
 
 | Return field | Description |
 |--------------|-------------|
-| `isExactOutput` | Use `quote.quote.minAmountIn` for approve/send input amount when true. |
+| `isExactOutput` | Use `quote.quote.amountIn` (includes slippage buffer) for approve/send input amount when true — not `minAmountIn`. |
 | `isOneClickService` | Whether the route uses OneClick send logic. |
 | `isQuoteParamDepositAddress` | Whether the deposit address is stored under `quote.quoteParam.depositAddress`. |
 | `isPermitWithNonce` | Whether the route needs a nonce-based permit. |
@@ -1060,9 +1060,11 @@ const { isExactOutput } = getQuoteModes({
 });
 
 const amountWei = isExactOutput
-  ? quote.quote?.minAmountIn
+  ? quote.quote?.amountIn
   : quote.quoteParam.amountWei;
 ```
+
+For `EXACT_OUTPUT`, always approve and send **`amountIn`** (includes slippage buffer), not `minAmountIn`. Using the minimum can cause the first step to fail when slippage moves against you; any excess is refunded to `refundTo`.
 
 Then call the wallet adapter:
 
