@@ -5,7 +5,7 @@ import Big from "big.js";
 import { getRequest, GetStatusParams, GetStatusStableflowResponse, numberRemoveEndZero, OneClickSwapType } from "@stableflow/core";
 import { FRAXZERO_REDEEM_MINT_ABI } from "./contract";
 import { getPrice } from "@stableflow/core";
-import { ExecTime, OneClickSwapType } from "@stableflow/core";
+import { ExecTime } from "@stableflow/core";
 import { evmRpcFallbackProvider } from "@stableflow/utils-evm";
 import { Csl } from "@stableflow/core";
 import { OpenAPI } from "@stableflow/core";

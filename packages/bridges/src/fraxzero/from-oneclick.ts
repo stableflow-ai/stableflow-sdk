@@ -8,7 +8,7 @@ import { numberRemoveEndZero } from "@stableflow/core";
 import { SendType } from "@stableflow/core";
 import { OpenAPI } from "@stableflow/core";
 import { Csl } from "@stableflow/core";
-import { ExecTime, OneClickSwapType } from "@stableflow/core";
+import { ExecTime } from "@stableflow/core";
 import { evmRpcFallbackProvider } from "@stableflow/utils-evm";
 
 export class OneClick2FraxZeroService extends FraxZeroService {

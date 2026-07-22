@@ -3,7 +3,7 @@ import oneClickService, { excludeFees as oneClickExcludeFees } from "../oneclick
 import usdt0Service, { excludeFees as usdt0ExcludeFees } from "../usdt0";
 import Big from "big.js";
 import { MIDDLE_CHAIN_REFOUND_ADDRESS, MIDDLE_TOKEN_CHAIN } from "./config";
-import { ExecTime, OneClickSwapType } from "@stableflow/core";
+import { ExecTime } from "@stableflow/core";
 import { OpenAPI } from "@stableflow/core";
 import { Csl } from "@stableflow/core";
 import { numberRemoveEndZero } from "@stableflow/core";

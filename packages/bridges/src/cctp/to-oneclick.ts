@@ -53,7 +53,7 @@ export class CCTPOneClickService {
         ...oneClickParams,
         amountWei: Big(0.01).times(10 ** MIDDLE_TOKEN_CHAIN.decimals).toFixed(0, 0),
       });
-      execTime.log("oneClickService.quote: %o", oneClickResult);
+      execTime.log("CCTPOneClickService.quote", "oneClickService.quote: %o", oneClickResult);
 
       if (oneClickResult.errMsg) {
         return oneClickResult;
@@ -62,7 +62,7 @@ export class CCTPOneClickService {
       cctpParams.recipient = oneClickResult.quote.depositAddress;
       execTime.breakpoint();
       cctpResult = await cctpService.quote(cctpParams);
-      execTime.log("cctpService.quote: %o", cctpResult);
+      execTime.log("CCTPOneClickService.quote", "cctpService.quote: %o", cctpResult);
 
       execTime.breakpoint();
       try {
@@ -76,14 +76,14 @@ export class CCTPOneClickService {
         oneClickResult.estimateTime = oneClickResult2.estimateTime;
         oneClickResult.priceImpact = oneClickResult2.priceImpact;
         oneClickResult.exchangeRate = oneClickResult2.exchangeRate;
-        execTime.log("confirm get actual output amount result: %o", oneClickResult2);
+        execTime.log("CCTPOneClickService.quote", "confirm get actual output amount result: %o", oneClickResult2);
       } catch (err) {
-        execTime.log("confirm get actual output amount error: %o", err);
+        execTime.log("CCTPOneClickService.quote", "confirm get actual output amount error: %o", err);
       }
     } else {
       execTime.breakpoint();
       cctpResult = await cctpService.quote(cctpParams);
-      execTime.log("cctpService.quote dry: %o", cctpResult);
+      execTime.log("CCTPOneClickService.quote", "cctpService.quote dry: %o", cctpResult);
 
       if (cctpResult.errMsg) {
         return cctpResult;
@@ -92,7 +92,7 @@ export class CCTPOneClickService {
       oneClickParams.amountWei = Big(cctpResult.outputAmount || 0).times(10 ** MIDDLE_TOKEN_CHAIN.decimals).toFixed(0, 0);
       execTime.breakpoint();
       oneClickResult = await oneClickService.quote(oneClickParams);
-      execTime.log("oneClickService.quote: %o", oneClickResult);
+      execTime.log("CCTPOneClickService.quote", "oneClickService.quote: %o", oneClickResult);
     }
 
     if (oneClickResult.errMsg) {
