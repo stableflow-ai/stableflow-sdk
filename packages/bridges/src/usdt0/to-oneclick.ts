@@ -1,4 +1,4 @@
-import { getRequest, GetStatusParams, GetStatusStableflowResponse, SendType } from "@stableflow/core";
+import { getRequest, GetStatusParams, GetStatusStableflowResponse, SendType, OneClickSwapType } from "@stableflow/core";
 import oneClickService, { excludeFees as oneClickExcludeFees } from "../oneclick";
 import usdt0Service, { excludeFees as usdt0ExcludeFees } from "../usdt0";
 import Big from "big.js";
@@ -41,7 +41,7 @@ export class Usdt0OneClickService {
       ...params,
       fromToken: MIDDLE_TOKEN_CHAIN,
       originAsset: MIDDLE_TOKEN_CHAIN.assetId,
-      swapType: "FLEX_INPUT",
+      swapType: OneClickSwapType.Flex,
       isProxy: false,
       refundTo: middleChainRecipientAddress,
       wallet: middleChainWallet,

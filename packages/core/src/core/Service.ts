@@ -3,6 +3,22 @@
  */
 export type ServiceType = "oneclick" | "usdt0" | "cctp" | "fraxzero" | "fraxzero-oneclick" | "oneclick-fraxzero" | "usdt0-oneclick" | "oneclick-usdt0" | "native";
 
+/**
+ * OneClick swap type. Controls how `amount` is interpreted for OneClick-based
+ * routes and the underlying `/v0/quote` request.
+ *
+ * - `Input`  (`EXACT_INPUT`)  - `amount` is the fixed input amount.
+ * - `Output` (`EXACT_OUTPUT`) - `amount` is the fixed output amount; required
+ *   input is computed and any excess is refunded to `refundTo`.
+ * - `Flex`   (`FLEX_INPUT`)   - flexible input allowing partial deposits.
+ */
+export const OneClickSwapType = {
+  Input: "EXACT_INPUT",
+  Output: "EXACT_OUTPUT",
+  Flex: "FLEX_INPUT",
+} as const;
+export type OneClickSwapType = (typeof OneClickSwapType)[keyof typeof OneClickSwapType];
+
 export const Service = {
   OneClick: "oneclick",
   Usdt0: "usdt0",

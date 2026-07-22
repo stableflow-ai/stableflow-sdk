@@ -5,7 +5,7 @@ import { MIDDLE_CHAIN_LAYERZERO_EXECUTOR, MIDDLE_TOKEN_CHAIN } from "./config";
 import { ExecTime } from "@stableflow/core";
 import { OpenAPI } from "@stableflow/core";
 import { numberRemoveEndZero } from "@stableflow/core";
-import { getPrice, GetStatusParams, getRequest, GetStatusStableflowResponse, isStableToken } from "@stableflow/core";
+import { getPrice, GetStatusParams, getRequest, GetStatusStableflowResponse, isStableToken, OneClickSwapType } from "@stableflow/core";
 
 export class OneClickUsdt0Service {
   public async quote(params: any) {
@@ -96,7 +96,7 @@ export class OneClickUsdt0Service {
       amountWei: secondStepAmountWei,
       toToken: MIDDLE_TOKEN_CHAIN,
       destinationAsset: MIDDLE_TOKEN_CHAIN.assetId,
-      swapType: "EXACT_OUTPUT",
+      swapType: OneClickSwapType.Output,
       isProxy: true,
       recipient: middleChainRecipientAddress,
       appFees: [

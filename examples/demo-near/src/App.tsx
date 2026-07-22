@@ -13,21 +13,6 @@ import './App.css';
 import type { TokenConfig } from '@stableflow/core';
 import { BridgeSFA, getQuoteModes, type GetAllQuoteParams } from '@stableflow/bridges';
 
-const prices: Record<string, string> = {
-  TRX: '0.293733',
-  ETH: '2954.29',
-  POL: '0.11727',
-  NEAR: '1.45',
-  SOL: '123.51',
-  BNB: '901.08',
-  AVAX: '11.83',
-  XDAI: '0.999483',
-  APT: '1.56',
-  BERA: '0.595966',
-  OKB: '104.55',
-  XPL: '0.1403',
-};
-
 const bridgeTokens = getBridgeTokens();
 
 function App() {
@@ -75,9 +60,7 @@ function App() {
     try {
       const quoteRequest: GetAllQuoteParams = {
         dry: false,
-        minInputAmount: '0.1',
-        prices,
-        fromToken: fromChainConfig,
+        minInputAmount: '0.1',        fromToken: fromChainConfig,
         toToken: toChainConfig,
         wallet: fromWallet.wallet as GetAllQuoteParams['wallet'],
         recipient,

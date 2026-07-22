@@ -1,7 +1,7 @@
 import oneClickService, { excludeFees as oneClickExcludeFees } from "../oneclick";
 import { FraxZeroService, excludeFees as fraxZeroExcludeFees } from ".";
 import { FRAXZERO_CONFIG, FRAXZERO_GAS_USED, FRAXZERO_MIDDLE_CHAIN_REFOUND_ADDRESS, FRAXZERO_MIDDLE_TOKEN_FRXUSD, FRAXZERO_MIDDLE_TOKEN_USDC, FRAXZERO_REDEEM_AND_MINT_CONTRACT, FRAXZERO_REDEEM_USDC_CONTRACT } from "./config";
-import { getPrice, getRequest, GetStatusParams, GetStatusStableflowResponse, isStableToken } from "@stableflow/core";
+import { getPrice, getRequest, GetStatusParams, GetStatusStableflowResponse, isStableToken, OneClickSwapType } from "@stableflow/core";
 import { FRAXZERO_REDEEM_MINT_ABI } from "./contract";
 import Big from "big.js";
 import { numberRemoveEndZero } from "@stableflow/core";
@@ -148,7 +148,7 @@ export class OneClick2FraxZeroService extends FraxZeroService {
         amountWei: firstStepAmountWei,
         toToken: FRAXZERO_MIDDLE_TOKEN_USDC,
         destinationAsset: FRAXZERO_MIDDLE_TOKEN_USDC.assetId,
-        swapType: "EXACT_OUTPUT",
+        swapType: OneClickSwapType.Output,
         isProxy: true,
         recipient: middleChainRecipientAddress,
         appFees: [
@@ -217,7 +217,7 @@ export class OneClick2FraxZeroService extends FraxZeroService {
           isOneClickTransfer: !firstStepResult.sendParam ? {
             originAsset: fromToken.contractAddress,
             depositAddress: firstStepResult.quote?.depositAddress,
-            amount: firstStepResult.quote?.minAmountIn,
+            amount: firstStepResult.quote?.amountIn,
           } : false,
           isFromEthereumUSDC,
           isToEthereumFrxUSD,

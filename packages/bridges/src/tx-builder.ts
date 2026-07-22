@@ -122,7 +122,9 @@ const getSendAmountWei = (serviceType: Service, quote: any): string => {
     bridgeStore: { quoteDataService: serviceType },
   });
   if (isExactOutput) {
-    return quote?.quote?.minAmountIn;
+    // Use amountIn (with slippage buffer), not minAmountIn, so approve/deposit
+    // amounts cannot fall short due to slippage; excess is refunded to refundTo.
+    return quote?.quote?.amountIn;
   }
   return quote?.quoteParam?.amountWei;
 };
