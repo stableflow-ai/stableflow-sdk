@@ -1,15 +1,14 @@
 import React from 'react';
 import type { TokenConfig } from '@stableflow/core';
-import { getEvmTokens } from '@/utils/chains';
+import { decodeTokenKey, encodeTokenKey } from '@/utils/chains';
 
 interface ChainSelectorProps {
   label: string;
-  value?: string;
-  onChange: (chainKey: string) => void;
-  excludeContractAddress?: string;
+  value?: TokenConfig;
+  onChange: (token: TokenConfig) => void;
+  excludeToken?: TokenConfig;
   disabled?: boolean;
-  /** Defaults to EVM tokens only. Pass `getBridgeTokens()` or another list for all destinations. */
-  tokens?: TokenConfig[];
+  tokens: TokenConfig[];
   placeholder?: string;
 }
 
@@ -17,27 +16,40 @@ export const ChainSelector: React.FC<ChainSelectorProps> = ({
   label,
   value,
   onChange,
-  excludeContractAddress,
+  excludeToken,
   disabled,
-  tokens: tokenSource,
-  placeholder,
+  tokens,
+  placeholder = 'Select chain',
 }) => {
-  const tokenList = (tokenSource ?? getEvmTokens()).filter(
-    (token) => token.contractAddress !== excludeContractAddress
+  const tokenList = tokens.filter(
+    (token) =>
+      !(
+        token.contractAddress === excludeToken?.contractAddress &&
+        token.chainName === excludeToken?.chainName
+      )
   );
 
   return (
     <div className="chain-selector">
       <label>{label}</label>
       <select
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
+        value={value ? encodeTokenKey(value) : void 0}
+        onChange={(e) => {
+          const { chainName, contractAddress } = decodeTokenKey(e.target.value);
+          const currentToken = tokenList.find(
+            (token) => token.chainName === chainName && token.contractAddress === contractAddress
+          );
+          if (!currentToken) {
+            return;
+          }
+          onChange(currentToken);
+        }}
         disabled={disabled}
         className="select-chain"
       >
-        <option value="">{placeholder ?? 'Select EVM chain'}</option>
+        <option value="">{placeholder}</option>
         {tokenList.map((token) => (
-          <option key={`${token.chainName}-${token.contractAddress}`} value={token.contractAddress}>
+          <option key={encodeTokenKey(token)} value={encodeTokenKey(token)}>
             {token.symbol} - {token.chainName}
           </option>
         ))}

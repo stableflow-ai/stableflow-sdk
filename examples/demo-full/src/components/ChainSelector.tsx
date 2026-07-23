@@ -1,5 +1,6 @@
 import React from 'react';
 import type { TokenConfig } from '@stableflow/core';
+import { decodeTokenKey, encodeTokenKey } from '@/utils/chains';
 
 interface ChainSelectorProps {
   label: string;
@@ -26,9 +27,9 @@ export const ChainSelector: React.FC<ChainSelectorProps> = ({
     <div className="chain-selector">
       <label>{label}</label>
       <select
-        value={value ? `${value.chainName}-${value.contractAddress}` : void 0}
+        value={value ? encodeTokenKey(value) : void 0}
         onChange={(e) => {
-          const [chainName, contractAddress] = e.target.value.split('-');
+          const { chainName, contractAddress } = decodeTokenKey(e.target.value);
           const currentToken = tokenList.find((token) => token.chainName === chainName && token.contractAddress === contractAddress);
           if (!currentToken) {
             return;
@@ -41,8 +42,8 @@ export const ChainSelector: React.FC<ChainSelectorProps> = ({
         <option value="">{placeholder}</option>
         {tokenList.map((token) => (
           <option
-            key={`${token.chainName}-${token.contractAddress}`}
-            value={`${token.chainName}-${token.contractAddress}`}>
+            key={encodeTokenKey(token)}
+            value={encodeTokenKey(token)}>
             {token.symbol} - {token.chainName}
           </option>
         ))}

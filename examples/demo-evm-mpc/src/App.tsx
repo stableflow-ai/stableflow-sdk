@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useSwitchChain } from 'wagmi';
 import { useTransactionStore } from './stores/transactionStore';
 import useWalletsStore from './stores/use-wallets';
@@ -6,7 +6,7 @@ import { ChainSelector } from './components/ChainSelector';
 import { QuoteResult } from './components/QuoteResult';
 import { WalletConnector } from './components/WalletConnector';
 import { TransactionHistory } from './components/TransactionHistory';
-import { getChainByKey, getBridgeTokens } from './utils/chains';
+import { getEvmTokens, getBridgeTokens } from './utils/chains';
 import type { QuoteResult as QuoteResultType, Transaction } from './types';
 import { useWallet } from './hooks/useWallet';
 import Big from 'big.js';
@@ -116,9 +116,12 @@ const decorateStepsWithChainHints = (build: BuildTransactionResult): StepItem[] 
   });
 };
 
+const evmTokens = getEvmTokens();
+const bridgeTokens = getBridgeTokens();
+
 function App() {
-  const [fromChain, setFromChain] = useState<string>();
-  const [toChain, setToChain] = useState<string>();
+  const [fromToken, setFromToken] = useState<TokenConfig>();
+  const [toToken, setToToken] = useState<TokenConfig>();
   const [amount, setAmount] = useState<string>('');
   const [slippageInput, setSlippageInput] = useState<string>(formatSlippageInput(DEFAULT_SLIPPAGE));
   const [toAddress, setToAddress] = useState<string>('');
@@ -138,11 +141,7 @@ function App() {
   const evmChainId = useWalletsStore((state) => state.evm.chainId);
   const { switchChainAsync } = useSwitchChain();
 
-  const [fromChainConfig, toChainConfig] = useMemo((): [TokenConfig | undefined, TokenConfig | undefined] => {
-    return [fromChain ? getChainByKey(fromChain) : undefined, toChain ? getChainByKey(toChain) : undefined];
-  }, [fromChain, toChain]);
-
-  const { wallet: fromWallet, switchNetwork } = useWallet(fromChainConfig ?? null);
+  const { wallet: fromWallet, switchNetwork } = useWallet(fromToken ?? null);
 
   const recipient =
     (toAddress || toWalletAddress || fromWalletAddress || '').trim() || fromWalletAddress || '';
@@ -186,7 +185,7 @@ function App() {
   };
 
   const getFromTokenChainId = (): number => {
-    const chainId = fromChainConfig?.chainId ?? mpcBuild?.chainId;
+    const chainId = fromToken?.chainId ?? mpcBuild?.chainId;
     if (!chainId) {
       throw new Error('From token chainId is missing');
     }
@@ -203,10 +202,10 @@ function App() {
   };
 
   const validateMpcPrerequisites = (): string | null => {
-    if (!selectedQuote || !fromChainConfig || !toChainConfig || !fromWalletAddress || !fromWallet?.wallet) {
+    if (!selectedQuote || !fromToken || !toToken || !fromWalletAddress || !fromWallet?.wallet) {
       return 'Please select a quote and ensure wallet is connected';
     }
-    if (fromChainConfig.chainType !== 'evm') {
+    if (fromToken.chainType !== 'evm') {
       return 'API-driven custody demo supports EVM source chains only';
     }
     if (!getSigner()) {
@@ -253,8 +252,8 @@ function App() {
   const handleGetQuote = async () => {
     const normalizedSlippage = normalizeSlippage(slippageInput);
     if (
-      !fromChainConfig ||
-      !toChainConfig ||
+      !fromToken ||
+      !toToken ||
       !amount ||
       !fromWalletAddress ||
       !recipient ||
@@ -278,13 +277,13 @@ function App() {
       const quoteRequest: GetAllQuoteParams = {
         dry: false,
         minInputAmount: '0.1',
-        fromToken: fromChainConfig,
-        toToken: toChainConfig,
+        fromToken: fromToken,
+        toToken: toToken,
         wallet: fromWallet.wallet,
         recipient,
         refundTo: fromWalletAddress,
         amountWei: Big(amount)
-          .times(10 ** fromChainConfig.decimals)
+          .times(10 ** fromToken.decimals)
           .toString(),
         slippageTolerance: normalizedSlippage,
         oneclickParams: {
@@ -295,7 +294,7 @@ function App() {
             },
           ],
         },
-        ...(fromChainConfig.chainType === 'evm' && fromWallet?.wallet
+        ...(fromToken.chainType === 'evm' && fromWallet?.wallet
           ? {
             evmWallet: fromWallet.wallet,
             evmAddress: fromWalletAddress,
@@ -378,7 +377,7 @@ function App() {
       setError(validationError);
       return;
     }
-    if (!mpcBuild || !selectedQuote || !fromChainConfig || !toChainConfig || !fromWalletAddress) {
+    if (!mpcBuild || !selectedQuote || !fromToken || !toToken || !fromWalletAddress) {
       setError('Build transaction first');
       return;
     }
@@ -467,10 +466,10 @@ function App() {
 
         const tx: Transaction = {
           id: hash,
-          fromToken: fromChainConfig,
-          toToken: toChainConfig,
-          fromChain: fromChainConfig.chainName,
-          toChain: toChainConfig.chainName,
+          fromToken: fromToken,
+          toToken: toToken,
+          fromChain: fromToken.chainName,
+          toChain: toToken.chainName,
           txHash: hash,
           toChainTxHash: '',
           amount,
@@ -501,9 +500,9 @@ function App() {
 
   const [fromChainBalance, setFromChainBalance] = useState<string>('');
   const [fromChainBalanceLoading, setFromChainBalanceLoading] = useState(false);
-  const getFromChainBalance = async (_fromChainConfig?: TokenConfig) => {
+  const getFromChainBalance = async (_fromToken?: TokenConfig) => {
     setFromChainBalanceLoading(true);
-    const cfg = _fromChainConfig || fromChainConfig;
+    const cfg = _fromToken || fromToken;
     if (!cfg || !fromWallet?.account) {
       setFromChainBalanceLoading(false);
       setFromChainBalance('');
@@ -522,7 +521,7 @@ function App() {
     setFromChainBalanceLoading(false);
   };
 
-  const amountLabel = fromChainConfig?.symbol ? `Amount (${fromChainConfig.symbol})` : 'Amount';
+  const amountLabel = fromToken?.symbol ? `Amount (${fromToken.symbol})` : 'Amount';
 
   return (
     <div className="app">
@@ -544,20 +543,21 @@ function App() {
             <h2>From</h2>
             <ChainSelector
               label="From Chain (EVM)"
-              value={fromChain}
-              onChange={(_fromContractAddress) => {
-                const cfg = getChainByKey(_fromContractAddress);
-                if (cfg) switchNetwork(cfg);
-                setFromChain(_fromContractAddress);
+              value={fromToken}
+              tokens={evmTokens}
+              placeholder="Select EVM chain"
+              onChange={(_fromToken) => {
+                switchNetwork(_fromToken);
+                setFromToken(_fromToken);
                 resetMpcFlow();
-                void getFromChainBalance(cfg);
+                void getFromChainBalance(_fromToken);
               }}
-              excludeContractAddress={toChain}
+              excludeToken={toToken}
             />
-            {fromChainConfig && (
+            {fromToken && (
               <div className="quote-header">
                 <WalletConnector
-                  chain={fromChainConfig}
+                  chain={fromToken}
                   onAddressChange={handleFromWalletAddressChange}
                 />
                 <div className="wallet-connected">
@@ -580,13 +580,13 @@ function App() {
             <h2>To</h2>
             <ChainSelector
               label="To Chain"
-              value={toChain}
-              onChange={(value) => {
-                setToChain(value);
+              value={toToken}
+              onChange={(token) => {
+                setToToken(token);
                 resetMpcFlow();
               }}
-              excludeContractAddress={fromChain}
-              tokens={getBridgeTokens()}
+              excludeToken={fromToken}
+              tokens={bridgeTokens}
               placeholder="Select destination chain"
             />
             <div className="to-address-input">
@@ -602,9 +602,9 @@ function App() {
                 className="input-address"
               />
             </div>
-            {toChainConfig?.chainType === 'evm' && (
+            {toToken?.chainType === 'evm' && (
               <WalletConnector
-                chain={toChainConfig}
+                chain={toToken}
                 onAddressChange={handleToWalletAddressChange}
               />
             )}
@@ -647,7 +647,7 @@ function App() {
             <button
               type="button"
               onClick={() => void handleGetQuote()}
-              disabled={loading || !fromChain || !toChain || !amount || !fromWalletAddress}
+              disabled={loading || !fromToken || !toToken || !amount || !fromWalletAddress}
               className="btn-primary"
             >
               {loading ? 'Getting Quote...' : 'Get Quote'}
@@ -655,7 +655,7 @@ function App() {
             {selectedQuote && (
               <>
                 <QuoteResult
-                  toToken={toChainConfig}
+                  toToken={toToken}
                   quotes={quotes}
                   onSelectQuote={(quote) => {
                     setSelectedQuote(quote);
