@@ -13,11 +13,35 @@ import { Csl } from "@stableflow/core";
 
 export const BridgeFee = [
   {
+    includeChains: ["BNB Chain", "Tron"],
     recipient: "reffer.near",
     // No bridge fee will be charged temporarily
-    fee: 0, // 100=1% 1=0.01%
+    fee: 1, // 100=1% 1=0.01%
   },
 ];
+
+export const checkIsBridgeFee = (params?: any) => {
+  const currentBridgeFee = BridgeFee[0];
+  const { fromToken, toToken } = params ?? {};
+
+  if (!fromToken || !toToken) {
+    return false;
+  }
+
+  const fromTokenSymbol = fromToken?.symbol === "USD₮0" ? "USDT" : fromToken?.symbol;
+  const toTokenSymbol = toToken?.symbol === "USD₮0" ? "USDT" : toToken?.symbol;
+
+  if (
+    // 1. bridge chains is bsc / tron
+    (currentBridgeFee.includeChains.includes(fromToken?.chainName) || currentBridgeFee.includeChains.includes(toToken?.chainName))
+    // 2. is swap
+    || fromTokenSymbol !== toTokenSymbol
+  ) {
+    return true;
+  }
+
+  return false;
+};
 
 export const excludeFees: string[] = ["estimateGasUsd"];
 
@@ -70,7 +94,18 @@ export class OneClickService {
 
       try {
         const netFee = Big(_amountInUsd).minus(_amountOutUsd);
+        const isBridgeFee = checkIsBridgeFee(params);
         let bridgeFeeValue = Big(0);
+        if (isBridgeFee) {
+          bridgeFeeValue = BridgeFee.reduce((acc, item) => {
+            return acc.plus(
+              Big(params.amountWei)
+                .div(10 ** params.fromToken.decimals)
+                .times(Big(item.fee).div(10000))
+                .times(getPrice(params.prices, params.fromToken.symbol))
+            );
+          }, Big(0));
+        }
         let destinationGasFee = Big(netFee).minus(bridgeFeeValue);
         destinationGasFee = Big(destinationGasFee).lt(0) ? Big(0) : destinationGasFee;
         if (fromTokenSymbol !== toTokenSymbol) {
@@ -193,10 +228,7 @@ export class OneClickService {
       recipientType: "DESTINATION_CHAIN",
       deadline: new Date(Date.now() + this.offsetTime).toISOString(),
       quoteWaitingTimeMs: 0,
-      appFees: [
-        ...BridgeFee,
-        ...appFees,
-      ],
+      appFees,
       referral: "stableflow",
       amount: amountWei,
       slippageTolerance: slippageTolerance * 100,
@@ -211,6 +243,15 @@ export class OneClickService {
         continue;
       }
       quoteParams[k] = restParams[k as keyof typeof restParams];
+    }
+
+    const isBridgeFee = checkIsBridgeFee(params);
+    if (isBridgeFee) {
+      if (Array.isArray(quoteParams.appFees)) {
+        quoteParams.appFees = quoteParams.appFees.concat(BridgeFee.map((it) => ({ recipient: it.recipient, fee: it.fee })));
+      } else {
+        quoteParams.appFees = BridgeFee.map((it) => ({ recipient: it.recipient, fee: it.fee }));
+      }
     }
 
     execTime.breakpoint();
