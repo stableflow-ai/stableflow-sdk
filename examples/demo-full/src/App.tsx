@@ -514,14 +514,14 @@ function App() {
               >
                 {loading ? 'Getting Quote...' : 'Get Quote'}
               </button>
+              <QuoteResult
+                toToken={toToken}
+                quotes={quotes}
+                onSelectQuote={setSelectedQuote}
+                selectedQuote={selectedQuote}
+              />
               {selectedQuote && (
                 <>
-                  <QuoteResult
-                    toToken={toToken}
-                    quotes={quotes}
-                    onSelectQuote={setSelectedQuote}
-                    selectedQuote={selectedQuote}
-                  />
                   <button
                     type="button"
                     onClick={() => void handleSubmitTransaction()}

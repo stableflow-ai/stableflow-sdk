@@ -17,22 +17,9 @@ export const QuoteResult: React.FC<QuoteResultProps> = ({
 }) => {
   const validQuotes = quotes.filter((q) => q.quote && !q.error);
 
-  if (validQuotes.length === 0) {
-    return (
-      <div className="quote-result error">
-        <p>No valid quotes available. Please try again.</p>
-        {quotes.map((q) => (
-          <div key={q.serviceType} className="quote-error">
-            <strong>{q.serviceType}:</strong> {q.error || 'Unknown error'}
-          </div>
-        ))}
-      </div>
-    );
-  }
-
   return (
     <div className="quote-result">
-      <h3>Available Routes</h3>
+      <h3>Quotes({quotes?.length ?? 0})</h3>
       <div className="quote-list">
         {validQuotes.map((quote) => {
           const isSelected = selectedQuote?.serviceType === quote.serviceType;
@@ -61,6 +48,13 @@ export const QuoteResult: React.FC<QuoteResultProps> = ({
                 <h4>{String(quote.serviceType).toUpperCase()}</h4>
                 {isSelected && <span className="selected-badge">Selected</span>}
               </div>
+              {
+                quote.quote?.errMsg && (
+                  <div className="quote-error">
+                    {quote.quote?.errMsg}
+                  </div>
+                )
+              }
               <div className="quote-details">
                 <div className="quote-row">
                   <span>Output Amount:</span>
