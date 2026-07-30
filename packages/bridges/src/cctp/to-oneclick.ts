@@ -44,63 +44,31 @@ export class CCTPOneClickService {
       wallet: evmWallet,
     };
 
-    let cctpResult: any;
-    let oneClickResult: any;
+    // First, use the middle chain refund address to request CCTP for the output amount
+    execTime.breakpoint();
+    let cctpResult = await cctpService.quote(cctpParams);
+    execTime.log("cctpService.quote: %o", cctpResult);
 
-    if (!dry) {
-      execTime.breakpoint();
-      oneClickResult = await oneClickService.quote({
-        ...oneClickParams,
-        amountWei: Big(0.01).times(10 ** MIDDLE_TOKEN_CHAIN.decimals).toFixed(0, 0),
-      });
-      execTime.log("CCTPOneClickService.quote", "oneClickService.quote: %o", oneClickResult);
-
-      if (oneClickResult.errMsg) {
-        return oneClickResult;
-      }
-
-      cctpParams.recipient = oneClickResult.quote.depositAddress;
-      execTime.breakpoint();
-      cctpResult = await cctpService.quote(cctpParams);
-      execTime.log("CCTPOneClickService.quote", "cctpService.quote: %o", cctpResult);
-
-      execTime.breakpoint();
-      try {
-        const oneClickResult2 = await oneClickService.quote({
-          ...oneClickParams,
-          dry: true,
-          amountWei: Big(cctpResult.outputAmount || 0).times(10 ** MIDDLE_TOKEN_CHAIN.decimals).toFixed(0, 0),
-        });
-        oneClickResult.fees = oneClickResult2.fees;
-        oneClickResult.outputAmount = oneClickResult2.outputAmount;
-        oneClickResult.estimateTime = oneClickResult2.estimateTime;
-        oneClickResult.priceImpact = oneClickResult2.priceImpact;
-        oneClickResult.exchangeRate = oneClickResult2.exchangeRate;
-        execTime.log("CCTPOneClickService.quote", "confirm get actual output amount result: %o", oneClickResult2);
-      } catch (err) {
-        execTime.log("CCTPOneClickService.quote", "confirm get actual output amount error: %o", err);
-      }
-    } else {
-      execTime.breakpoint();
-      cctpResult = await cctpService.quote(cctpParams);
-      execTime.log("CCTPOneClickService.quote", "cctpService.quote dry: %o", cctpResult);
-
-      if (cctpResult.errMsg) {
-        return cctpResult;
-      }
-
-      oneClickParams.amountWei = Big(cctpResult.outputAmount || 0).times(10 ** MIDDLE_TOKEN_CHAIN.decimals).toFixed(0, 0);
-      execTime.breakpoint();
-      oneClickResult = await oneClickService.quote(oneClickParams);
-      execTime.log("CCTPOneClickService.quote", "oneClickService.quote: %o", oneClickResult);
+    if (cctpResult.errMsg) {
+      return cctpResult;
     }
+
+    // Use the output amount from CCTP to request near-intents for the depositAddress
+    oneClickParams.amountWei = Big(cctpResult.outputAmount || 0).times(10 ** MIDDLE_TOKEN_CHAIN.decimals).toFixed(0, 0);
+    execTime.breakpoint();
+    const oneClickResult = await oneClickService.quote(oneClickParams);
+    execTime.log("oneClickService.quote: %o", oneClickResult);
 
     if (oneClickResult.errMsg) {
       return oneClickResult;
     }
 
-    if (cctpResult.errMsg) {
-      return cctpResult;
+    if (!dry) {
+      cctpParams.recipient = oneClickResult.quote.depositAddress;
+
+      execTime.breakpoint();
+      cctpResult = await cctpService.quote(cctpParams);
+      execTime.log("cctpService.quote again: %o", cctpResult);
     }
 
     csl("CCTPOneClickService quote", "rose-600", "oneClickResult: %o", oneClickResult);
