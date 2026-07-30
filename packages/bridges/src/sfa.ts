@@ -66,6 +66,8 @@ export interface GetAllQuoteParams {
     appFees?: { recipient: string; fee: number; }[];
     swapType?: OneClickSwapType;
     isProxy?: boolean;
+    /** When true (default), always calculate destination gas fee. When false, fee is 0 if fromTokenSymbol !== toTokenSymbol. */
+    forceCalculateFee?: boolean;
   };
 }
 
@@ -160,6 +162,7 @@ export class BridgeSFA {
         _params.appFees = params.oneclickParams?.appFees || params.appFees;
         _params.swapType = params.oneclickParams?.swapType;
         _params.isProxy = params.oneclickParams?.isProxy;
+        _params.forceCalculateFee = params.oneclickParams?.forceCalculateFee;
       }
       if (([
         Service.Usdt0,

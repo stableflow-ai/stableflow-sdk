@@ -708,7 +708,7 @@ BridgeSFA.getAllQuote(
 | `slippageTolerance` | `number` | Yes | Percentage value. `0.5` means `0.5%`; OneClick routes convert it internally. |
 | `minInputAmount` | `string` | No | Minimum input amount. Defaults to `1`. |
 | `appFees` | `{ recipient; fee }[]` | No | Deprecated. Use `oneclickParams.appFees`. |
-| `oneclickParams` | `object` | No | OneClick-specific `appFees`, `swapType`, and `isProxy`. |
+| `oneclickParams` | `object` | No | OneClick-specific `appFees`, `swapType`, `isProxy`, and `forceCalculateFee`. |
 
 Return items:
 
@@ -1043,6 +1043,21 @@ Fee units:
 `isProxy` only applies to OneClick routes and mixed routes that start from OneClick. When enabled, OneClick uses proxy deposit address mode, which makes deposit addresses more stable. This is useful when institutions, exchanges, custodians, or enterprise wallets need transfer allowlists.
 
 The tradeoff is higher execution cost on some chains. For example, Tron transfers can cost more than 50% extra gas. Prefer `isProxy: true` for allowlist or compliance flows, and leave it off for ordinary users when lowest gas cost matters more. In production, compare fees with `dry: true`, then re-quote with the same `isProxy` value and `dry: false` before execution.
+
+#### forceCalculateFee
+
+`forceCalculateFee` controls whether OneClick calculates `destinationGasFeeUsd` when the source and destination token symbols differ (a swap). It defaults to `true`.
+
+| Value | Behavior |
+|-------|----------|
+| `true` (default) | Always calculate `destinationGasFeeUsd` from the quote net fee (minus bridge fee). The value is included in `totalFeesUsd`. |
+| `false` | When `fromTokenSymbol !== toTokenSymbol`, set `destinationGasFeeUsd` to `0`. `totalFeesUsd` is recalculated from the updated `fees` object. |
+
+```typescript
+oneclickParams: {
+  forceCalculateFee: true, // default; set false to zero destination gas fee on swaps
+}
+```
 
 ### 4.3 approve
 

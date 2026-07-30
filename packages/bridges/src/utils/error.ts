@@ -1,32 +1,39 @@
 import Big from "big.js";
 import { Service, type TokenConfig } from "@stableflow/core";
+import { formatNumber } from "./format-number";
 
 export const formatQuoteError = (error: any, options: { service: Service; fromToken: TokenConfig; }) => {
   const { service, fromToken } = options;
 
   const defaultErrorMessage = "Failed to get quote, please try again later";
 
-  if (service === Service.OneClick) {
+  if (([Service.OneClick, Service.OneClickUsdt0, Service.Usdt0OneClick, Service.CCTPOneClick, Service.OneClickCCTP, Service.FraxZeroOneClick, Service.OneClickFraxZero] as Service[]).includes(service)) {
     const getQuoteErrorMessage = (): { message: string; sourceMessage: string; } => {
+      const apiMessage =
+        error?.body?.message ||
+        error?.response?.data?.message;
       const _messageResult = {
         message: error?.message || defaultErrorMessage,
-        sourceMessage: error?.response?.data?.message || defaultErrorMessage,
+        sourceMessage: apiMessage || defaultErrorMessage,
       };
-      if (
-        error?.response?.data?.message &&
-        error?.response?.data?.message !== "Internal server error"
-      ) {
+      if (apiMessage && apiMessage !== "Internal server error") {
         // quote failed, maybe out of liquidity
-        if (error?.response?.data?.message === "Failed to get quote") {
+        if (apiMessage === "Failed to get quote") {
           _messageResult.message = "Amount exceeds max";
           return _messageResult;
         }
-        // Amount is too low for bridge
-        if (error?.response?.data?.message?.includes("Amount is too low for bridge, try at least")) {
-          const match = error.response.data.message.match(/try at least\s+(\d+(?:\.\d+)?)/i);
-          let minimumAmount = match ? match[1] : Big(1).times(10 ** fromToken.decimals).toFixed(0);
-          minimumAmount = Big(minimumAmount).div(10 ** fromToken.decimals).toFixed(fromToken.decimals);
-          _messageResult.message = `Amount is too low, at least ${minimumAmount}`;
+        // Amount is too low for bridge — convert wei minimum to readable amount
+        if (apiMessage.includes("Amount is too low for bridge, try at least")) {
+          const match = apiMessage.match(/try at least\s+(\d+(?:\.\d+)?)/i);
+          const minWei = match ? match[1] : Big(1).times(10 ** fromToken.decimals).toFixed(0);
+          const minAmount = Big(minWei).div(10 ** fromToken.decimals);
+          const readableAmount = formatNumber(minAmount, fromToken.decimals, true);
+          _messageResult.message = `Amount is too low, at least ${readableAmount} ${fromToken.symbol}`;
+          return _messageResult;
+        }
+        // app fees exceeds 5% of amount
+        if (apiMessage.includes("Cannot convert undefined or null to object")) {
+          _messageResult.message = "app fees exceeds 5% of amount";
           return _messageResult;
         }
         return _messageResult;

@@ -51,7 +51,7 @@ export class OneClickService {
 
   public async formatQuoteData(res: { data: any; params: any; }) {
     const { params } = res;
-    const { isProxy = true, prices } = params;
+    const { isProxy = true, prices, forceCalculateFee = true } = params;
 
     const isExactOutput = params.swapType === OneClickSwapType.Output;
     const nativeTokenPrice = getPrice(prices, params.fromToken.nativeToken.symbol);
@@ -107,7 +107,7 @@ export class OneClickService {
         }
         let destinationGasFee = Big(netFee).minus(bridgeFeeValue);
         destinationGasFee = Big(destinationGasFee).lt(0) ? Big(0) : destinationGasFee;
-        if (fromTokenSymbol !== toTokenSymbol) {
+        if (!forceCalculateFee && fromTokenSymbol !== toTokenSymbol) {
           destinationGasFee = Big(0);
         }
         res.data.fees = {
@@ -198,6 +198,7 @@ export class OneClickService {
     appFees?: { recipient: string; fee: number; }[];
     swapType?: OneClickSwapType;
     isProxy?: boolean;
+    forceCalculateFee?: boolean;
   }) {
     const {
       wallet,

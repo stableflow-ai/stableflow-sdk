@@ -15,13 +15,11 @@ export const QuoteResult: React.FC<QuoteResultProps> = ({
   onSelectQuote,
   selectedQuote,
 }) => {
-  const validQuotes = quotes.filter((q) => q.quote && !q.error);
-
   return (
     <div className="quote-result">
       <h3>Quotes({quotes?.length ?? 0})</h3>
       <div className="quote-list">
-        {validQuotes.map((quote) => {
+        {quotes.map((quote) => {
           const isSelected = selectedQuote?.serviceType === quote.serviceType;
           const quoteData = quote.quote?.quote || quote.quote?.data;
           const outputAmount =
@@ -49,9 +47,9 @@ export const QuoteResult: React.FC<QuoteResultProps> = ({
                 {isSelected && <span className="selected-badge">Selected</span>}
               </div>
               {
-                quote.quote?.errMsg && (
+                (quote.quote?.errMsg || quote.error) && (
                   <div className="quote-error">
-                    {quote.quote?.errMsg}
+                    {quote.quote?.errMsg || quote.error}
                   </div>
                 )
               }

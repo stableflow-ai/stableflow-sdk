@@ -525,14 +525,14 @@ function App() {
                   <button
                     type="button"
                     onClick={() => void handleSubmitTransaction()}
-                    disabled={loading || selectedQuote.quote?.errMsg}
+                    disabled={loading || selectedQuote.quote?.errMsg || selectedQuote.error}
                     className="btn-submit"
                   >
                     {
                       loading
                         ? 'Submitting...'
-                        : selectedQuote.quote?.errMsg
-                          ? selectedQuote.quote?.errMsg
+                        : (selectedQuote.quote?.errMsg || selectedQuote.error)
+                          ? (selectedQuote.quote?.errMsg || selectedQuote.error)
                           : 'Submit Transaction'
                     }
                   </button>
