@@ -17,6 +17,8 @@ export {
   formatQuoteError,
   quoteSignature,
   formatNumber,
+  OFT_SHARED_DECIMALS,
+  removeOftDust,
 } from './utils';
 export { getHopMsgFee } from './usdt0/hop-composer';
 export {

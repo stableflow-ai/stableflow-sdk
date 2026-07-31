@@ -4,3 +4,4 @@ export { addressToBytes32 } from "./address";
 export { formatQuoteError } from "./error";
 export { quoteSignature } from "./cctp";
 export { formatNumber } from "./format-number";
+export { OFT_SHARED_DECIMALS, removeOftDust } from "./oft";
