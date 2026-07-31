@@ -237,7 +237,7 @@ export class OneClickService {
     // }
 
     for (const k in restParams) {
-      if (["evmAddress", "evmWallet", "destinationChain", "originChain"].includes(k)) {
+      if (["evmAddress", "evmWallet", "destinationChain", "originChain", "evmGasFees"].includes(k)) {
         continue;
       }
       quoteParams[k] = restParams[k as keyof typeof restParams];

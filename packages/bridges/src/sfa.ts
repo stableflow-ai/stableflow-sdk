@@ -69,6 +69,19 @@ export interface GetAllQuoteParams {
     /** When true (default), always calculate destination gas fee. When false, fee is 0 if fromTokenSymbol !== toTokenSymbol. */
     forceCalculateFee?: boolean;
   };
+  /**
+   * Optional pre-fetched EVM gas fees by chainId.
+   * Speeds up dry quotes; if omitted, the SDK falls back to provider.getFeeData().
+   */
+  evmGasFees?: Record<
+    string | number,
+    {
+      gasPrice: string;
+      maxFeePerGas?: string;
+      maxPriorityFeePerGas?: string;
+      lastUpdated?: number;
+    }
+  >;
 }
 
 const submitOthersTx = (
@@ -144,6 +157,7 @@ export class BridgeSFA {
         slippageTolerance: params.slippageTolerance,
         evmWallet: params.evmWallet,
         evmAddress: params.evmAddress,
+        evmGasFees: params.evmGasFees,
       };
 
       if (([

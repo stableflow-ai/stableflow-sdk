@@ -96,7 +96,7 @@ export class OneClick2FraxZeroService extends FraxZeroService {
         price: getPrice(prices, FRAXZERO_MIDDLE_TOKEN_USDC.nativeToken.symbol),
         nativeToken: FRAXZERO_MIDDLE_TOKEN_USDC.nativeToken,
         provider: provider,
-        gasPrice: dry ? evmGasFees[FRAXZERO_MIDDLE_TOKEN_USDC.chainId as number].gasPrice : void 0,
+        gasPrice: dry ? evmGasFees?.[FRAXZERO_MIDDLE_TOKEN_USDC.chainId as number]?.gasPrice : void 0,
       });
       execTime.log("middleChainWallet.getEstimateGas");
       const secondStepGasToAmount = Big(usd || 0).div(getPrice(prices, fromToken.symbol) || 1).toFixed(fromToken.decimals);

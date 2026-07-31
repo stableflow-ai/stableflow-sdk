@@ -42,6 +42,7 @@
     "@solana/web3.js": "^1.98.4",
     "@stableflow/bridges": "workspace:*",
     "@stableflow/core": "workspace:*",
+    "@stableflow/utils-evm": "workspace:*",
     "@stableflow/wallet-aptos": "workspace:*",
     "@stableflow/wallet-evm": "workspace:*",
     "@stableflow/wallet-near": "workspace:*",

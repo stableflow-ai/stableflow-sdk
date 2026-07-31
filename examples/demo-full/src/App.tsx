@@ -9,6 +9,7 @@ import { getBridgeTokens } from './utils/chains';
 import { serializeForPersist } from './utils/serialize';
 import type { QuoteResult as QuoteResultType, Transaction } from './types';
 import { useWallet } from './hooks/useWallet';
+import { useEvmGasFees } from './hooks/useEvmGasFees';
 import Big from 'big.js';
 import './App.css';
 import type { TokenConfig, WalletConfig } from '@stableflow/core';
@@ -54,6 +55,7 @@ function App() {
   const { addTransaction } = useTransactionStore();
   const wallets = useWalletsStore();
   const { switchChainAsync } = useSwitchChain();
+  const { byChainId: evmGasFees } = useEvmGasFees();
   const cs = new Csl(true);
   const csl = cs.log;
 
@@ -67,6 +69,36 @@ function App() {
     setQuotes([]);
     setSelectedQuote(null);
   };
+
+  const buildQuoteRequest = (overrides: {
+    dry: boolean;
+    singleService?: GetAllQuoteParams['singleService'];
+    slippageTolerance: number;
+  }): GetAllQuoteParams => ({
+    dry: overrides.dry,
+    singleService: overrides.singleService,
+    minInputAmount: '0.1',
+    fromToken: fromToken!,
+    toToken: toToken!,
+    wallet: fromWallet!.wallet as WalletConfig,
+    recipient,
+    refundTo: fromWalletAddress!,
+    amountWei: Big(amount)
+      .times(10 ** fromToken!.decimals)
+      .toFixed(0, 0),
+    slippageTolerance: overrides.slippageTolerance,
+    oneclickParams: {
+      appFees: [
+        {
+          recipient: 'stableflow.near',
+          fee: 0,
+        },
+      ],
+    },
+    evmWallet: evmWallet?.wallet as WalletConfig,
+    evmAddress: evmAddress ?? void 0,
+    evmGasFees,
+  });
 
   const handleSlippageChange = (value: string) => {
     if (!/^\d*\.?\d{0,2}$/.test(value)) {
@@ -117,29 +149,10 @@ function App() {
     setSelectedQuote(null);
 
     try {
-      const quoteRequest: GetAllQuoteParams = {
-        dry: false,
-        minInputAmount: '0.1',
-        fromToken: fromToken,
-        toToken: toToken,
-        wallet: fromWallet.wallet as WalletConfig,
-        recipient,
-        refundTo: fromWalletAddress,
-        amountWei: Big(amount)
-          .times(10 ** fromToken.decimals)
-          .toFixed(0, 0),
+      const quoteRequest = buildQuoteRequest({
+        dry: true,
         slippageTolerance: normalizedSlippage,
-        oneclickParams: {
-          appFees: [
-            {
-              recipient: 'stableflow.near',
-              fee: 0,
-            },
-          ],
-        },
-        evmWallet: evmWallet?.wallet as WalletConfig,
-        evmAddress: evmAddress ?? void 0,
-      };
+      });
 
       const response = await BridgeSFA.getAllQuote(quoteRequest);
 
@@ -223,26 +236,49 @@ function App() {
       return;
     }
 
+    const normalizedSlippage = normalizeSlippage(slippageInput);
+    if (normalizedSlippage === null) {
+      setError('Slippage must be between 0.01 and 1.');
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
-    const quote = selectedQuote.quote;
     const wallet = fromWallet.wallet as {
       allowance?: (params: unknown) => Promise<{ allowance: string }>;
       approve?: (params: unknown) => Promise<{ success: boolean; message?: string }>;
     };
 
-    const { isExactOutput } = getQuoteModes({
-      quoteData: quote,
-      bridgeStore: { quoteDataService: selectedQuote.serviceType },
-    });
-
-    let _amountWei = quote.quoteParam.amountWei;
-    if (isExactOutput) {
-      _amountWei = quote.quote?.amountIn;
-    }
-
     try {
+      const finalResponse = await BridgeSFA.getAllQuote(
+        buildQuoteRequest({
+          dry: false,
+          singleService: selectedQuote.serviceType,
+          slippageTolerance: normalizedSlippage,
+        })
+      );
+      const finalRoute = finalResponse.find((q) => q.serviceType === selectedQuote.serviceType);
+      const quote = finalRoute?.quote;
+      if (!quote || quote.errMsg) {
+        throw new Error(quote?.errMsg || finalRoute?.error || 'Failed to get executable quote');
+      }
+
+      setSelectedQuote({
+        serviceType: selectedQuote.serviceType,
+        quote,
+      });
+
+      const { isExactOutput } = getQuoteModes({
+        quoteData: quote,
+        bridgeStore: { quoteDataService: selectedQuote.serviceType },
+      });
+
+      let _amountWei = quote.quoteParam.amountWei;
+      if (isExactOutput) {
+        _amountWei = quote.quote?.amountIn;
+      }
+
       const permitSignature = await getPermitSignature(quote);
 
       if (quote.needApprove && wallet.allowance && wallet.approve) {

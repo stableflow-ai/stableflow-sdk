@@ -122,6 +122,7 @@ Omit optional sections when empty. Keep **Highlights** and **What's Changed**.
 
 | Version | Channel | Date | File |
 |---------|---------|------|------|
+| `3.1.5` | `latest` | 2026-07-31 | [v3.1.5.md](./v3.1.5.md) |
 | `3.1.4` | `latest` | 2026-07-31 | [v3.1.4.md](./v3.1.4.md) |
 | `3.1.4-rc-0f7f3e64ed-20260731` | `rc` | 2026-07-31 | → same changeset as [v3.1.4.md](./v3.1.4.md) |
 | `3.1.4-canary-0f7f3e64ed-20260731` | `canary` | 2026-07-31 | → same changeset as [v3.1.4.md](./v3.1.4.md) |

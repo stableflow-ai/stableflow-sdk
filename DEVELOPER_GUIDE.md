@@ -709,6 +709,7 @@ BridgeSFA.getAllQuote(
 | `minInputAmount` | `string` | No | Minimum input amount. Defaults to `1`. |
 | `appFees` | `{ recipient; fee }[]` | No | Deprecated. Use `oneclickParams.appFees`. |
 | `oneclickParams` | `object` | No | OneClick-specific `appFees`, `swapType`, `isProxy`, and `forceCalculateFee`. |
+| `evmGasFees` | `Record<string \| number, { gasPrice; maxFeePerGas?; maxPriorityFeePerGas?; lastUpdated? }>` | No | Optional pre-fetched EVM gas fees by chainId. Speeds up `dry: true` quotes; if omitted, wallet adapters fall back to `provider.getFeeData()`. |
 
 Return items:
 
@@ -969,6 +970,8 @@ For OneClick HTTP quotes, `QuoteRequest.dry` behaves as follows:
 
 `BridgeSFA.getAllQuote` forwards `dry` to every eligible route in `ServiceMap`. Wallet adapters may also simplify gas estimation or skip transaction construction when `dry: true`.
 
+For EVM source-gas estimates during `dry: true`, you may pass optional `evmGasFees` (fees keyed by chainId) to avoid per-route RPC `getFeeData` calls. If omitted, adapters fall back to `provider.getFeeData()`.
+
 ```typescript
 import { BridgeSFA, ServiceMap } from "@stableflow/bridges";
 import { EVMWallet } from "@stableflow/wallet-evm";
@@ -982,6 +985,7 @@ const fromWallet = new EVMWallet(provider, signer);
 const previews = await BridgeSFA.getAllQuote({
   ...params,
   dry: true,
+  // optional: evmGasFees: { [chainId]: { gasPrice: "..." } },
 });
 
 const best = previews

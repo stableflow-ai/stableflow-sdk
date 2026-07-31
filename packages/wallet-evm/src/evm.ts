@@ -323,7 +323,7 @@ export default class EVMWallet {
         price: nativeTokenPrice,
         nativeToken: fromToken.nativeToken,
         provider,
-        gasPrice: dry ? evmGasFees[fromToken.chainId].gasPrice : void 0,
+        gasPrice: dry ? evmGasFees?.[fromToken.chainId]?.gasPrice : void 0,
       });
       result.estimateSourceGas = wei;
       result.estimateSourceGasUsd = usd;
