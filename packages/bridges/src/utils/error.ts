@@ -1,6 +1,22 @@
 import Big from "big.js";
 import { Service, type TokenConfig } from "@stableflow/core";
 import { formatNumber } from "./format-number";
+import { FRAXZERO_MIDDLE_TOKEN_USDC } from "../fraxzero/config";
+import { MIDDLE_TOKEN_CHAIN as USDT0_MIDDLE_TOKEN } from "../usdt0/config";
+import { MIDDLE_TOKEN_CHAIN as CCTP_MIDDLE_TOKEN } from "../cctp/config";
+
+const ONECLICK_SECOND_HOP_SERVICES: Service[] = [
+  Service.FraxZeroOneClick,
+  Service.Usdt0OneClick,
+  Service.CCTPOneClick,
+];
+
+const resolveAmountToken = (service: Service, fromToken: TokenConfig): TokenConfig => {
+  if (service === Service.FraxZeroOneClick) return FRAXZERO_MIDDLE_TOKEN_USDC;
+  if (service === Service.Usdt0OneClick) return USDT0_MIDDLE_TOKEN;
+  if (service === Service.CCTPOneClick) return CCTP_MIDDLE_TOKEN;
+  return fromToken;
+};
 
 export const formatQuoteError = (error: any, options: { service: Service; fromToken: TokenConfig; }) => {
   const { service, fromToken } = options;
@@ -24,11 +40,15 @@ export const formatQuoteError = (error: any, options: { service: Service; fromTo
         }
         // Amount is too low for bridge — convert wei minimum to readable amount
         if (apiMessage.includes("Amount is too low for bridge, try at least")) {
+          const amountToken = resolveAmountToken(service, fromToken);
+          const isMiddleToken = ONECLICK_SECOND_HOP_SERVICES.includes(service);
           const match = apiMessage.match(/try at least\s+(\d+(?:\.\d+)?)/i);
-          const minWei = match ? match[1] : Big(1).times(10 ** fromToken.decimals).toFixed(0);
-          const minAmount = Big(minWei).div(10 ** fromToken.decimals);
-          const readableAmount = formatNumber(minAmount, fromToken.decimals, true);
-          _messageResult.message = `Amount is too low, at least ${readableAmount} ${fromToken.symbol}`;
+          const minWei = match ? match[1] : Big(1).times(10 ** amountToken.decimals).toFixed(0);
+          const minAmount = Big(minWei).div(10 ** amountToken.decimals);
+          const readableAmount = formatNumber(minAmount, amountToken.decimals, true);
+          _messageResult.message = isMiddleToken
+            ? `Middle token amount is too low, at least ${readableAmount} ${amountToken.symbol}`
+            : `Amount is too low, at least ${readableAmount} ${amountToken.symbol}`;
           return _messageResult;
         }
         // app fees exceeds 5% of amount
