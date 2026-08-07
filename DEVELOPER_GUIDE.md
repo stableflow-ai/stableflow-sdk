@@ -23,6 +23,7 @@ This guide helps developers integrate StableFlow features, including the HTTP-on
    - [Token prices](#token-prices)
    - [4.1 Recommended Use of the `dry` Flag](#41-recommended-use-of-the-dry-flag)
    - [4.2 `oneclickParams`](#42-oneclickparams)
+     - [appFees](#appfees)
    - [4.3 approve](#43-approve)
    - [4.4 permit signature](#44-permit-signature)
    - [4.5 Error Handling](#45-error-handling)
@@ -1033,6 +1034,20 @@ Fee units:
 | `50` | `0.50%` |
 | `10` | `0.10%` |
 | `1` | `0.01%` |
+
+##### Why manual withdrawal is needed?
+
+In NEAR Intents, deposits for cross-chain/cross-asset trades, intent matching, and fee deduction all happen inside the contract. When you set `appFees`, the system deducts the fee proportionally from the trade's input token and credits it to the specified `recipient` account's internal balance. This internally custodied / ledgered share is tracked and managed through the [NEP-245 Multi Token Standard](https://github.com/near/NEPs/blob/master/neps/nep-0245.md) (a unified multi-token standard that can manage multiple token asset types within a single smart contract). You can view each fee credit at `https://nearblocks.io/address/<YOUR_WALLET_ADDRESS>/mt-tokens`.
+
+##### How to withdraw?
+
+1. Go to [near.com](https://near.com/), choose **Sign in**, then **NEAR Wallets**, select your wallet, and sign to log in.
+2. Complete **Verify your wallet**: click **Verify wallet** and sign.
+3. In the left navigation, open **Assets** to see fees received by your account.
+4. Click **crypto**. You can then choose:
+   - **Swap**
+   - **Send** (to your NEAR wallet, or to any other chain wallet)
+   - **Move to Confidential** (transfer assets through the privacy bridge)
 
 #### swapType
 
