@@ -24,6 +24,7 @@ This guide helps developers integrate StableFlow features, including the HTTP-on
    - [4.1 Recommended Use of the `dry` Flag](#41-recommended-use-of-the-dry-flag)
    - [4.2 `oneclickParams`](#42-oneclickparams)
      - [appFees](#appfees)
+     - [quoteWaitingTimeMs](#quotewaitingtimems)
    - [4.3 approve](#43-approve)
    - [4.4 permit signature](#44-permit-signature)
    - [4.5 Error Handling](#45-error-handling)
@@ -709,7 +710,7 @@ BridgeSFA.getAllQuote(
 | `slippageTolerance` | `number` | Yes | Percentage value. `0.5` means `0.5%`; OneClick routes convert it internally. |
 | `minInputAmount` | `string` | No | Minimum input amount. Defaults to `1`. |
 | `appFees` | `{ recipient; fee }[]` | No | Deprecated. Use `oneclickParams.appFees`. |
-| `oneclickParams` | `object` | No | OneClick-specific `appFees`, `swapType`, `isProxy`, and `forceCalculateFee`. |
+| `oneclickParams` | `object` | No | OneClick-specific `appFees`, `swapType`, `isProxy`, `forceCalculateFee`, and `quoteWaitingTimeMs`. |
 | `evmGasFees` | `Record<string \| number, { gasPrice; maxFeePerGas?; maxPriorityFeePerGas?; lastUpdated? }>` | No | Optional pre-fetched EVM gas fees by chainId. Speeds up `dry: true` quotes; if omitted, wallet adapters fall back to `provider.getFeeData()`. |
 
 Return items:
@@ -874,6 +875,7 @@ Hyperliquid.quote(
 | `amountWei` | `string` | Yes | Source amount in the smallest unit. |
 | `dry` | `boolean` | No | Defaults to `true`; `false` generates a real deposit address. |
 | `oneclickParams.appFees` | `{ recipient; fee }[]` | No | App fee configuration. |
+| `oneclickParams.quoteWaitingTimeMs` | `number` | No | Time in milliseconds to wait for a quote from the relay. Defaults to `3000`. Pass `0` for the fastest quote. |
 
 ##### @stableflow/hyperliquid Hyperliquid.transfer()
 
@@ -1075,6 +1077,16 @@ The tradeoff is higher execution cost on some chains. For example, Tron transfer
 ```typescript
 oneclickParams: {
   forceCalculateFee: true, // default; set false to zero destination gas fee on swaps
+}
+```
+
+#### quoteWaitingTimeMs
+
+Time in milliseconds the caller is willing to wait for a quote from the OneClick relay. Defaults to `3000`. Pass `0` to receive the fastest quote.
+
+```typescript
+oneclickParams: {
+  quoteWaitingTimeMs: 3000, // default; pass 0 for the fastest quote
 }
 ```
 

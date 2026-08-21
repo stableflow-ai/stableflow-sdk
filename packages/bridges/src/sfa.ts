@@ -68,6 +68,8 @@ export interface GetAllQuoteParams {
     isProxy?: boolean;
     /** When true (default), always calculate destination gas fee. When false, fee is 0 if fromTokenSymbol !== toTokenSymbol. */
     forceCalculateFee?: boolean;
+    /** Time in milliseconds to wait for a quote from the relay. Defaults to 3000. Pass 0 for the fastest quote. */
+    quoteWaitingTimeMs?: number;
   };
   /**
    * Optional pre-fetched EVM gas fees by chainId.
@@ -177,6 +179,7 @@ export class BridgeSFA {
         _params.swapType = params.oneclickParams?.swapType;
         _params.isProxy = params.oneclickParams?.isProxy;
         _params.forceCalculateFee = params.oneclickParams?.forceCalculateFee;
+        _params.quoteWaitingTimeMs = params.oneclickParams?.quoteWaitingTimeMs;
       }
       if (([
         Service.Usdt0,

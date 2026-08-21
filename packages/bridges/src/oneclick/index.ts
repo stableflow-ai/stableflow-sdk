@@ -199,6 +199,7 @@ export class OneClickService {
     swapType?: OneClickSwapType;
     isProxy?: boolean;
     forceCalculateFee?: boolean;
+    quoteWaitingTimeMs?: number;
   }) {
     const {
       wallet,
@@ -210,6 +211,7 @@ export class OneClickService {
       swapType = OneClickSwapType.Input,
       isProxy = true,
       slippageTolerance,
+      quoteWaitingTimeMs = 3000,
       ...restParams
     } = params;
 
@@ -225,7 +227,7 @@ export class OneClickService {
         .substr(2, 9)}`,
       recipientType: "DESTINATION_CHAIN",
       deadline: new Date(Date.now() + this.offsetTime).toISOString(),
-      quoteWaitingTimeMs: 0,
+      quoteWaitingTimeMs,
       appFees,
       referral: "stableflow",
       amount: amountWei,

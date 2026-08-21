@@ -37,6 +37,7 @@ class HyperliquidService {
       amount: params.amountWei,
       refundType: "ORIGIN_CHAIN",
       appFees: params.oneclickParams?.appFees,
+      quoteWaitingTimeMs: params.oneclickParams?.quoteWaitingTimeMs,
       swapType: OneClickSwapType.Output,
       isProxy: false,
     };
@@ -173,6 +174,8 @@ export interface HyperliquidQuoteParams {
   dry?: boolean;
   oneclickParams?: {
     appFees?: { recipient: string; fee: number; }[];
+    /** Time in milliseconds to wait for a quote from the relay. Defaults to 3000. Pass 0 for the fastest quote. */
+    quoteWaitingTimeMs?: number;
   };
 }
 
