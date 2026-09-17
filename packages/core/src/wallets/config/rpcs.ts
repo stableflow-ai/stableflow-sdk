@@ -26,6 +26,7 @@ export const NetworkRpcUrlsMap: Record<string, string[]> = {
   "sui": ["https://fullnode.mainnet.sui.io:443"],
   "katana": ["https://rpc.katana.network", "https://katana.drpc.org"],
   "pharos": ["https://rpc.pharos.xyz"],
+  "arc": ["https://rpc.mainnet.arc.io"],
 };
 
 /**

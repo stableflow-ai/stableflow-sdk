@@ -491,6 +491,22 @@ const chains: Record<string, ChainConfig> = {
     },
     ...getChainRpcUrl("pharos"),
   },
+  arc: {
+    chainName: "Arc",
+    blockchain: "arc",
+    chainIcon: getStableflowChainLogo("Arc"),
+    chainIconGray: getStableflowChainLogo("Arc-gray"),
+    chainType: chainTypes.evm.value,
+    chainId: 5042,
+    blockExplorerUrl: "https://explorer.arc.io/tx",
+    blockExplorerUrls: ["https://explorer.arc.io"],
+    primaryColor: "#1B3158",
+    nativeToken: {
+      symbol: "USDC",
+      decimals: 18,
+    },
+    ...getChainRpcUrl("arc"),
+  },
 };
 
 export default chains;

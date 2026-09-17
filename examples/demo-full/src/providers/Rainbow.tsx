@@ -66,6 +66,18 @@ const pharos = defineChain({
   },
 });
 
+const arc = defineChain({
+  id: 5042,
+  name: 'Arc',
+  nativeCurrency: { name: 'USDC', symbol: 'USDC', decimals: 18 },
+  rpcUrls: {
+    default: { http: getChainRpcUrl('arc').rpcUrls },
+  },
+  blockExplorers: {
+    default: { name: 'Arc Explorer', url: 'https://explorer.arc.io' },
+  },
+});
+
 export const metadata = {
   name: 'StableFlow Demo-Full',
   description: 'All-chain StableFlow bridge example (EVM, Aptos, NEAR, Solana, Sui, TON, Tron).',
@@ -95,6 +107,7 @@ const RpcUrls: Record<number, any> = {
   [fraxtal.id]: fallback(getChainRpcUrl("frax").rpcUrls.map((rpc) => http(rpc))),
   [katana.id]: fallback(getChainRpcUrl("katana").rpcUrls.map((rpc) => http(rpc))),
   [pharos.id]: fallback(getChainRpcUrl("pharos").rpcUrls.map((rpc) => http(rpc))),
+  [arc.id]: fallback(getChainRpcUrl("arc").rpcUrls.map((rpc) => http(rpc))),
 };
 
 const connectors = connectorsForWallets(
@@ -143,6 +156,7 @@ const wagmiConfig = createConfig({
     fraxtal,
     katana,
     pharos,
+    arc,
   ],
   transports: {
     [mainnet.id]: RpcUrls[mainnet.id] || http(),
@@ -166,6 +180,7 @@ const wagmiConfig = createConfig({
     [fraxtal.id]: RpcUrls[fraxtal.id] || http(),
     [katana.id]: RpcUrls[katana.id] || http(),
     [pharos.id]: RpcUrls[pharos.id] || http(),
+    [arc.id]: RpcUrls[arc.id] || http(),
   },
 });
 
