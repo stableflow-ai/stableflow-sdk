@@ -10,13 +10,13 @@ pnpm add @stableflow/wallet-solana @stableflow/core @stableflow/bridges
 
 **Peer dependencies:**
 
-- `@solana/web3.js` ^1.98.4
+- `@solana/web3.js` ^1.99.0
 - `@solana/spl-token` ^0.4.14
 - `@layerzerolabs/lz-v2-utilities` ^3.0.151
 - `@layerzerolabs/lz-solana-sdk-v2` ^3.0.154
 - `@layerzerolabs/oft-v2-solana-sdk` ^3.0.168
 - `@coral-xyz/anchor` ^0.29.0
-- `@metaplex-foundation/umi` ^1.5.1 (and related Metaplex packages — see `package.json`)
+- `@metaplex-foundation/umi` ^1.6.0 (and related Metaplex packages — see `package.json`)
 
 ## When to use
 

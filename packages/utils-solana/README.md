@@ -11,7 +11,7 @@ pnpm add @stableflow/utils-solana @stableflow/core
 **Peer dependencies** (install in your app):
 
 - `@solana/spl-token` ^0.4.14
-- `@solana/web3.js` ^1.98.4
+- `@solana/web3.js` ^1.99.0
 
 This package is primarily used by `@stableflow/wallet-solana` and some cross-chain wallet paths. Application code rarely imports it directly.
 
