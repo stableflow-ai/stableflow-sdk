@@ -24,6 +24,7 @@ setRpcUrls({
   sol: [`${CustomRpcHost}/solana`],
   pol: ['https://polygon-bor-rpc.publicnode.com'],
   tron: [`${CustomRpcHost}/tron`],
+  arc: [`https://arc-rpc.publicnode.com`],
 });
 
 console.log(NetworkRpcUrlsMap);
