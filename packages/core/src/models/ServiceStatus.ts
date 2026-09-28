@@ -69,7 +69,7 @@ export enum LayerZeroStatus {
 }
 
 /**
- * Stableflow Statuses
+ * StableFlow Statuses
  */
 export enum StableflowStatus {
   /**

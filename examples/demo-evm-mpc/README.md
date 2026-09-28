@@ -24,7 +24,7 @@ The full flow runs end-to-end and is visualized as a step panel in the UI:
 See [`src/App.tsx`](src/App.tsx) `handleSubmitTransaction`.
 
 ```ts
-// Stableflow builds unsigned data (no signer)
+// StableFlow builds unsigned data (no signer)
 const build = await BridgeSFA.buildTransaction(serviceType, { quote });
 
 // External MPC signer (here: browser wallet) signs & broadcasts
@@ -40,7 +40,7 @@ if (build.permitTypedData) {
 }
 const { hash } = await signer.sendTransaction(build.tx);
 
-// Report back to Stableflow
+// Report back to StableFlow
 await BridgeSFA.report(serviceType, { quote, hash, permitSignature });
 ```
 

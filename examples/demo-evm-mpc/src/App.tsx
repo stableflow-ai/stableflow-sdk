@@ -528,7 +528,7 @@ function App() {
       <header className="app-header">
         <h1>StableFlow Demo EVM (MPC / API-driven custody)</h1>
         <p>
-          Stableflow returns unsigned tx data / EIP-712 typed data. Signing and
+          StableFlow returns unsigned tx data / EIP-712 typed data. Signing and
           broadcasting are done by an external MPC signer (Fireblocks, etc.).
           In this demo the connected browser wallet stands in for that MPC signer.
         </p>

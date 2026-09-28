@@ -7,7 +7,7 @@ import { getQuoteModes } from "./utils";
  * Serializable, unsigned EVM transaction data.
  *
  * This is what an API-driven custody integrator (e.g. an MPC wallet such as
- * Fireblocks) receives. Stableflow builds the calldata; the integrator signs
+ * Fireblocks) receives. StableFlow builds the calldata; the integrator signs
  * and broadcasts it through their own infrastructure, then reports the
  * resulting hash back via `BridgeSFA.report`.
  */
