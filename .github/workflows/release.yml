@@ -1,0 +1,55 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - "release/**"
+
+concurrency:
+  group: npm-release-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Enable pnpm
+        env:
+          COREPACK_ENABLE_DOWNLOAD_PROMPT: "0"
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.19.0 --activate
+
+      - name: Verify release ref
+        run: node scripts/verify-release-ref.mjs
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm build:pub
+
+      - name: Publish to npm
+        env:
+          NPM_CONFIG_PROVENANCE: "true"
+        run: node scripts/publish-released.mjs
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node scripts/github-release.mjs

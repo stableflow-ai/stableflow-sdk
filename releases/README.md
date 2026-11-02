@@ -2,6 +2,34 @@
 
 This directory holds StableFlow SDK release notes for published `@stableflow/*` packages.
 
+## How to publish
+
+Feature branches merge to `main`. A release starts from a clean checkout of the commit to ship. `pnpm release` creates `release/<version>`, writes the same version into every public package, commits, and tags. It does not push or run `npm publish`.
+
+Commit `releases/vX.Y.Z.md` before a stable release. The script exits when that file is missing.
+
+| Channel | Command | Version | npm dist-tag | After CI |
+|---------|---------|---------|--------------|----------|
+| latest | `pnpm release latest patch` (`minor` or `major`) | `x.y.z` | `latest` | Merge `release/x.y.z` back to `main` |
+| rc, beta, canary | `pnpm release rc` (`beta`, `canary`). Optional `--base x.y.z` | `{base}-{channel}-{hash}-{YYYYMMDD}` | `rc`, `beta`, or `canary` | Keep the release branch off `main` |
+| experimental | `pnpm release experimental` | `0.0.0-experimental-{hash}-{YYYYMMDD}` | `experimental-{hash}-{YYYYMMDD}` | Keep the release branch off `main` |
+
+`<hash>` is the last 10 characters of the commit being released. The date is the `Asia/Shanghai` day as `YYYYMMDD`. When those 10 characters are all digits, the script prefixes `h` so the prerelease id stays valid semver. npm rejects a dist-tag that is itself valid semver, so the experimental dist-tag drops the leading `0.0.0-`.
+
+`--dry-run` prints the version, dist-tag, branch, and tag and leaves git untouched.
+
+Push the branch and the annotated tag together:
+
+```bash
+git push -u origin release/<version> <version>
+```
+
+A push to `release/**` runs [`.github/workflows/release.yml`](../.github/workflows/release.yml). The workflow requires the branch name `release/<version>` and the tag at that commit, installs from `pnpm-lock.yaml`, runs `pnpm build:pub`, publishes any of the 12 public packages that do not already have the version, and opens a GitHub Release. Channel builds are marked as prereleases. The release body is `releases/v<version>.md` when that file exists.
+
+npm auth is the Trusted Publisher on `stableflow-ai/stableflow-sdk` for workflow file `release.yml` (`id-token: write`, provenance). The workflow does not read `NPM_TOKEN`. Each package's publisher stays pending until `release.yml` publishes that package once. Validate the current pending configuration before **2026-11-04 09:07 UTC**. `pnpm pub`, `pnpm pub:rc`, `pnpm pub:beta`, and `pnpm pub:canary` remain local fallbacks and authenticate with the user npm token, so they do not validate the Trusted Publisher. Let CI publish a version that still needs to go out through that workflow.
+
+The same commit on the same Shanghai day produces the same prerelease version. Add a commit, or wait until the next day, before cutting another prerelease from that commit.
+
 ## Package version format
 
 All packages in a release share the same version string.
@@ -14,7 +42,7 @@ All packages in a release share the same version string.
 
 Example: `3.1.4`
 
-Publish with: `pnpm pub`
+Release with: `pnpm release latest patch` (or `minor` / `major`). See [How to publish](#how-to-publish).
 
 ### Channel / prerelease builds
 
@@ -31,12 +59,12 @@ Publish with: `pnpm pub`
 
 Examples:
 
-| Version | Channel | Publish script |
+| Version | Channel | Release command |
 |---------|---------|----------------|
-| `3.1.4-rc-0f7f3e64ed-20260731` | `rc` | `pnpm pub:rc` |
-| `3.1.4-canary-0f7f3e64ed-20260731` | `canary` | `pnpm pub:canary` |
-| `3.1.1-beta-d5f36a0408-20260723` | `beta` | `pnpm pub:beta` |
-| `0.0.0-experimental-66f3349774-20260703` | `experimental` | (custom / experimental lane) |
+| `3.1.4-rc-0f7f3e64ed-20260731` | `rc` | `pnpm release rc` |
+| `3.1.4-canary-0f7f3e64ed-20260731` | `canary` | `pnpm release canary` |
+| `3.1.1-beta-d5f36a0408-20260723` | `beta` | `pnpm release beta` |
+| `0.0.0-experimental-66f3349774-20260703` | `experimental` | `pnpm release experimental` |
 
 Install examples:
 

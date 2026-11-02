@@ -100,6 +100,7 @@ From the monorepo root:
 | `pnpm build:wallets` | Build all wallet packages |
 | `pnpm build:hyperliquid` | Build `@stableflow/hyperliquid` |
 | `pnpm build:examples` | Build all examples under `examples/*` |
+| `pnpm release` | Bump the shared version, commit, and tag `release/<version>`. Push that branch and tag to publish. See [releases/README.md](releases/README.md). |
 | `pnpm dev:demo-*` | Start a specific example (see table above) |
 
 ## Minimal integration example

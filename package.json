@@ -23,6 +23,7 @@
     "dev:demo-tron-simple": "pnpm --filter demo-tron-simple dev",
     "dev:demo-hyperliquid": "pnpm --filter demo-hyperliquid dev",
     "dev:demo-full": "pnpm --filter demo-full dev",
+    "release": "node scripts/release.mjs",
     "pub": "pnpm -r publish --access public",
     "pub:rc": "pnpm -r publish --access public --tag rc --no-git-checks",
     "pub:beta": "pnpm -r publish --access public --tag beta --no-git-checks",
