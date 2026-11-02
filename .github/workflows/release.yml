@@ -44,9 +44,10 @@ jobs:
       - name: Build
         run: pnpm build:pub
 
+      - name: Install npm for trusted publishing
+        run: npm install -g npm@11
+
       - name: Publish to npm
-        env:
-          NPM_CONFIG_PROVENANCE: "true"
         run: node scripts/publish-released.mjs
 
       - name: Create GitHub Release

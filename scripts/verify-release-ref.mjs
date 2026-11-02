@@ -1,7 +1,8 @@
 /**
  * Confirm this CI checkout is the release branch and that the matching tag
- * points at HEAD. Fetches the tag a few times because a combined branch+tag
- * push can arrive slightly apart.
+ * points at HEAD, or at an ancestor whose package version is unchanged.
+ * Fetches the tag a few times because a combined branch+tag push can arrive
+ * slightly apart.
  */
 import { execFileSync, spawnSync } from "node:child_process";
 import { readFileSync } from "node:fs";
@@ -34,8 +35,13 @@ try {
 
 const head = git("rev-parse", "HEAD");
 if (tagCommit !== head) {
-  console.error(`Tag ${version} points at ${tagCommit}, HEAD is ${head}.`);
-  process.exit(1);
+  const ancestor = spawnSync("git", ["merge-base", "--is-ancestor", tagCommit, head], { stdio: "ignore" });
+  const taggedVersion = JSON.parse(git("show", `${tagCommit}:packages/core/package.json`)).version;
+  if (ancestor.status !== 0 || taggedVersion !== version) {
+    console.error(`Tag ${version} points at ${tagCommit}, HEAD is ${head}.`);
+    process.exit(1);
+  }
+  console.log(`tag ${version} is an ancestor of HEAD; package version is unchanged`);
 }
 
 console.log(`verified ${expected} at ${head}`);
