@@ -150,6 +150,7 @@ Omit optional sections when empty. Keep **Highlights** and **What's Changed**.
 
 | Version | Channel | Date | File |
 |---------|---------|------|------|
+| `3.1.7` | `latest` | 2026-11-02 | [v3.1.7.md](./v3.1.7.md) |
 | `3.1.6` | `latest` | 2026-08-21 | [v3.1.6.md](./v3.1.6.md) |
 | `3.1.5` | `latest` | 2026-07-31 | [v3.1.5.md](./v3.1.5.md) |
 | `3.1.4` | `latest` | 2026-07-31 | [v3.1.4.md](./v3.1.4.md) |
