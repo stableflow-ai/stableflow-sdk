@@ -19,6 +19,11 @@ if (existing.status === 0) {
 }
 
 const notesPath = `releases/v${version}.md`;
+const staged =
+  "The npm packages are staged by release.yml. A maintainer approves them on npmjs.com before they can be installed.";
+const notes = existsSync(notesPath)
+  ? `${readFileSync(notesPath, "utf8").trimEnd()}\n\n${staged}`
+  : `StableFlow SDK ${version}.\n\n${staged}`;
 const args = [
   "release",
   "create",
@@ -27,9 +32,9 @@ const args = [
   process.env.GITHUB_SHA || "HEAD",
   "--title",
   `StableFlow SDK ${version}`,
+  "--notes",
+  notes,
 ];
-if (existsSync(notesPath)) args.push("--notes-file", notesPath);
-else args.push("--notes", `StableFlow SDK ${version}.`);
 if (distTagFromVersion(version) !== "latest") args.push("--prerelease");
 
 const created = spawnSync("gh", args, { stdio: "inherit" });

@@ -1,11 +1,16 @@
 /**
- * Publish the version already committed on this release branch.
+ * Stage the version already committed on this release branch.
  * Skips packages that already have the version on npm so a failed run can resume.
- * Auth is the GitHub Actions Trusted Publisher. A token would skip OIDC and
- * leave the publisher pending.
+ *
+ * Auth is the GitHub Actions Trusted Publisher, which is allowed to
+ * `npm stage publish` only. npm 10 cannot exchange the OIDC token, so the
+ * workflow installs npm 11 first. A maintainer approves the staged version
+ * on npmjs.com before it can be installed.
  */
-import { spawnSync } from "node:child_process";
-import { readdirSync, readFileSync } from "node:fs";
+import { execFileSync, spawnSync } from "node:child_process";
+import { mkdtempSync, readdirSync, readFileSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { distTagFromVersion, isReleaseVersion } from "./version.mjs";
 
 const PUBLISH_ORDER = [
@@ -44,6 +49,7 @@ for (const name of PUBLISH_ORDER) {
 }
 
 const tag = distTagFromVersion(version);
+assertNpmCanStage();
 console.log(`version ${version}`);
 console.log(`dist-tag ${tag}`);
 
@@ -52,18 +58,10 @@ for (const name of PUBLISH_ORDER) {
     console.log(`skip ${name}@${version}`);
     continue;
   }
-  console.log(`publish ${name}@${version}`);
-  const result = spawnSync(
-    "pnpm",
-    ["--filter", name, "publish", "--access", "public", "--tag", tag, "--no-git-checks", "--provenance"],
-    { stdio: "inherit" },
-  );
-  if (result.status !== 0) process.exit(result.status ?? 1);
-  if (!isPublished(name, version)) {
-    console.error(`${name}@${version} is still missing from npm after publish.`);
-    process.exit(1);
-  }
+  stagePackage(name, version, tag);
 }
+
+console.log("Staged packages still need a maintainer to approve them on npmjs.com before they can be installed.");
 
 function publicManifests() {
   const byName = new Map();
@@ -98,6 +96,42 @@ function workspaceDeps(manifest) {
   return Object.entries(deps)
     .filter(([name, spec]) => name.startsWith("@stableflow/") && String(spec).startsWith("workspace:"))
     .map(([name]) => name);
+}
+
+function assertNpmCanStage() {
+  const npmVersion = execFileSync("npm", ["--version"], { encoding: "utf8" }).trim();
+  const [major, minor] = npmVersion.split(".").map(Number);
+  if (!(major > 11 || (major === 11 && minor >= 15))) {
+    console.error(`npm ${npmVersion} cannot stage-publish with a Trusted Publisher. Install npm >= 11.15.0.`);
+    process.exit(1);
+  }
+  console.log(`npm ${npmVersion}`);
+}
+
+function stagePackage(name, version, tag) {
+  const dir = mkdtempSync(join(tmpdir(), "stableflow-pack-"));
+  try {
+    const packed = spawnSync("pnpm", ["--filter", name, "pack", "--pack-destination", dir], { encoding: "utf8" });
+    if (packed.status !== 0) {
+      console.error(packed.stdout);
+      console.error(packed.stderr);
+      process.exit(packed.status ?? 1);
+    }
+    const tarballs = readdirSync(dir).filter((file) => file.endsWith(".tgz"));
+    if (tarballs.length !== 1) {
+      console.error(`Expected one tarball for ${name}, found ${tarballs.join(", ") || "none"}.`);
+      process.exit(1);
+    }
+    console.log(`stage ${name}@${version}`);
+    const result = spawnSync(
+      "npm",
+      ["stage", "publish", join(dir, tarballs[0]), "--access", "public", "--tag", tag],
+      { stdio: "inherit" },
+    );
+    if (result.status !== 0) process.exit(result.status ?? 1);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
 }
 
 function isPublished(name, version) {
