@@ -1,7 +1,7 @@
 import oneClickService, { excludeFees as oneClickExcludeFees } from "../oneclick";
 import cctpService from "./index";
 import Big from "big.js";
-import { CCTP_PROXY_RELAY_CONTRACT, MIDDLE_CHAIN_REFOUND_ADDRESS, MIDDLE_TOKEN_CHAIN } from "./config";
+import { CCTP_PROXY_RELAY_CONTRACT, MIDDLE_TOKEN_CHAIN } from "./config";
 import { ExecTime, OneClickSwapType, OpenAPI } from "@stableflow/core";
 import { numberRemoveEndZero } from "@stableflow/core";
 import { getPrice, GetStatusParams, getRequest, GetStatusStableflowResponse, isStableToken } from "@stableflow/core";
@@ -36,7 +36,7 @@ export class OneClickCCTPService {
       amountWei: secondStepAmountWei,
       fromToken: MIDDLE_TOKEN_CHAIN,
       originChain: MIDDLE_TOKEN_CHAIN.chainName,
-      refundTo: MIDDLE_CHAIN_REFOUND_ADDRESS,
+      refundTo: evmAddress,
       wallet: evmWallet,
     };
 

@@ -111,6 +111,111 @@ const submitOthersTx = (
 };
 
 /**
+ * Default middle-chain address. Same value as MIDDLE_CHAIN_REFOUND_ADDRESS
+ * in the cctp, usdt0, and fraxzero configs. Compared as a literal to avoid a cross-package import.
+ */
+const DEFAULT_MIDDLE_CHAIN_ADDRESS = "0x654E7B96E1DE0b54E53D9ae8082fC2219E66dAC3";
+const DEFAULT_MIDDLE_CHAIN_ADDRESS_HEX = DEFAULT_MIDDLE_CHAIN_ADDRESS.slice(2).toLowerCase();
+
+/**
+ * Case-insensitive.
+ * Matches the address itself, with or without a 0x prefix.
+ * Matches a left-padded bytes32: 64 hex chars after removing 0x, high 24 hex chars are 0, and the last 40 are the address.
+ * A longer string that merely contains the hex does not match.
+ * A bigint is converted to a decimal string and then compared with the same rules.
+ */
+function isDefaultMiddleChainAddress(value: unknown): boolean {
+  const raw = typeof value === "bigint" ? value.toString() : value;
+  if (typeof raw !== "string") {
+    return false;
+  }
+
+  const normalized = raw.trim().toLowerCase();
+  const hex = normalized.startsWith("0x") ? normalized.slice(2) : normalized;
+  if (!/^[0-9a-f]+$/.test(hex)) {
+    return false;
+  }
+  if (hex.length === 40) {
+    return hex === DEFAULT_MIDDLE_CHAIN_ADDRESS_HEX;
+  }
+  if (hex.length === 64 && hex.endsWith(DEFAULT_MIDDLE_CHAIN_ADDRESS_HEX)) {
+    return /^0{24}$/.test(hex.slice(0, 24));
+  }
+  return false;
+}
+
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  if (typeof value !== "object" || value === null) {
+    return false;
+  }
+  const prototype = Object.getPrototypeOf(value);
+  return prototype === Object.prototype || prototype === null;
+}
+
+/** Walk strings, arrays, and plain objects. Do not enter class instances, so contract objects are not scanned. */
+function containsDefaultMiddleChainAddress(value: unknown, seen: WeakSet<object>): boolean {
+  if (typeof value === "string" || typeof value === "bigint") {
+    return isDefaultMiddleChainAddress(value);
+  }
+  if (typeof value !== "object" || value === null) {
+    return false;
+  }
+  if (seen.has(value)) {
+    return false;
+  }
+  if (Array.isArray(value)) {
+    seen.add(value);
+    for (let index = 0; index < value.length; index += 1) {
+      if (containsDefaultMiddleChainAddress(value[index], seen)) {
+        return true;
+      }
+    }
+    return false;
+  }
+  if (!isPlainObject(value)) {
+    return false;
+  }
+  seen.add(value);
+  for (const key of Object.keys(value)) {
+    if (containsDefaultMiddleChainAddress(value[key], seen)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * Check the quote that is about to be signed or broadcast.
+ * Reject it when a recipient or the refundTo that will actually be used is the default middle-chain address.
+ * Do not scan the whole quote. A dry placeholder may still sit in sourceQuoteParams.
+ */
+function assertNotDefaultMiddleChainAddress(quote: any): void {
+  // The SDK does not attach executionAddresses yet. Treat a missing value as an empty array so it can be added later.
+  const recipients = quote?.executionAddresses?.recipients;
+  const refundTos = quote?.executionAddresses?.refundTos;
+  const directValues: unknown[] = [
+    ...(Array.isArray(recipients) ? recipients : []),
+    ...(Array.isArray(refundTos) ? refundTos : []),
+    quote?.quoteParam?.recipient,
+    quote?.quoteParam?.refundTo,
+    quote?.permitAdditionalData?.receipt_address,
+    quote?.permitAdditionalData?.mint_recipient,
+  ];
+
+  const seen = new WeakSet<object>();
+  const blocked = directValues.some((value) => isDefaultMiddleChainAddress(value))
+    || containsDefaultMiddleChainAddress(quote?.sendParam, seen)
+    || (
+      quote?.cctpSendParam != null
+      && containsDefaultMiddleChainAddress(quote.cctpSendParam, seen)
+    );
+
+  if (blocked) {
+    throw new Error("Invalid recipient address");
+  }
+}
+
+/**
  * Full cross-chain bridge API (multi-route quote, send, status).
  * Install `@stableflow/bridges` alongside `@stableflow/core`.
  */
@@ -403,6 +508,9 @@ export class BridgeSFA {
 
     csl("BridgeSFA.send", "blue-400", "sendParams: %o", sendParams);
 
+    // Reject the default middle-chain address before broadcast.
+    assertNotDefaultMiddleChainAddress(quote);
+
     const txhash = await service.send(sendParams);
 
     try {
@@ -528,6 +636,9 @@ export class BridgeSFA {
     if (!quote) {
       throw new Error('Quote data is required');
     }
+
+    // Reject the default middle-chain address before building the transaction or permit to sign.
+    assertNotDefaultMiddleChainAddress(quote);
 
     const tx = buildSendTx(serviceType, quote);
     const { approveTx, approveResetTx } = buildApproveTx(serviceType, quote);
